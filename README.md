@@ -1,9 +1,6 @@
 # Simulating Risk
 
-
 ## Development instructions
-
-This git repository uses git flow branching conventions.
 
 Initial setup and installation:
 
@@ -20,7 +17,12 @@ pip install -r requirements/dev.txt
 ### Install pre-commit hooks
 
 Install pre-commit hooks (currently [black](https://github.com/psf/black) and [isort](https://pycqa.github.io/isort/)):
-
 ```sh
 pre-commit install
 ```
+
+Use Mesa runserver to run the prototype stag hunt model locally:
+```sh
+mesa runserver stag_hunt
+```
+
