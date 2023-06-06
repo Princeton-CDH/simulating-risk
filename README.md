@@ -12,9 +12,10 @@ Initial setup and installation:
 python3 -m venv simrisk
 source simrisk/bin/activate
 ```
-- Install python dependencies::
+- Install the package, dependencies, and development dependencies:
 ```sh
-pip install -r requirements/dev.txt
+pip install -e .
+pip install -e ".[dev]"
 ```
 
 ### Install pre-commit hooks

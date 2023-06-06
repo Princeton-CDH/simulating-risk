@@ -1,6 +1,6 @@
 import mesa
 
-from risky_food.model import RiskyFoodModel
+from simulatingrisk.risky_food.model import RiskyFoodModel
 
 chart = mesa.visualization.ChartModule(
     [
