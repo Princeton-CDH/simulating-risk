@@ -1,5 +1,4 @@
 from enum import Enum
-from functools import partial
 
 import mesa
 
@@ -28,8 +27,11 @@ class Agent(mesa.Agent):
         else:
             choice = FoodChoice.SAFE
         self.payoff = self.model.payoff(choice)
+        # debug output
         print(
-            f"agent {self.unique_id} r {self.risk_level:.4f} p {self.model.prob_notcontaminated:.4f} choice: {choice} payoff {self.payoff}"
+            f"agent {self.unique_id} r {self.risk_level:.4f} "
+            + f"p {self.model.prob_notcontaminated:.4f} "
+            + f"choice: {choice} payoff {self.payoff}"
         )
 
 
@@ -73,8 +75,10 @@ class RiskyFoodModel(mesa.Model):
             [FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
             weights=[self.prob_notcontaminated, 1 - self.prob_notcontaminated],
         )[0]
+        # debug output
         print(
-            f"p not contaminated: {self.prob_notcontaminated:.4f} actual status: {self.risky_food_status}"
+            f"p not contaminated: {self.prob_notcontaminated:.4f} "
+            + f"actual status: {self.risky_food_status}"
         )
         self.schedule.step()
         self.datacollector.collect(self)
