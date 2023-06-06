@@ -19,7 +19,7 @@ pip install -r requirements/dev.txt
 
 ### Install pre-commit hooks
 
-Install pre-commit hooks (currently [black](https://github.com/psf/black) and [isort](https://pycqa.github.io/isort/)):
+Install pre-commit hooks (currently [black](https://github.com/psf/black) and [ruff](https://beta.ruff.rs/docs/)):
 
 ```sh
 pre-commit install
