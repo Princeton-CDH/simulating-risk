@@ -17,7 +17,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["pre-commit"]
+dev = ["pre-commit", "pytest"]
 
 [tool.black]
 line-length = 88
