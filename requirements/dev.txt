@@ -1,6 +1,0 @@
-# all requirements for production, test, and dev
--r main.txt
-#-r test.txt
-#-r docs.txt
-
-pre-commit

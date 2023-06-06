@@ -29,4 +29,4 @@ SEE: We’ll see what are the risk attitudes that are replicated more and less o
 - To run from the main `simulating-risk` project directory: 
 	- Configure python to include the current directory in import path; 
 	  for C-based shells, run `setenv PYTHONPATH .` ; for bash, run `export $PYTHONPATH=.`
-	- Run with mesa: `mesa runserver risky_food/`
+	- To run interactively with mesa runserver: `mesa runserver simulatingrisk/risky_food/`
