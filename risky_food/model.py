@@ -1,4 +1,5 @@
 from enum import Enum
+from statistics import mean
 
 import mesa
 
@@ -18,7 +19,7 @@ class Agent(mesa.Agent):
         super().__init__(unique_id, model)
         # get a random risk tolerance; returns a value between 0.0 and 1.0
         self.risk_level = risk_level or self.random.random()
-        print(f"agent {unique_id} risk level {self.risk_level}")
+        # print(f"agent {unique_id} risk level {self.risk_level}")
 
     def step(self):
         # choose food based on the probability not contaminated and risk tolerance
@@ -28,18 +29,18 @@ class Agent(mesa.Agent):
             choice = FoodChoice.SAFE
         self.payoff = self.model.payoff(choice)
         # debug output
-        print(
-            f"agent {self.unique_id} r {self.risk_level:.4f} "
-            + f"p {self.model.prob_notcontaminated:.4f} "
-            + f"choice: {choice} payoff {self.payoff}"
-        )
+        # print(
+        #     f"agent {self.unique_id} r {self.risk_level:.4f} "
+        #     + f"p {self.model.prob_notcontaminated:.4f} "
+        #     + f"choice: {choice} payoff {self.payoff}"
+        # )
 
 
 def food_status(model):
     if model.risky_food_status == FoodStatus.CONTAMINATED:
-        print("food status 1")
+        # print("food status 1")
         return 1
-    print("food status 0")
+    # print("food status 0")
     return 0
 
 
@@ -60,8 +61,12 @@ class RiskyFoodModel(mesa.Model):
             model_reporters={
                 "prob_notcontaminated": "prob_notcontaminated",
                 "contaminated": "contaminated",
-            }
-            # TODO: add data collection for agents to track risk level
+                "average_risk_level": "avg_risk_level",
+                "min_risk_level": "min_risk_level",
+                "max_risk_level": "max_risk_level",
+                "num_agents": "total_agents",
+            },
+            agent_reporters={"risk_level": "risk_level", "payoff": "payoff"},
         )
 
     def step(self):
@@ -69,17 +74,20 @@ class RiskyFoodModel(mesa.Model):
         # pick a probability for risky food being not contaminated this round
         self.prob_notcontaminated = self.random.random()
         # determine actual food status, weighted by probability of non-contamination
-        print([self.prob_notcontaminated, 1 - self.prob_notcontaminated])
+        # print([self.prob_notcontaminated, 1 - self.prob_notcontaminated])
         # randomly choose based on probabality not contaminated; return the first choice
+
+        notcontam_weight = self.prob_notcontaminated * 100
+
         self.risky_food_status = self.random.choices(
             [FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
-            weights=[self.prob_notcontaminated, 1 - self.prob_notcontaminated],
+            weights=[notcontam_weight, 100 - notcontam_weight],
         )[0]
         # debug output
-        print(
-            f"p not contaminated: {self.prob_notcontaminated:.4f} "
-            + f"actual status: {self.risky_food_status}"
-        )
+        # print(
+        #     f"p not contaminated: {self.prob_notcontaminated:.4f} "
+        #     + f"actual status: {self.risky_food_status}"
+        # )
         self.schedule.step()
         self.datacollector.collect(self)
 
@@ -101,7 +109,7 @@ class RiskyFoodModel(mesa.Model):
 
             self.nextid += agent.payoff
 
-        print(f"finished propagation, {self.schedule.get_agent_count()} total agents")
+        # print(f"finished propagation, {self.schedule.get_agent_count()} total agents")
 
     @property
     def contaminated(self):
@@ -109,6 +117,30 @@ class RiskyFoodModel(mesa.Model):
         if self.risky_food_status == FoodStatus.CONTAMINATED:
             return 1
         return 0
+
+    @property
+    def agents(self):
+        # custom property to make it easy to access all current agents
+
+        # uses a generator of agents from the scheduler that
+        # will allow adding and removing agents from the scheduler
+        return self.schedule.agent_buffer()
+
+    @property
+    def total_agents(self):
+        return len(list(self.agents))
+
+    @property
+    def avg_risk_level(self):
+        return mean([agent.risk_level for agent in self.agents])
+
+    @property
+    def min_risk_level(self):
+        return min([agent.risk_level for agent in self.agents])
+
+    @property
+    def max_risk_level(self):
+        return max([agent.risk_level for agent in self.agents])
 
     def payoff(self, choice):
         "Calculate the payoff for a given choice, based on current food status"
