@@ -19,7 +19,6 @@ class Agent(mesa.Agent):
         super().__init__(unique_id, model)
         # get a random risk tolerance; returns a value between 0.0 and 1.0
         self.risk_level = risk_level or self.random.random()
-        # print(f"agent {unique_id} risk level {self.risk_level}")
 
     def step(self):
         # choose food based on the probability not contaminated and risk tolerance
@@ -28,20 +27,6 @@ class Agent(mesa.Agent):
         else:
             choice = FoodChoice.SAFE
         self.payoff = self.model.payoff(choice)
-        # debug output
-        # print(
-        #     f"agent {self.unique_id} r {self.risk_level:.4f} "
-        #     + f"p {self.model.prob_notcontaminated:.4f} "
-        #     + f"choice: {choice} payoff {self.payoff}"
-        # )
-
-
-def food_status(model):
-    if model.risky_food_status == FoodStatus.CONTAMINATED:
-        # print("food status 1")
-        return 1
-    # print("food status 0")
-    return 0
 
 
 class RiskyFoodModel(mesa.Model):
@@ -77,11 +62,7 @@ class RiskyFoodModel(mesa.Model):
         self.prob_notcontaminated * 100
 
         self.risky_food_status = self.get_risky_food_status()
-        # debug output
-        # print(
-        #     f"p not contaminated: {self.prob_notcontaminated:.4f} "
-        #     + f"actual status: {self.risky_food_status}"
-        # )
+
         self.schedule.step()
         self.datacollector.collect(self)
 
@@ -113,8 +94,6 @@ class RiskyFoodModel(mesa.Model):
             self.schedule.remove(agent)
 
             self.nextid += agent.payoff
-
-        # print(f"finished propagation, {self.schedule.get_agent_count()} total agents")
 
     @property
     def contaminated(self):
