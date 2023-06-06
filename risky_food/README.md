@@ -1,6 +1,6 @@
 # Risky Food Simulation
 
-## summary
+## Summary
 
 Game: risky food source is 3 if **N**, 1 if **C**; safe source is 2
 
@@ -22,3 +22,11 @@ EACH ROUND:
 END ROUND
 
 SEE: We’ll see what are the risk attitudes that are replicated more and less over time
+
+## Running the simulation
+
+- Install python dependencies as described in the main project readme (requires mesa)
+- To run from the main `simulating-risk` project directory: 
+	- Configure python to include the current directory in import path; 
+	  for C-based shells, run `setenv PYTHONPATH .` ; for bash, run `export $PYTHONPATH=.`
+	- Run with mesa: `mesa runserver risky_food/`
