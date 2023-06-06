@@ -73,16 +73,10 @@ class RiskyFoodModel(mesa.Model):
         """Advance the model by one step."""
         # pick a probability for risky food being not contaminated this round
         self.prob_notcontaminated = self.random.random()
-        # determine actual food status, weighted by probability of non-contamination
-        # print([self.prob_notcontaminated, 1 - self.prob_notcontaminated])
-        # randomly choose based on probabality not contaminated; return the first choice
 
-        notcontam_weight = self.prob_notcontaminated * 100
+        self.prob_notcontaminated * 100
 
-        self.risky_food_status = self.random.choices(
-            [FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
-            weights=[notcontam_weight, 100 - notcontam_weight],
-        )[0]
+        self.risky_food_status = self.get_risky_food_status()
         # debug output
         # print(
         #     f"p not contaminated: {self.prob_notcontaminated:.4f} "
@@ -93,6 +87,17 @@ class RiskyFoodModel(mesa.Model):
 
         # setup agents for the next round
         self.propagate()
+
+    def get_risky_food_status(self):
+        # determine actual food status for this round,
+        # weighted by probability of non-contamination
+
+        # randomly choose, with choice weighted by
+        # current probability not contaminated
+        return self.random.choices(
+            [FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
+            weights=[self.prob_notcontaminated, 1 - self.prob_notcontaminated],
+        )[0]
 
     def propagate(self):
         # update agents based on payoff from the completed round
