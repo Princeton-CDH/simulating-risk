@@ -1,5 +1,4 @@
 import mesa
-
 from stag_hunt.model import HuntChoice, StagHuntModel
 
 
