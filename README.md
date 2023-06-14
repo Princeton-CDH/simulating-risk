@@ -1,9 +1,6 @@
 # Simulating Risk
 
-
 ## Development instructions
-
-This git repository uses git flow branching conventions.
 
 Initial setup and installation:
 
