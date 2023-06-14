@@ -9,20 +9,16 @@ Initial setup and installation:
 python3 -m venv simrisk
 source simrisk/bin/activate
 ```
-- Install python dependencies::
+- Install the package, dependencies, and development dependencies:
 ```sh
-pip install -r requirements/dev.txt
+pip install -e .
+pip install -e ".[dev]"
 ```
 
 ### Install pre-commit hooks
 
-Install pre-commit hooks (currently [black](https://github.com/psf/black) and [isort](https://pycqa.github.io/isort/)):
+Install pre-commit hooks (currently [black](https://github.com/psf/black) and [ruff](https://beta.ruff.rs/docs/)):
+
 ```sh
 pre-commit install
 ```
-
-Use Mesa runserver to run the prototype stag hunt model locally:
-```sh
-mesa runserver stag_hunt
-```
-
