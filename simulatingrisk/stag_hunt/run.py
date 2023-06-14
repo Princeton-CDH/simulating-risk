@@ -1,11 +1,11 @@
 import mesa
-from stag_hunt.model import HuntChoice, StagHuntModel
+from simulatingrisk.stag_hunt.model import StagHuntModel
 
 
 def agent_portrayal(agent):
     # TODO: figure out where Mesa wants this import to happen
     # (expects model and server nested deeper than run?)
-    from stag_hunt.model import HuntChoice, StagHuntModel
+    from simulatingrisk.stag_hunt.model import HuntChoice
 
     portrayal = {
         "Shape": "circle",
