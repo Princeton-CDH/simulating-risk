@@ -87,11 +87,11 @@ class RiskyFoodModel(mesa.Model):
         # will allow us to add and remove
         for agent in self.schedule.agent_buffer():
             # add offspring based on payoff; keep risk level
-            for i in range(agent.payoff):
+            # logic is offspring = to payoff, original dies off,
+            # but for efficiency just add payoff - 1 and keep the  original
+            for i in range(agent.payoff - 1):
                 a = Agent(i + self.nextid, self, agent.risk_level)
                 self.schedule.add(a)
-            # remove agent from previous round
-            self.schedule.remove(agent)
 
             self.nextid += agent.payoff
 
