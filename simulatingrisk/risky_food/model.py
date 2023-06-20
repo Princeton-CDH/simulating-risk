@@ -59,8 +59,6 @@ class RiskyFoodModel(mesa.Model):
         # pick a probability for risky food being not contaminated this round
         self.prob_notcontaminated = self.random.random()
 
-        self.prob_notcontaminated * 100
-
         self.risky_food_status = self.get_risky_food_status()
 
         self.schedule.step()
