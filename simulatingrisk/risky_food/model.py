@@ -110,7 +110,7 @@ class RiskyFoodModel(mesa.Model):
 
     @property
     def total_agents(self):
-        return len(list(self.agents))
+        return self.schedule.get_agent_count()
 
     @property
     def avg_risk_level(self):
