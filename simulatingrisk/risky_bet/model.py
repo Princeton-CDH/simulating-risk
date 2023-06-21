@@ -20,7 +20,8 @@ divergent_colors = [
     "#1a9850",
     "#006837",
 ]
-divergent_colors.reverse()  # reverse to get  green first and red last
+# low values = risk inclined (more likely to take a risky bet)
+# higher value = risk averse (less likely to the bet)
 
 
 class RiskyGambler(mesa.Agent):
@@ -42,7 +43,7 @@ class RiskyGambler(mesa.Agent):
     def step(self):
         # decide how to bet based on risk tolerance and likelihood
         # that the risky bet will pay off
-        if self.risk_level > self.model.prob_risky_payoff:
+        if self.model.prob_risky_payoff > self.risk_level:
             self.choice = Bet.RISKY
         else:
             self.choice = Bet.SAFE
@@ -75,7 +76,7 @@ class RiskyGambler(mesa.Agent):
         # And then reset wealth back to initial value
 
         # get neighbors; use Von Neumann neighboard (no diagonals), don't include self
-        neighbors = self.model.grid.get_neighbors(self.pos, False, True)
+        neighbors = self.model.grid.get_neighbors(self.pos, False, False)
         # sort neighbors by wealth, wealthiest neighbor first
         neighbors.sort(key=lambda x: x.wealth, reverse=True)
         wealthiest = neighbors[0]
