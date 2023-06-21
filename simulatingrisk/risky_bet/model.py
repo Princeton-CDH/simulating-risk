@@ -79,20 +79,37 @@ class RiskyGambler(mesa.Agent):
         # sort neighbors by wealth, wealthiest neighbor first
         neighbors.sort(key=lambda x: x.wealth, reverse=True)
         wealthiest = neighbors[0]
-        # if wealthiest neighbor is richer than me, adopt their risk level
+        # if wealthiest neighbor is richer, adjust
         if wealthiest.wealth > self.wealth:
-            self.risk_level = wealthiest.risk_level
+            # adjust risk based on model configuration
+            if self.model.risk_adjustment == "adopt":
+                # adopt wealthiest neighbor's risk level
+                self.risk_level = wealthiest.risk_level
+            elif self.model.risk_adjustment == "average":
+                #  average theirs with mine
+                self.risk_level = statistics.mean(
+                    [self.risk_level, wealthiest.risk_level]
+                )
 
         # reset wealth back to initial value
         self.wealth = self.initial_wealth
 
 
 class RiskyBetModel(mesa.Model):
+    """
+    Model for simulating a risky bet game.
+
+    :param grid_size: number for square grid size (creates n*n agents)
+    :param risk_adjustment: strategy agents should use for adjusting risk;
+        adopt (default), or average
+    """
+
     initial_wealth = 1000
 
-    def __init__(self, grid_size):
+    def __init__(self, grid_size, risk_adjustment="adopt"):
         # assume a fully-populated square grid
         self.num_agents = grid_size * grid_size
+        self.risk_adjustment = risk_adjustment
         # initialize a single grid (each square inhabited by a single agent);
         # configure the grid to wrap around so everyone has neighbors
         self.grid = mesa.space.SingleGrid(grid_size, grid_size, True)

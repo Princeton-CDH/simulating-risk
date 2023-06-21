@@ -50,6 +50,25 @@ colors = [
     "#006837",
 ]
 
+# make model parameters user-configurable
+model_params = {
+    "grid_size": grid_size,  # mesa.visualization.StaticText(value=grid_size),
+    # "grid_size": mesa.visualization.Slider(
+    #     "Grid size",
+    #     value=20,
+    #     min_value=10,
+    #     max_value=100,
+    #     description="Grid dimension (n*n = number of agents)",
+    # ),
+    "risk_adjustment": mesa.visualization.Choice(
+        "Risk adjustment strategy",
+        value="adopt",
+        choices=["adopt", "average"],
+        description="How agents update their risk level",
+    ),
+}
+
+
 grid = mesa.visualization.CanvasGrid(agent_portrayal, grid_size, grid_size, 500, 500)
 chart = mesa.visualization.ChartModule(
     [
@@ -66,7 +85,7 @@ server = mesa.visualization.ModularServer(
     RiskyBetModel,
     [grid, chart],
     "Risky Bet Simulation",
-    {"grid_size": grid_size},
+    model_params=model_params,
 )
 server.port = 8521  # The default
 server.launch()
