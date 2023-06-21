@@ -124,6 +124,10 @@ class RiskyBetModel(mesa.Model):
 
         self.datacollector = mesa.DataCollector(
             model_reporters={
+                # state of the world
+                "prob_risky_payoff": "prob_risky_payoff",
+                "risky_bet": "risky_bet",
+                # aggregate information about agents
                 "risk_min": "risk_min",
                 "risk_q1": "risk_q1",
                 "risk_mean": "risk_mean",
@@ -148,10 +152,11 @@ class RiskyBetModel(mesa.Model):
     def call_risky_bet(self):
         # flip a weighted coin to determine if the risky bet pays off,
         # weighted by current round payoff probability
-        return self.random.choices(
+        self.risky_bet = self.random.choices(
             [True, False],
             weights=[self.prob_risky_payoff, 1 - self.prob_risky_payoff],
         )[0]
+        return self.risky_bet
 
     def adjustment_round(self):
         # agents should adjust their wealth every 10 rounds;
