@@ -7,6 +7,7 @@ def agent_portrayal(agent):
     import math
     from simulatingrisk.risky_bet.model import divergent_colors
 
+    # initial display
     portrayal = {
         "Shape": "circle",
         "Color": "gray",
@@ -20,18 +21,21 @@ def agent_portrayal(agent):
     color_index = math.floor(agent.risk_level * 10)
     portrayal["Color"] = divergent_colors[color_index]
 
-    # size based on wealth
-    # TODO: make this more of a gradient
-    if agent.wealth > agent.model.initial_wealth / 2:
-        portrayal["r"] = 0.2
-    elif math.isclose(agent.wealth, agent.model.initial_wealth, abs_tol=100):
-        portrayal["r"] = 0.4
-    else:
-        portrayal["r"] = 0.7
+    # size based on wealth within current distribution
+    max_wealth = agent.model.max_agent_wealth
+    wealth_index = math.floor(agent.wealth / max_wealth * 10)
+    # set radius based on wealth, but don't go smaller than 0.1 radius
+    # or too large to fit in the grid
+    portrayal["r"] = wealth_index / 15 + 0.1
+
+    # TODO: change shape based on number of times risk level has been adjusted?
+    # can't find a list of available shapes; setting to triangle and square
+    # results in a 404 for a local custom url
+
     return portrayal
 
 
-grid_size = 10
+grid_size = 20
 
 colors = [
     "#a50026",
