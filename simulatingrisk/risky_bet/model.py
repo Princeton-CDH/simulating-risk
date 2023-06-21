@@ -147,6 +147,11 @@ class RiskyBetModel(mesa.Model):
         return [a.risk_level for a in self.schedule.agent_buffer()]
 
     @property
+    def max_agent_wealth(self):
+        # what is the current largest wealth of any agent?
+        return max([a.wealth for a in self.schedule.agent_buffer()])
+
+    @property
     def risk_median(self):
         # calculate median of current agent risk levels
         return statistics.median(self.agent_risk_levels)
