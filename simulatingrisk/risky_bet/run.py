@@ -70,7 +70,7 @@ model_params = {
 
 
 grid = mesa.visualization.CanvasGrid(agent_portrayal, grid_size, grid_size, 500, 500)
-chart = mesa.visualization.ChartModule(
+risk_chart = mesa.visualization.ChartModule(
     [
         {"Label": "risk_min", "Color": divergent_colors[0]},
         {"Label": "risk_q1", "Color": divergent_colors[3]},
@@ -80,10 +80,17 @@ chart = mesa.visualization.ChartModule(
     ],
     data_collector_name="datacollector",
 )
+world_chart = mesa.visualization.ChartModule(
+    [
+        {"Label": "prob_risky_payoff", "Color": "gray"},
+        {"Label": "risky_bet", "Color": "blue"},
+    ],
+    data_collector_name="datacollector",
+)
 
 server = mesa.visualization.ModularServer(
     RiskyBetModel,
-    [grid, chart],
+    [grid, risk_chart, world_chart],
     "Risky Bet Simulation",
     model_params=model_params,
 )
