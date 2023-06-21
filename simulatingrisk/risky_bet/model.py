@@ -1,19 +1,43 @@
 from enum import Enum
+import statistics
 
 import mesa
 
 Bet = Enum("Bet", ["RISKY", "SAFE"])
 bet_choices = [Bet.SAFE, Bet.RISKY]
 
+# divergent color scheme, ten colors
+# from https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=10
+divergent_colors = [
+    "#a50026",
+    "#d73027",
+    "#f46d43",
+    "#fdae61",
+    "#fee08b",
+    "#d9ef8b",
+    "#a6d96a",
+    "#66bd63",
+    "#1a9850",
+    "#006837",
+]
+divergent_colors.reverse()  # reverse to get  green first and red last
+
 
 class RiskyGambler(mesa.Agent):
     def __init__(self, unique_id, model, initial_wealth):
         super().__init__(unique_id, model)
         # starting wealth determined by the model
+        self.initial_wealth = initial_wealth  # store initial value
         self.wealth = initial_wealth
         # get a random risk tolerance; returns a value between 0.0 and 1.0
         self.risk_level = self.random.random()
         self.choice = None
+
+    def __repr__(self):
+        return (
+            f"<RiskyGambler id={self.unique_id} wealth={self.wealth} "
+            + f"risk_level={self.risk_level}>"
+        )
 
     def step(self):
         # decide how to bet based on risk tolerance and likelihood
@@ -26,25 +50,41 @@ class RiskyGambler(mesa.Agent):
         # determine the payoff for this choice
         self.calculate_payoff(self.choice)
 
+        # every ten rounds, agents adjust their risk level
+        # make this a model method?
+        if self.model.adjustment_round():
+            self.adjust_risk()
+
     def calculate_payoff(self, choice):
         if choice == Bet.RISKY:
             # if the risky bet paid off, multiply current wealth by 1.5
             if self.model.risky_payoff:
                 self.wealth = self.wealth * 1.5
-                print(
-                    "agent %s risky bet paid off, wealth is now %s"
-                    % (self.unique_id, self.wealth)
-                )
 
             # if it doesn't, multiply by 0.5
             else:
                 self.wealth = self.wealth * 0.5
-                print(
-                    "agent %s risky bet did not paid off, wealth is now %s"
-                    % (self.unique_id, self.wealth)
-                )
-        # safe choice = wealth stays the same
-        print("agent %s no bet, wealth stays %s" % (self.unique_id, self.wealth))
+
+        # otherwise, no change
+
+    def adjust_risk(self):
+        # look at neighbors (4)
+        # if anyone has more money,
+        # adopt their risk attitude
+        # [other possibilities: average between your risk attitude and theirs].
+        # And then reset wealth back to initial value
+
+        # get neighbors; use Von Neumann neighboard (no diagonals), don't include self
+        neighbors = self.model.grid.get_neighbors(self.pos, False, True)
+        # sort neighbors by wealth, wealthiest neighbor first
+        neighbors.sort(key=lambda x: x.wealth, reverse=True)
+        wealthiest = neighbors[0]
+        # if wealthiest neighbor is richer than me, adopt their risk level
+        if wealthiest.wealth > self.wealth:
+            self.risk_level = wealthiest.risk_level
+
+        # reset wealth back to initial value
+        self.wealth = self.initial_wealth
 
 
 class RiskyBetModel(mesa.Model):
@@ -66,14 +106,12 @@ class RiskyBetModel(mesa.Model):
             self.grid.move_to_empty(a)
 
         self.datacollector = mesa.DataCollector(
-            # TODO: figure out what data to collect
             model_reporters={
-                # "prob_notcontaminated": "prob_notcontaminated",
-                # "contaminated": "contaminated",
-                # "average_risk_level": "avg_risk_level",
-                # "min_risk_level": "min_risk_level",
-                # "max_risk_level": "max_risk_level",
-                # "num_agents": "total_agents",
+                "risk_min": "risk_min",
+                "risk_q1": "risk_q1",
+                "risk_mean": "risk_mean",
+                "risk_q3": "risk_q3",
+                "risk_max": "risk_max",
             },
             agent_reporters={"risk_level": "risk_level", "choice": "choice"},
         )
@@ -87,8 +125,8 @@ class RiskyBetModel(mesa.Model):
         self.risky_payoff = self.call_risky_bet()
 
         self.schedule.step()
-        # TODO: add periodic agent risk adjustment (every ten rounds)
         self.datacollector.collect(self)
+        # every ten rounds, agents adjust their risk level
 
     def call_risky_bet(self):
         # flip a weighted coin to determine if the risky bet pays off,
@@ -97,3 +135,42 @@ class RiskyBetModel(mesa.Model):
             [True, False],
             weights=[self.prob_risky_payoff, 1 - self.prob_risky_payoff],
         )[0]
+
+    def adjustment_round(self):
+        # agents should adjust their wealth every 10 rounds;
+        # check if the current step is an adjustment round
+        return self.schedule.steps > 0 and self.schedule.steps % 10 == 0
+
+    # TODO: possible to cache but invalidate when step changes?
+    @property
+    def agent_risk_levels(self):
+        return [a.risk_level for a in self.schedule.agent_buffer()]
+
+    @property
+    def risk_median(self):
+        # calculate median of current agent risk levels
+        return statistics.median(self.agent_risk_levels)
+
+    @property
+    def risk_mean(self):
+        return statistics.mean(self.agent_risk_levels)
+
+    @property
+    def risk_min(self):
+        return min(self.agent_risk_levels)
+
+    @property
+    def risk_max(self):
+        return max(self.agent_risk_levels)
+
+    @property
+    def risk_q1(self):
+        risk_median = self.risk_median
+        # first quartile is the median of values less than the median
+        return statistics.median([r for r in self.agent_risk_levels if r < risk_median])
+
+    @property
+    def risk_q3(self):
+        risk_median = self.risk_median
+        # third quartile is the median of values greater than the median
+        return statistics.median([r for r in self.agent_risk_levels if r > risk_median])
