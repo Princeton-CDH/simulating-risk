@@ -1,25 +1,11 @@
 import mesa
 
-from simulatingrisk.risky_bet.model import RiskyBetModel
+from simulatingrisk.risky_bet.model import RiskyBetModel, divergent_colors
 
 
 def agent_portrayal(agent):
     import math
-
-    # divergent color scheme, ten colors
-    # from https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=10
-    colors = [
-        "#a50026",
-        "#d73027",
-        "#f46d43",
-        "#fdae61",
-        "#fee08b",
-        "#d9ef8b",
-        "#a6d96a",
-        "#66bd63",
-        "#1a9850",
-        "#006837",
-    ]
+    from simulatingrisk.risky_bet.model import divergent_colors
 
     portrayal = {
         "Shape": "circle",
@@ -32,7 +18,7 @@ def agent_portrayal(agent):
     # color based on risk level, with ten bins
     # convert 0.0 to 1.0 to 1 - 10
     color_index = math.floor(agent.risk_level * 10)
-    portrayal["Color"] = colors[color_index]
+    portrayal["Color"] = divergent_colors[color_index]
 
     # size based on wealth
     # TODO: make this more of a gradient
@@ -47,14 +33,29 @@ def agent_portrayal(agent):
 
 grid_size = 10
 
+colors = [
+    "#a50026",
+    "#d73027",
+    "#f46d43",
+    "#fdae61",
+    "#fee08b",
+    "#d9ef8b",
+    "#a6d96a",
+    "#66bd63",
+    "#1a9850",
+    "#006837",
+]
+
 grid = mesa.visualization.CanvasGrid(agent_portrayal, grid_size, grid_size, 500, 500)
 chart = mesa.visualization.ChartModule(
-    # TODO: figure out what data points are worth collecting and reporting here
     [
-        # {"Label": "stag_hunters", "Color": "green"},
-        # {"Label": "hare_hunters", "Color": "blue"},
+        {"Label": "risk_min", "Color": divergent_colors[0]},
+        {"Label": "risk_q1", "Color": divergent_colors[3]},
+        {"Label": "risk_mean", "Color": divergent_colors[5]},
+        {"Label": "risk_q3", "Color": divergent_colors[7]},
+        {"Label": "risk_max", "Color": divergent_colors[-1]},
     ],
-    # data_collector_name="datacollector",
+    data_collector_name="datacollector",
 )
 
 server = mesa.visualization.ModularServer(
