@@ -3,6 +3,8 @@ from statistics import mean
 
 import mesa
 
+from simulatingrisk.utils import coinflip
+
 
 class FoodChoice(Enum):
     RISKY = "R"
@@ -73,12 +75,12 @@ class RiskyFoodModel(mesa.Model):
         # determine actual food status for this round,
         # weighted by probability of non-contamination
 
-        # randomly choose, with choice weighted by
+        # randomly choose status, with first choice weighted by
         # current probability not contaminated
-        return self.random.choices(
-            [FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
-            weights=[self.prob_notcontaminated, 1 - self.prob_notcontaminated],
-        )[0]
+        return coinflip(
+            choices=[FoodStatus.NOTCONTAMINATED, FoodStatus.CONTAMINATED],
+            weight=self.prob_notcontaminated,
+        )
 
     def propagate(self):
         # update agents based on payoff from the completed round
