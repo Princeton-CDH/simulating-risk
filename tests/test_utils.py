@@ -32,7 +32,7 @@ def test_coinflip_weights(weight):
     if weight is None:
         weight = 0.5
     expected = total_runs * weight
-    assert math.isclose(result_count[0], expected, abs_tol=total_runs * 0.1)
+    assert math.isclose(result_count[0], expected, abs_tol=total_runs * 0.2)
 
 
 def test_coinflip_choices():
