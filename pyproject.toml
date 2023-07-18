@@ -16,6 +16,10 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[tool.setuptools.packages.find]
+include = ["simulatingrisk"]
+# exclude tests and notebooks
+
 [project.optional-dependencies]
 dev = ["pre-commit", "pytest", "pytest-cov"]
 
