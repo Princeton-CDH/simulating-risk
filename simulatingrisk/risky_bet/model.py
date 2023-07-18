@@ -29,7 +29,7 @@ divergent_colors = [
 # higher value = risk averse (less likely to the bet)
 
 
-class RiskyGambler(mesa.Agent):
+class Gambler(mesa.Agent):
     def __init__(self, unique_id, model, initial_wealth):
         super().__init__(unique_id, model)
         # starting wealth determined by the model
@@ -41,7 +41,7 @@ class RiskyGambler(mesa.Agent):
 
     def __repr__(self):
         return (
-            f"<RiskyGambler id={self.unique_id} wealth={self.wealth} "
+            f"<Gambler id={self.unique_id} wealth={self.wealth} "
             + f"risk_level={self.risk_level}>"
         )
 
@@ -134,7 +134,7 @@ class RiskyBetModel(mesa.Model):
 
         # initialize agents and add to grid and scheduler
         for i in range(self.num_agents):
-            a = RiskyGambler(i, self, self.initial_wealth)
+            a = Gambler(i, self, self.initial_wealth)
             self.schedule.add(a)
             # place randomly in an empty spot
             self.grid.move_to_empty(a)
