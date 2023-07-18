@@ -22,7 +22,11 @@ def test_coinflip_weights(weight):
     results = []
     total_runs = 100
     for i in range(total_runs):
-        results.append(coinflip(weight=weight))
+        if weight:
+            results.append(coinflip(weight=weight))
+        else:
+            # for None, don't specify the weight
+            results.append(coinflip())
 
     # use counter to tally the results
     result_count = Counter(results)
