@@ -1,7 +1,9 @@
 from collections import Counter
 import math
+from unittest.mock import Mock, patch
+import statistics
 
-from simulatingrisk.risky_bet.model import RiskyBetModel
+from simulatingrisk.risky_bet.model import RiskyBetModel, RiskyGambler
 
 
 def test_call_risky_bet():
@@ -32,14 +34,16 @@ def test_call_risky_bet():
 def test_adjustment_round():
     model = RiskyBetModel(3)
 
-    for metaround in range(3):
-        # run for nine rounds, none of them should be adjustment rounds
-        for i in range(9):
-            model.step()
-            assert model.adjustment_round is False
-        # tenth round is an adjustment round
+    # run for nine rounds, none of them should be adjustment rounds
+    for i in range(9):
         model.step()
-        assert model.adjustment_round
+        assert not model.adjustment_round
+    # tenth round is an adjustment round
+    model.step()
+    assert model.adjustment_round
+    # next round is not
+    model.step()
+    assert not model.adjustment_round
 
 
 def test_riskygambler_neighbors():
@@ -51,3 +55,60 @@ def test_riskygambler_neighbors():
     # even if they are on the edge of the grid
     for agent in model.schedule.agent_buffer():
         assert len(agent.neighbors) == 4
+
+
+def test_riskygambler_wealthiestneighbor():
+    # initialize an agent with a mock model
+    agent = RiskyGambler(1, Mock(), 1000)
+    mock_neighbors = [
+        Mock(wealth=1),
+        Mock(wealth=45),
+        Mock(wealth=232),
+        Mock(wealth=32),
+    ]
+
+    with patch.object(RiskyGambler, "neighbors", mock_neighbors):
+        assert agent.wealthiest_neighbor.wealth == 232
+
+
+def test_riskygambler_adjust_risk_adopt():
+    # initialize an agent with a mock model
+    agent = RiskyGambler(1, Mock(risk_adjustment="adopt"), 1000)
+    # set a known risk level
+    agent.risk_level = 0.3
+    # adjust wealth as if the model had run
+    agent.wealth = 300
+    # set a mock wealthiest neighbor with more wealth than current agent
+    neighbor = Mock(wealth=1500, risk_level=0.2)
+    with patch.object(RiskyGambler, "wealthiest_neighbor", neighbor):
+        agent.adjust_risk()
+        # default behavior is to adopt successful risk level
+        assert agent.risk_level == neighbor.risk_level
+        # wealth should reset to initial value
+        assert agent.wealth == agent.initial_wealth
+
+        # now simulate a wealthiest neighbor with less wealth than current agent
+        neighbor.wealth = 240
+        neighbor.risk_level = 0.4
+        prev_risk_level = agent.risk_level
+        agent.adjust_risk()
+        # risk level should not be changed
+        assert agent.risk_level == prev_risk_level
+
+
+def test_riskygambler_adjust_risk_average():
+    # same as previous test, but with average risk adjustment strategy
+    agent = RiskyGambler(1, Mock(risk_adjustment="average"), 1000)
+    # set a known risk level
+    agent.risk_level = 0.7
+    # adjust wealth as if the model had run
+    agent.wealth = 300
+    # set a mock wealthiest neighbor with more wealth than current agent
+    neighbor = Mock(wealth=1500, risk_level=0.2)
+    with patch.object(RiskyGambler, "wealthiest_neighbor", neighbor):
+        prev_risk_level = agent.risk_level
+        agent.adjust_risk()
+        # new risk level should be average of previous and most successful
+        assert agent.risk_level == statistics.mean(
+            [neighbor.risk_level, prev_risk_level]
+        )
