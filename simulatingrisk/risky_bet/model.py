@@ -83,15 +83,19 @@ class RiskyGambler(mesa.Agent):
             self.pos, moore=False, include_center=False
         )
 
+    @property
+    def wealthiest_neighbor(self):
+        """identify and return the current wealthiest neighbor"""
+        # sort neighbors by wealth, wealthiest neighbor first
+        return sorted(self.neighbors, key=lambda x: x.wealth, reverse=True)[0]
+
     def adjust_risk(self):
         # look at neighbors (4)
         # if anyone has more money,
         # either adopt their risk attitude or average theirs with yours
         # then reset wealth back to initial value
 
-        # sort neighbors by wealth, wealthiest neighbor first
-        self.neighbors.sort(key=lambda x: x.wealth, reverse=True)
-        wealthiest = self.neighbors[0]
+        wealthiest = self.wealthiest_neighbor
         # if wealthiest neighbor is richer, adjust
         if wealthiest.wealth > self.wealth:
             # adjust risk based on model configuration
@@ -162,6 +166,9 @@ class RiskyBetModel(mesa.Model):
         self.datacollector.collect(self)
         # every ten rounds, agents adjust their risk level
 
+        # delete cached property before the next round
+        del self.agent_risk_levels
+
     def call_risky_bet(self):
         # flip a weighted coin to determine if the risky bet pays off,
         # weighted by current round payoff probability
@@ -175,9 +182,12 @@ class RiskyBetModel(mesa.Model):
         # check if the current step is an adjustment round
         return self.schedule.steps > 0 and self.schedule.steps % 10 == 0
 
-    # TODO: possible to cache but invalidate when step changes?
-    @property
-    def agent_risk_levels(self):
+    @cached_property
+    def agent_risk_levels(self) -> [float]:
+        # list of all risk levels for all current agents;
+        # property is cached but should be cleared in each new round
+
+        # NOTE: occasionally median method is complaining that this is empty
         return [a.risk_level for a in self.schedule.agent_buffer()]
 
     @property
@@ -188,6 +198,10 @@ class RiskyBetModel(mesa.Model):
     @property
     def risk_median(self):
         # calculate median of current agent risk levels
+        if not self.agent_risk_levels:
+            # occasionally this complains about an empty list
+            # hopefully only possible in unit tests...
+            return
         return statistics.median(self.agent_risk_levels)
 
     @property
