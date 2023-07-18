@@ -1,19 +1,24 @@
 from enum import Enum
+from functools import cached_property
 import statistics
 
 import mesa
 
+from simulatingrisk.utils import coinflip
+
+
 Bet = Enum("Bet", ["RISKY", "SAFE"])
 bet_choices = [Bet.SAFE, Bet.RISKY]
 
-# divergent color scheme, ten colors
-# from https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=10
+# divergent color scheme, eleven colors
+# from https://colorbrewer2.org/?type=diverging&scheme=RdYlGn&n=11
 divergent_colors = [
     "#a50026",
     "#d73027",
     "#f46d43",
     "#fdae61",
     "#fee08b",
+    "#ffffbf",
     "#d9ef8b",
     "#a6d96a",
     "#66bd63",
@@ -53,7 +58,7 @@ class RiskyGambler(mesa.Agent):
 
         # every ten rounds, agents adjust their risk level
         # make this a model method?
-        if self.model.adjustment_round():
+        if self.model.adjustment_round:
             self.adjust_risk()
 
     def calculate_payoff(self, choice):
@@ -68,18 +73,25 @@ class RiskyGambler(mesa.Agent):
 
         # otherwise, no change
 
+    @cached_property
+    def neighbors(self):
+        """Get neighbors for the current agent; uses Von Neumann
+        neighborhood (no diagonals), does not include self."""
+        # because this simulation doesn't include any movement,
+        # neighbors won't change over the run and we can cache
+        return self.model.grid.get_neighbors(
+            self.pos, moore=False, include_center=False
+        )
+
     def adjust_risk(self):
         # look at neighbors (4)
         # if anyone has more money,
-        # adopt their risk attitude
-        # [other possibilities: average between your risk attitude and theirs].
-        # And then reset wealth back to initial value
+        # either adopt their risk attitude or average theirs with yours
+        # then reset wealth back to initial value
 
-        # get neighbors; use Von Neumann neighboard (no diagonals), don't include self
-        neighbors = self.model.grid.get_neighbors(self.pos, False, False)
         # sort neighbors by wealth, wealthiest neighbor first
-        neighbors.sort(key=lambda x: x.wealth, reverse=True)
-        wealthiest = neighbors[0]
+        self.neighbors.sort(key=lambda x: x.wealth, reverse=True)
+        wealthiest = self.neighbors[0]
         # if wealthiest neighbor is richer, adjust
         if wealthiest.wealth > self.wealth:
             # adjust risk based on model configuration
@@ -153,13 +165,12 @@ class RiskyBetModel(mesa.Model):
     def call_risky_bet(self):
         # flip a weighted coin to determine if the risky bet pays off,
         # weighted by current round payoff probability
-        self.risky_bet = self.random.choices(
-            [True, False],
-            weights=[self.prob_risky_payoff, 1 - self.prob_risky_payoff],
-        )[0]
+        self.risky_bet = coinflip([True, False], weight=self.prob_risky_payoff)
         return self.risky_bet
 
-    def adjustment_round(self):
+    @property
+    def adjustment_round(self) -> bool:
+        """is the current round an adjustment round?"""
         # agents should adjust their wealth every 10 rounds;
         # check if the current step is an adjustment round
         return self.schedule.steps > 0 and self.schedule.steps % 10 == 0
