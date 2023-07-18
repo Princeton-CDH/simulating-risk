@@ -1,15 +1,17 @@
 def risk_index(risk_level):
-    # risk levels range from 0.0 to 1.0,
-    # but we want eleven bins, with bins for 0 - 0.05 and 0.95 - 1.0,
-    # since risk = 0, 0.5, and 1 are all special cases we want clearly captured.
+    """Calculate a risk bin index for a given risk level.
+    Risk levels range from 0.0 to 1.0,
+    Implement eleven bins, with bins for 0 - 0.05 and 0.95 - 1.0,
+    since risk = 0, 0.5, and 1 are all special cases we want clearly captured.
+    """
+    # implementation adapted from https://stackoverflow.com/a/64995801/9706217
 
     # if we think of it as a range from -0.05 to 1.05,
     # then we can work with evenly sized 0.1 bins
     minval = -0.05
     binwidth = 0.1
     nbins = 11
-
-    # Determine which bin this element belongs in
+    # Determine which bin this risk level belongs in
     binnum = int((risk_level - minval) // binwidth)  # // = floor division
     # convert bin number to 0-based index
     return min(nbins - 1, binnum)
