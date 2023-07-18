@@ -3,7 +3,10 @@ import math
 from unittest.mock import Mock, patch
 import statistics
 
+import pytest
+
 from simulatingrisk.risky_bet.model import RiskyBetModel, Gambler
+from simulatingrisk.risky_bet.server import risk_index
 
 
 def test_call_risky_bet():
@@ -112,3 +115,17 @@ def test_gambler_adjust_risk_average():
         assert agent.risk_level == statistics.mean(
             [neighbor.risk_level, prev_risk_level]
         )
+
+
+test_risk_index_bins = [
+    (0.04, 0),  # first bin is 0 - 0.05
+    (0.09, 1),  # 2nd : 0.05 - 0.15
+    (0.18, 2),  # 3nd : 0.15 - 0.25
+    (0.32, 3),  # 3nd : 0.25 - 0.35
+    (0.98, 10),  # last bin is 0.95 - 1
+]
+
+
+@pytest.mark.parametrize("risk_level,expected_bin", test_risk_index_bins)
+def test_risk_index(risk_level, expected_bin):
+    assert risk_index(risk_level) == expected_bin
