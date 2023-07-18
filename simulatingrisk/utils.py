@@ -10,7 +10,7 @@ def coinflip(choices: [any, any] = [0, 1], weight: float = 0.5) -> any:
     :type choices: [any, any] (optional)
     :param weight: optional weight between 0.0-1.0 for the first
         choice, defaults to 0.5
-    :type weight: float (toptional)
+    :type weight: float (optional)
 
     :return: selected choice
     :rtype: any
