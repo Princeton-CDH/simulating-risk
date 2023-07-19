@@ -43,7 +43,7 @@ def riskyfood_batch_run():
     return results
 
 
-def save_results(simulation, data):
+def save_results(simulation, results):
     # save as csv for external analysis
     # - use datetime to distinguish this run, but make nicer for filename
     datestr = datetime.today().isoformat().replace(".", "_").replace(":", "")
@@ -56,6 +56,8 @@ def save_results(simulation, data):
         dict_writer = csv.DictWriter(output_file, fields)
         dict_writer.writeheader()
         dict_writer.writerows(results)
+
+    return output_filename
 
 
 if __name__ == "__main__":
