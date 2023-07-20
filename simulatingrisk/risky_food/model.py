@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import cached_property
 from statistics import mean
 
 import mesa
@@ -33,6 +34,7 @@ class Agent(mesa.Agent):
 
 class RiskyFoodModel(mesa.Model):
     prob_notcontaminated = None
+    running = True  # required for batch running
 
     def __init__(self, n):
         self.num_agents = n
@@ -68,6 +70,9 @@ class RiskyFoodModel(mesa.Model):
 
         # setup agents for the next round
         self.propagate()
+
+        # delete cached property before the next round
+        del self.agent_risk_levels
 
     def get_risky_food_status(self):
         # determine actual food status for this round,
@@ -114,17 +119,25 @@ class RiskyFoodModel(mesa.Model):
     def total_agents(self):
         return self.schedule.get_agent_count()
 
+    @cached_property
+    def agent_risk_levels(self) -> [float]:
+        # list of all risk levels for all current agents;
+        # property is cached but should be cleared in each new round
+
+        # NOTE: occasionally median method is complaining that this is empty
+        return [a.risk_level for a in self.agents]
+
     @property
     def avg_risk_level(self):
-        return mean([agent.risk_level for agent in self.agents])
+        return mean(self.agent_risk_levels)
 
     @property
     def min_risk_level(self):
-        return min([agent.risk_level for agent in self.agents])
+        return min(self.agent_risk_levels)
 
     @property
     def max_risk_level(self):
-        return max([agent.risk_level for agent in self.agents])
+        return max(self.agent_risk_levels)
 
     def payoff(self, choice):
         "Calculate the payoff for a given choice, based on current food status"
