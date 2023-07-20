@@ -17,6 +17,9 @@ def test_risky_food_status(prob_notcontaminated):
     # test that food status choice is weighted properly
     # by probability of not being contaminated
 
+    # NOTE: this is redundant now that we've refactored the logic
+    # into a reusable coin flip method; keeping to confirm refactor works
+
     # initialize model with one agent
     model = RiskyFoodModel(1)
     model.prob_notcontaminated = prob_notcontaminated
