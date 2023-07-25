@@ -1,8 +1,9 @@
 from collections import Counter
 import math
+
 import pytest
 
-from simulatingrisk.risky_food.model import RiskyFoodModel, FoodStatus
+from simulatingrisk.risky_food.model import RiskyFoodModel, FoodStatus, Agent
 
 
 test_probabilities = [
@@ -37,3 +38,22 @@ def test_risky_food_status(prob_notcontaminated):
     assert math.isclose(
         result_count[FoodStatus.NOTCONTAMINATED], expected, abs_tol=total_runs * 0.1
     )
+
+
+def test_agent_init():
+    model = RiskyFoodModel(1)
+    agent_id = 123
+    agent = Agent(agent_id, model)
+    assert agent.model == model
+    assert agent.unique_id == agent_id
+    # random risk level
+    assert agent.risk_level >= 0.0 and agent.risk_level <= 1.0
+
+    # assigned risk level
+    risk = 0.4
+    agent2 = Agent(1, model, risk_level=risk)
+    assert agent2.risk_level == risk
+
+    # allow zero risk (should not get a random value)
+    agent0 = Agent(1, model, risk_level=0)
+    assert agent0.risk_level == 0
