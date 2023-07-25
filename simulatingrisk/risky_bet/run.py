@@ -2,7 +2,7 @@ import mesa
 
 from simulatingrisk.risky_bet.model import RiskyBetModel, divergent_colors
 from simulatingrisk.risky_bet.server import agent_portrayal
-from simulatingrisk.risky_food.server import RiskHistogramModule
+from simulatingrisk.charts.histogram import RiskHistogramModule
 
 
 grid_size = 20
