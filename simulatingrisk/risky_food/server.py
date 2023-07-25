@@ -31,7 +31,8 @@ total_agent_chart = mesa.visualization.ChartModule(
 
 
 # histogram chart from mesa tutorial
-class HistogramModule(VisualizationElement):
+# https://mesa.readthedocs.io/en/stable/tutorials/adv_tutorial_legacy.html
+class RiskHistogramModule(VisualizationElement):
     package_includes = [CHART_JS_FILE]
     local_includes = ["HistogramModule.js"]
 
@@ -54,15 +55,8 @@ class HistogramModule(VisualizationElement):
 
 # bins for risk levels to chart as histogram
 # match types used in the class, i.e. 0, 0.1, 0.2, 0.3, ... 1.0
+# NOTE: if we don't include 1.1, np.histogram groups 0.9 with 1.0
 risk_bins = [r / 10 for r in range(12)]
-histogram = HistogramModule(risk_bins, 200, 500, "risk levels")
+histogram = RiskHistogramModule(risk_bins, 200, 500, "risk levels")
 
-# server = mesa.visualization.ModularServer(
-#     RiskyFoodModel,
-#     # [chart, risk_chart, agent_risk_chart, total_agent_chart],
-#     [chart, risk_chart, total_agent_chart, histogram],
-#     "Risky Food",
-#     {"n": 20, "mode": "types"},
-# )
-# server.port = 8521  # The default
-# server.launch()
+# server is initialized in run.py
