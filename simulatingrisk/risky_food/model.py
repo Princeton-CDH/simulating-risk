@@ -25,17 +25,25 @@ class Agent(mesa.Agent):
         if risk_level is None:  # only set randomly if None; allow zero risk
             risk_level = self.random.random()
         self.risk_level = risk_level
+        self.choice = None
 
     def __repr__(self):
         return f"<RiskyFoodAgent id={self.unique_id} risk_level={self.risk_level}>"
 
     def step(self):
         # choose food based on the probability not contaminated and risk tolerance
-        if self.risk_level > self.model.prob_notcontaminated:
-            choice = FoodChoice.RISKY
+        # lower risk level = risk seeking
+        # higher = risk averse
+
+        # FIXME: confirm with Lara if this should be r > p or p > r
+        # risky bet uses p > r
+        # if self.risk_level > self.model.prob_notcontaminated:
+        if self.model.prob_notcontaminated > self.risk_level:
+            self.choice = FoodChoice.RISKY
         else:
-            choice = FoodChoice.SAFE
-        self.payoff = self.model.payoff(choice)
+            # test:  risk level 1.0 should always choose safe (not strictly greater)
+            self.choice = FoodChoice.SAFE
+        self.payoff = self.model.payoff(self.choice)
 
 
 class RiskyFoodModel(mesa.Model):
@@ -143,9 +151,10 @@ class RiskyFoodModel(mesa.Model):
             # adjust population based on payoff and number of agents
             total = len(agents)
             # calculate number of agents of this type for next round
+            # - convert to int so we can use for array slicing
             new_total = int((total * agents[0].payoff) / 2)
 
-            # if new total is less, remove agents over the needed total
+            # if new total is less, remove agents over the expected total
             for agent in agents[new_total:]:
                 self.schedule.remove(agent)
             # if new total is more, add new agents with same risk level
