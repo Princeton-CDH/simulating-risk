@@ -56,7 +56,7 @@ def test_gambler_neighbors():
 
     # every agent should have 4 neighbors,
     # even if they are on the edge of the grid
-    for agent in model.schedule.agent_buffer():
+    for agent in model.schedule.agents:
         assert len(agent.neighbors) == 4
 
 

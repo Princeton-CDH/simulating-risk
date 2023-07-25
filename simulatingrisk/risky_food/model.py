@@ -128,7 +128,7 @@ class RiskyFoodModel(mesa.Model):
 
         # get a generator of agents from the scheduler that
         # will allow us to add and remove
-        for agent in self.schedule.agent_buffer():
+        for agent in self.schedule.agents:
             # add offspring based on payoff; keep risk level
             # logic is offspring = to payoff, original dies off,
             # but for efficiency just add payoff - 1 and keep the  original
@@ -168,7 +168,7 @@ class RiskyFoodModel(mesa.Model):
 
         # uses a generator of agents from the scheduler that
         # will allow adding and removing agents from the scheduler
-        return self.schedule.agent_buffer()
+        return self.schedule.agents
 
     @property
     def total_agents(self):
