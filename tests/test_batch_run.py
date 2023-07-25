@@ -39,9 +39,9 @@ def test_riskyfood_batch_run(mock_batch_run):
     results = riskyfood_batch_run()
     mock_batch_run.assert_called_with(
         RiskyFoodModel,
-        parameters={"n": 10},
-        iterations=5,
-        max_steps=22,
+        parameters={"n": 110, "mode": "types"},
+        iterations=10,
+        max_steps=100,
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,
