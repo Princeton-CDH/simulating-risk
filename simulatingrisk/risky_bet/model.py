@@ -199,7 +199,7 @@ class RiskyBetModel(mesa.Model):
     @property
     def risk_median(self):
         # calculate median of current agent risk levels
-        if not self.agent_risk_levels:
+        if not any(self.agent_risk_levels):
             # occasionally this complains about an empty list
             # hopefully only possible in unit tests...
             return
