@@ -31,11 +31,9 @@ def riskyfood_batch_run():
     results = batch_run(
         RiskyFoodModel,
         # only parameter to this one currently is number of agents
-        parameters={
-            "n": 10,  # [10, 20, 30],  # 100],
-        },
-        iterations=5,
-        max_steps=22,  # population gets too large after 25/26 rounds...
+        parameters={"n": 110, "mode": "types"},
+        iterations=10,  # this one is faster, let's run more iterations
+        max_steps=100,
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,
