@@ -34,14 +34,10 @@ class Agent(mesa.Agent):
         # choose food based on the probability not contaminated and risk tolerance
         # lower risk level = risk seeking
         # higher = risk averse
-
-        # FIXME: confirm with Lara if this should be r > p or p > r
-        # risky bet uses p > r
-        # if self.risk_level > self.model.prob_notcontaminated:
+        #   risk level 1.0 should always choose safe (not strictly greater)
         if self.model.prob_notcontaminated > self.risk_level:
             self.choice = FoodChoice.RISKY
         else:
-            # test:  risk level 1.0 should always choose safe (not strictly greater)
             self.choice = FoodChoice.SAFE
         self.payoff = self.model.payoff(self.choice)
 
