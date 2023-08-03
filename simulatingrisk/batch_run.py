@@ -14,11 +14,16 @@ def riskybet_batch_run():
     results = batch_run(
         RiskyBetModel,
         parameters={
-            "grid_size": [10, 20, 30],  # 100],
-            "risk_adjustment": ["adopt", "average"],
+            "grid_size": 30,  # [20, 30],  # 100],
+            # "risk_adjustment": ["adopt", "average"],
+            "risk_adjustment": "adopt",
         },
         iterations=5,
-        max_steps=100,
+        # TODO: vary how often they update strategy
+        # every 100, every 1 round?
+        max_steps=3000,  # at least 1000, maybe more to see where it converges
+        # try 10k to see
+        # add logic on the model to stop if risk levels converge to 90% in one bin
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,
@@ -32,8 +37,8 @@ def riskyfood_batch_run():
         RiskyFoodModel,
         # only parameter to this one currently is number of agents
         parameters={"n": 110, "mode": "types"},
-        iterations=10,  # this one is faster, let's run more iterations
-        max_steps=100,
+        iterations=5,  # this one is faster, could run more iterations
+        max_steps=1000,
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,
