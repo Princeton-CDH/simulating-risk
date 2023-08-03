@@ -2,6 +2,8 @@ import mesa
 
 from simulatingrisk.risky_bet.model import RiskyBetModel, divergent_colors
 from simulatingrisk.risky_bet.server import agent_portrayal
+from simulatingrisk.charts.histogram import RiskHistogramModule
+
 
 grid_size = 20
 
@@ -35,6 +37,7 @@ risk_chart = mesa.visualization.ChartModule(
         {"Label": "risk_max", "Color": divergent_colors[-1]},
     ],
     data_collector_name="datacollector",
+    canvas_height=100,
 )
 world_chart = mesa.visualization.ChartModule(
     [
@@ -42,10 +45,22 @@ world_chart = mesa.visualization.ChartModule(
         {"Label": "risky_bet", "Color": "blue"},
     ],
     data_collector_name="datacollector",
+    canvas_height=100,
 )
+
+
+# generate bins for histogram, capturing 0-0.5 and 0.95-1.0
+risk_bins = []
+r = 0.05
+while r < 1.05:
+    risk_bins.append(round(r, 2))
+    r += 0.1
+histogram = RiskHistogramModule(risk_bins, 175, 500, "risk levels")
+
+
 server = mesa.visualization.ModularServer(
     RiskyBetModel,
-    [grid, risk_chart, world_chart],
+    [grid, histogram, world_chart, risk_chart],
     "Risky Bet Simulation",
     model_params=model_params,
 )
