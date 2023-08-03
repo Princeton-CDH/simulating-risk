@@ -16,15 +16,19 @@ from simulatingrisk.risky_food.model import RiskyFoodModel
 @patch("simulatingrisk.batch_run.batch_run")
 def test_riskybet_batch_run(mock_batch_run):
     # assert mesa batch run is called as expected
+    # FIXME: this test is too brittle,
+    # as written has to be updated everytime we change batch run options
     results = riskybet_batch_run()
     mock_batch_run.assert_called_with(
         RiskyBetModel,
         parameters={
-            "grid_size": [10, 20, 30],  # 100],
-            "risk_adjustment": ["adopt", "average"],
+            "grid_size": 30,  # [10, 20, 30],  # 100],
+            # "grid_size": [10, 20, 30],  # 100],
+            # "risk_adjustment": ["adopt", "average"],
+            "risk_adjustment": "adopt",
         },
         iterations=5,
-        max_steps=100,
+        max_steps=3000,
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,
@@ -39,9 +43,9 @@ def test_riskyfood_batch_run(mock_batch_run):
     results = riskyfood_batch_run()
     mock_batch_run.assert_called_with(
         RiskyFoodModel,
-        parameters={"n": 10},
+        parameters={"n": 110, "mode": "types"},
         iterations=5,
-        max_steps=22,
+        max_steps=1000,
         number_processes=1,  # set None to use all available; set 1 for jupyter
         data_collection_period=1,
         display_progress=True,

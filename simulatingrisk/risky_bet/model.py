@@ -168,7 +168,10 @@ class RiskyBetModel(mesa.Model):
         # every ten rounds, agents adjust their risk level
 
         # delete cached property before the next round
-        del self.agent_risk_levels
+        try:
+            del self.agent_risk_levels
+        except AttributeError:
+            pass
 
     def call_risky_bet(self):
         # flip a weighted coin to determine if the risky bet pays off,
@@ -189,21 +192,20 @@ class RiskyBetModel(mesa.Model):
         # property is cached but should be cleared in each new round
 
         # NOTE: occasionally median method is complaining that this is empty
-        return [a.risk_level for a in self.schedule.agent_buffer()]
+        return [a.risk_level for a in self.schedule.agents]
 
     @property
     def max_agent_wealth(self):
         # what is the current largest wealth of any agent?
-        return max([a.wealth for a in self.schedule.agent_buffer()])
+        return max([a.wealth for a in self.schedule.agents])
 
     @property
     def risk_median(self):
         # calculate median of current agent risk levels
-        if not self.agent_risk_levels:
+        if self.agent_risk_levels:
             # occasionally this complains about an empty list
             # hopefully only possible in unit tests...
-            return
-        return statistics.median(self.agent_risk_levels)
+            return statistics.median(self.agent_risk_levels)
 
     @property
     def risk_mean(self):
