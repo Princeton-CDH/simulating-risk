@@ -1,3 +1,8 @@
+import mesa
+import solara
+from matplotlib.figure import Figure
+
+
 def risk_index(risk_level):
     """Calculate a risk bin index for a given risk level.
     Risk levels range from 0.0 to 1.0,
@@ -24,7 +29,7 @@ def agent_portrayal(agent):
     # initial display
     portrayal = {
         "Shape": "circle",
-        "Color": "gray",
+        "Color": "tab:gray",
         "Filled": "true",
         "Layer": 0,
         "r": 0.5,
@@ -33,7 +38,7 @@ def agent_portrayal(agent):
     # color based on risk level, with ten bins
     # convert 0.0 to 1.0 to 1 - 10
     color_index = math.floor(agent.risk_level * 10)
-    portrayal["Color"] = divergent_colors[color_index]
+    portrayal["Color"] = "rgb:%s" % divergent_colors[color_index]
 
     # size based on wealth within current distribution
     max_wealth = agent.model.max_agent_wealth
@@ -47,3 +52,68 @@ def agent_portrayal(agent):
     # results in a 404 for a local custom url
 
     return portrayal
+
+
+grid_size = 20
+
+
+# make model parameters user-configurable
+model_params = {
+    "grid_size": grid_size,  # mesa.visualization.StaticText(value=grid_size),
+    # "grid_size": mesa.visualization.Slider(
+    #     "Grid size",
+    #     value=20,
+    #     min_value=10,
+    #     max_value=100,
+    #     description="Grid dimension (n*n = number of agents)",
+    # ),
+    "risk_adjustment": mesa.visualization.Choice(
+        "Risk adjustment strategy",
+        value="adopt",
+        choices=["adopt", "average"],
+        description="How agents update their risk level",
+    ),
+}
+
+jupyterviz_params = {
+    # "grid_size": grid_size,
+    "grid_size": {
+        "type": "SliderInt",
+        "value": 20,
+        "label": "Grid Size",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+    },
+    "risk_adjustment": {
+        "type": "Select",
+        "value": "adopt",
+        "values": ["adopt", "average"],
+        "description": "How agents update their risk level",
+    },
+}
+
+# generate bins for histogram, capturing 0-0.5 and 0.95-1.0
+risk_bins = []
+r = 0.05
+while r < 1.05:
+    risk_bins.append(round(r, 2))
+    r += 0.1
+
+
+# jupyter histogram based on mesa tutorial
+
+
+def make_histogram(viz):
+    # Note: you must initialize a figure using this method instead of
+    # plt.figure(), for thread safety purpose
+    fig = Figure()
+    ax = fig.subplots()
+    # generate a histogram of risk levels
+    risk_levels = [agent.risk_level for agent in viz.model.schedule.agents]
+    # Note: you have to use Matplotlib's OOP API instead of plt.hist
+    # because plt.hist is not thread-safe.
+    ax.hist(risk_levels, bins=risk_bins)
+    # You have to specify the dependencies as follows, so that the figure
+    # auto-updates when viz.model or viz.df is changed.
+    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])
