@@ -138,7 +138,7 @@ class HawkDoveModel(mesa.Model):
             self.grid.move_to_empty(agent)
 
         self.datacollector = mesa.DataCollector(
-            model_reporters={},
+            model_reporters={"max_agent_points": "max_agent_points"},
             agent_reporters={"risk_level": "risk_level", "choice": "choice"},
         )
 
