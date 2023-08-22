@@ -1,4 +1,6 @@
 import mesa
+import solara
+from matplotlib.figure import Figure
 
 from simulatingrisk.charts.histogram import RiskHistogramModule
 
@@ -36,3 +38,35 @@ risk_bins = [r / 10 for r in range(12)]
 histogram = RiskHistogramModule(risk_bins, 200, 500, "risk levels")
 
 # server is initialized in run.py
+# jupyterviz is initialized in app.py
+
+
+jupyterviz_params = {
+    "n": {
+        "type": "SliderInt",
+        "value": 20,
+        "label": "Number of starting agents",
+        "min": 10,
+        "max": 50,
+        "step": 1,
+    },
+    "mode": {
+        "type": "Select",
+        "value": "types",
+        "values": ["types", "random"],
+        "description": "Risk types of random risk level distribution",
+    },
+}
+
+
+def plot_total_agents(viz):
+    """plot total agents over time to provide an indicator of population size"""
+    fig = Figure()
+    ax = fig.subplots()
+    # generate a line plot of total number of agents
+    model_df = viz.model.datacollector.get_model_vars_dataframe()
+    ax.plot(model_df.num_agents)
+    ax.set_title("total agents")
+    # You have to specify the dependencies as follows, so that the figure
+    # auto-updates when viz.model or viz.df is changed.
+    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])

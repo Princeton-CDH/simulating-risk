@@ -1,5 +1,8 @@
 import os
 import numpy as np
+import solara
+from matplotlib.figure import Figure
+
 
 from mesa.visualization.ModularVisualization import VisualizationElement, CHART_JS_FILE
 
@@ -7,6 +10,8 @@ from mesa.visualization.ModularVisualization import VisualizationElement, CHART_
 # histogram chart from mesa tutorial
 # https://mesa.readthedocs.io/en/stable/tutorials/adv_tutorial_legacy.html
 class RiskHistogramModule(VisualizationElement):
+    """histogram plot of agent risk levels; for use with mesa runserver"""
+
     package_includes = [CHART_JS_FILE]
     local_includes = ["histogram.js"]
     # javascript is located in the same file as this python file
@@ -27,3 +32,32 @@ class RiskHistogramModule(VisualizationElement):
         # generate a histogram of risk levels based on the specified bins
         hist = np.histogram(risk_levels, bins=self.bins)[0]
         return [int(x) for x in hist]
+
+
+# generate bins for histogram, capturing 0-0.5 and 0.95-1.0
+risk_bins = []
+r = 0.05
+while r < 1.05:
+    risk_bins.append(round(r, 2))
+    r += 0.1
+
+
+def plot_risk_histogram(viz):
+    """histogram plot of agent risk levels; for use with jupyterviz/solara"""
+
+    # adapted from mesa visualiation tutorial
+    # https://mesa.readthedocs.io/en/stable/tutorials/visualization_tutorial.html#Building-your-own-visualization-component
+
+    # Note: you must initialize a figure using this method instead of
+    # plt.figure(), for thread safety purpose
+    fig = Figure()
+    ax = fig.subplots()
+    # generate a histogram of current risk levels
+    risk_levels = [agent.risk_level for agent in viz.model.schedule.agents]
+    # Note: you have to use Matplotlib's OOP API instead of plt.hist
+    # because plt.hist is not thread-safe.
+    ax.hist(risk_levels, bins=risk_bins)
+    ax.set_title("risk levels")
+    # You have to specify the dependencies as follows, so that the figure
+    # auto-updates when viz.model or viz.df is changed.
+    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])
