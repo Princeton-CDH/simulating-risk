@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import solara
 from matplotlib.figure import Figure
@@ -9,7 +10,7 @@ from mesa.visualization.ModularVisualization import VisualizationElement, CHART_
 
 # histogram chart from mesa tutorial
 # https://mesa.readthedocs.io/en/stable/tutorials/adv_tutorial_legacy.html
-class RiskHistogramModule(VisualizationElement):
+class HistogramModule(VisualizationElement):
     """histogram plot of agent risk levels; for use with mesa runserver"""
 
     package_includes = [CHART_JS_FILE]
@@ -17,10 +18,11 @@ class RiskHistogramModule(VisualizationElement):
     # javascript is located in the same file as this python file
     local_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def __init__(self, bins, canvas_height, canvas_width, label):
+    def __init__(self, bins, canvas_height, canvas_width, label, agent_attr):
         self.canvas_height = canvas_height
         self.canvas_width = canvas_width
         self.bins = bins
+        self.agent_attr = agent_attr
         new_element = "new HistogramModule({}, {}, {}, {})"
         new_element = new_element.format(
             bins, canvas_width, canvas_height, '"%s"' % label
@@ -28,10 +30,21 @@ class RiskHistogramModule(VisualizationElement):
         self.js_code = "elements.push(" + new_element + ");"
 
     def render(self, model):
-        risk_levels = [agent.risk_level for agent in model.schedule.agents]
+        agent_values = [
+            getattr(agent, self.agent_attr) for agent in model.schedule.agents
+        ]
         # generate a histogram of risk levels based on the specified bins
-        hist = np.histogram(risk_levels, bins=self.bins)[0]
+        hist = np.histogram(agent_values, bins=self.bins)[0]
         return [int(x) for x in hist]
+
+
+class RiskHistogramModule(HistogramModule):
+    """special case: risk_level histogram"""
+
+    def __init__(self, bins, canvas_height, canvas_width, label="risk levels"):
+        super().__init__(
+            bins, canvas_height, canvas_width, label, agent_attr="risk_level"
+        )
 
 
 # generate bins for histogram, capturing 0-0.5 and 0.95-1.0

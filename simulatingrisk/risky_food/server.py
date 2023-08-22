@@ -3,29 +3,37 @@ import solara
 from matplotlib.figure import Figure
 
 from simulatingrisk.charts.histogram import RiskHistogramModule
+from simulatingrisk.utils import labelLabel
+
 
 chart = mesa.visualization.ChartModule(
-    [
-        {"Label": "prob_notcontaminated", "Color": "blue"},
-        {"Label": "contaminated", "Color": "red"},
-    ],
+    labelLabel(
+        [
+            {"Label": "prob_notcontaminated", "Color": "blue"},
+            {"Label": "contaminated", "Color": "red"},
+        ]
+    ),
     data_collector_name="datacollector",
     canvas_height=100,  # default height is 200
 )
 risk_chart = mesa.visualization.ChartModule(
-    [
-        {"Label": "average_risk_level", "Color": "blue"},
-        {"Label": "min_risk_level", "Color": "green"},
-        {"Label": "max_risk_level", "Color": "orange"},
-    ],
+    labelLabel(
+        [
+            {"Label": "average_risk_level", "Color": "blue"},
+            {"Label": "min_risk_level", "Color": "green"},
+            {"Label": "max_risk_level", "Color": "orange"},
+        ]
+    ),
     data_collector_name="datacollector",
     canvas_height=100,
 )
 
 total_agent_chart = mesa.visualization.ChartModule(
-    [
-        {"Label": "num_agents", "Color": "gray"},
-    ],
+    labelLabel(
+        [
+            {"Label": "num_agents", "Color": "gray"},
+        ]
+    ),
     data_collector_name="datacollector",
     canvas_height=100,
 )

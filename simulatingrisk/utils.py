@@ -19,3 +19,13 @@ def coinflip(choices: [any, any] = [0, 1], weight: float = 0.5) -> any:
     # random.random is apparently faster than
     selection = 0 if random.random() < weight else 1
     return choices[selection]
+
+
+def labelLabel(fields):
+    # some kind of a bug in current (forked) version of Mesa or
+    # a conflict with tornado version on field labels;
+    # display is undefined without lowercase but server requires uppercase
+    # for now, just copy them
+    for item in fields:
+        item["label"] = item["Label"]
+    return fields
