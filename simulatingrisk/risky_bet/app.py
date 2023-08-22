@@ -2,16 +2,14 @@
 from mesa.experimental import JupyterViz
 
 from simulatingrisk.risky_bet.model import RiskyBetModel
-from simulatingrisk.risky_bet.server import (
-    agent_portrayal,
-    jupyterviz_params,
-    make_histogram,
-)
+from simulatingrisk.risky_bet.server import agent_portrayal, jupyterviz_params
+from simulatingrisk.charts.histogram import plot_risk_histogram
+
 
 page = JupyterViz(
     RiskyBetModel,
     jupyterviz_params,
-    measures=[make_histogram],
+    measures=[plot_risk_histogram],
     name="Risky Bet",
     agent_portrayal=agent_portrayal,
 )

@@ -1,6 +1,4 @@
 import mesa
-import solara
-from matplotlib.figure import Figure
 
 
 def risk_index(risk_level):
@@ -28,14 +26,15 @@ def agent_portrayal(agent):
 
     # initial display
     portrayal = {
+        # styles for mesa runserver
         "Shape": "circle",
-        "Color": "gray",  # runserver
-        "color": "tab:gray",  # solara / jupyter
+        "Color": "gray",
         "Filled": "true",
         "Layer": 0,
-        "r": 0.5,  # for runserver
-        # for solara / juypiterviz
+        "r": 0.5,
+        # styles for solara / jupyterviz
         "size": 25,
+        "color": "tab:gray",
     }
 
     # color based on risk level, with ten bins
@@ -57,6 +56,8 @@ def agent_portrayal(agent):
     # TODO: change shape based on number of times risk level has been adjusted?
     # can't find a list of available shapes; setting to triangle and square
     # results in a 404 for a local custom url
+    # NOTE: matplotlib scatter supports different shapes/markers,
+    # but not in a single scatter plot; would need to be plotted in groups
 
     return portrayal
 
@@ -99,28 +100,3 @@ jupyterviz_params = {
         "description": "How agents update their risk level",
     },
 }
-
-# generate bins for histogram, capturing 0-0.5 and 0.95-1.0
-risk_bins = []
-r = 0.05
-while r < 1.05:
-    risk_bins.append(round(r, 2))
-    r += 0.1
-
-
-# jupyter histogram based on mesa tutorial
-
-
-def make_histogram(viz):
-    # Note: you must initialize a figure using this method instead of
-    # plt.figure(), for thread safety purpose
-    fig = Figure()
-    ax = fig.subplots()
-    # generate a histogram of risk levels
-    risk_levels = [agent.risk_level for agent in viz.model.schedule.agents]
-    # Note: you have to use Matplotlib's OOP API instead of plt.hist
-    # because plt.hist is not thread-safe.
-    ax.hist(risk_levels, bins=risk_bins)
-    # You have to specify the dependencies as follows, so that the figure
-    # auto-updates when viz.model or viz.df is changed.
-    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])
