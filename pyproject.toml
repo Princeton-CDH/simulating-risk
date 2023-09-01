@@ -12,6 +12,7 @@ classifiers = [
 ]
 dependencies = [
     "mesa>=2.1",
+    "matplotlib"
 ]
 dynamic = ["version", "readme"]
 
