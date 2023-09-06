@@ -28,6 +28,27 @@ def test_agent_initial_choice():
         assert math.isclose(total, half_agents, rel_tol=0.05)
 
 
+def test_agent_initial_risk_level():
+    agent = HawkDoveAgent(1, Mock(), risk_level=2)
+    assert agent.risk_level == 2
+
+
+def test_model_single_risk_level():
+    risk_level = 3
+    model = HawkDoveModel(
+        5, include_diagonals=True, risk_attitudes="single", agent_risk_level=risk_level
+    )
+    for agent in model.schedule.agents:
+        assert agent.risk_level == risk_level
+
+
+def test_model_variable_risk_level():
+    model = HawkDoveModel(5, include_diagonals=True, risk_attitudes="variable")
+    # when risk level is variable/random, agents should have different risk levels
+    risk_levels = set([agent.risk_level for agent in model.schedule.agents])
+    assert len(risk_levels) > 1
+
+
 def test_num_hawk_neighbors():
     # initialize an agent with a mock model
     agent = HawkDoveAgent(1, Mock())

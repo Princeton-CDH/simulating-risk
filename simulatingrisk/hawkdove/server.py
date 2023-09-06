@@ -32,6 +32,7 @@ def agent_portrayal(agent):
         colors = divergent_colors_9
     else:
         colors = divergent_colors_5
+
     portrayal["Color"] = colors[agent.risk_level]
     # copy to lowercase color for solara
     portrayal["color"] = portrayal["Color"]
@@ -68,6 +69,18 @@ jupyterviz_params = {
         "max": 100,
         "step": 1,
     },
+    "include_diagonals": {
+        "type": "Checkbox",
+        "value": True,
+        "label": "Include diagonal neighbors",
+    },
+    "risk_attitudes": {
+        "type": "Select",
+        "value": "variable",
+        "values": ["variable", "single"],
+        "description": "Agent initial risk level",
+    },
+    "agent_risk_level": {"type": "SliderInt", "min": 0, "max": 8, "step": 1, "value": 2}
     # "risk_adjustment": {
     #     "type": "Select",
     #     "value": "adopt",
@@ -99,14 +112,29 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             all_agent_data.append(agent_data)
 
     df = pd.DataFrame(all_agent_data)
+    # print(all_agent_data)
 
     # use grid x,y coordinates to plot, but supress axis labels
 
     # currently passing in actual colors, not a variable to use for color
     # use domain/range to use color for display
-    colors = list(set(a["color"] for a in all_agent_data))
-    shape_domains = ("hawk", "dove")
+    hawkdove_domain = ("hawk", "dove")
     shape_range = ("triangle-up", "circle")
+
+    # FIXME: model doesn't get updated when the input changes;
+    # seems to only get a reference to the initial model
+
+    # when risk attitude is variable,
+    # use divergent color scheme to indicate risk level
+    if model.risk_attitudes == "variable":
+        colors = list(set(a["color"] for a in all_agent_data))
+        chart_color = alt.Color("color").legend(None).scale(domain=colors, range=colors)
+    elif model.risk_attitudes == "single":
+        chart_color = (
+            alt.Color("choice")
+            # .legend(None)
+            .scale(domain=hawkdove_domain, range=["orange", "blue"])
+        )
 
     chart = (
         alt.Chart(df)
@@ -115,9 +143,9 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             x=alt.X("x", axis=None),  # no x-axis label
             y=alt.Y("y", axis=None),  # no y-axis label
             size=alt.Size("size", title="points rank"),  # relabel size for legend
-            color=alt.Color("color").legend(None).scale(domain=colors, range=colors),
+            color=chart_color,
             shape=alt.Shape(  # use shape to indicate choice
-                "choice", scale=alt.Scale(domain=shape_domains, range=shape_range)
+                "choice", scale=alt.Scale(domain=hawkdove_domain, range=shape_range)
             ),
         )
         .configure_view(strokeOpacity=0)  # hide grid/chart lines

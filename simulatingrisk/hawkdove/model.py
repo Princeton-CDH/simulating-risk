@@ -33,7 +33,7 @@ class HawkDoveAgent(mesa.Agent):
     An agent with a risk attitude playing Hawk or Dove
     """
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, risk_level=None):
         super().__init__(unique_id, model)
 
         self.points = 0
@@ -44,7 +44,7 @@ class HawkDoveAgent(mesa.Agent):
         # - based partially on neighborhood size,
         #  which is configurable at the model level
         num_neighbors = 8 if self.model.include_diagonals else 4
-        self.risk_level = self.random.randint(0, num_neighbors)
+        self.risk_level = risk_level or self.random.randint(0, num_neighbors)
 
     def initial_choice(self):
         # first round : choose what to play randomly or based on initial setup
@@ -118,21 +118,34 @@ class HawkDoveModel(mesa.Model):
 
     running = True  # required for batch run
 
-    def __init__(self, grid_size, include_diagonals=True):
+    def __init__(
+        self,
+        grid_size,
+        include_diagonals=True,
+        risk_attitudes="variable",
+        agent_risk_level=None,
+    ):
         super().__init__()
         # assume a fully-populated square grid
         self.num_agents = grid_size * grid_size
         # mesa get_neighbors supports moore neighborhood (include diagonals)
         # and von neumann (exclude diagonals)
         self.include_diagonals = include_diagonals
+        self.risk_attitudes = risk_attitudes
 
         # initialize a single grid (each square inhabited by a single agent);
         # configure the grid to wrap around so everyone has neighbors
         self.grid = mesa.space.SingleGrid(grid_size, grid_size, True)
         self.schedule = mesa.time.StagedActivation(self, ["choose", "play"])
 
+        agent_opts = {}
+        # when started in single risk attitude mode, initialize all agents
+        # with the specified risk level
+        if risk_attitudes == "single" and agent_risk_level:
+            agent_opts["risk_level"] = agent_risk_level
+
         for i in range(self.num_agents):
-            agent = HawkDoveAgent(i, self)
+            agent = HawkDoveAgent(i, self, **agent_opts)
             self.schedule.add(agent)
             # place randomly in an empty spot
             self.grid.move_to_empty(agent)
