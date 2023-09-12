@@ -121,9 +121,6 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     hawkdove_domain = ("hawk", "dove")
     shape_range = ("triangle-up", "circle")
 
-    # FIXME: model doesn't get updated when the input changes;
-    # seems to only get a reference to the initial model
-
     # when risk attitude is variable,
     # use divergent color scheme to indicate risk level
     if model.risk_attitudes == "variable":
