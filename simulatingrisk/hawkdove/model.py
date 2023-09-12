@@ -33,11 +33,11 @@ class HawkDoveAgent(mesa.Agent):
     An agent with a risk attitude playing Hawk or Dove
     """
 
-    def __init__(self, unique_id, model, risk_level=None):
+    def __init__(self, unique_id, model, risk_level=None, hawk_odds=None):
         super().__init__(unique_id, model)
 
         self.points = 0
-        self.choice = self.initial_choice()
+        self.choice = self.initial_choice(hawk_odds)
         self.last_choice = None
 
         # risk level
@@ -46,9 +46,12 @@ class HawkDoveAgent(mesa.Agent):
         num_neighbors = 8 if self.model.include_diagonals else 4
         self.risk_level = risk_level or self.random.randint(0, num_neighbors)
 
-    def initial_choice(self):
-        # first round : choose what to play randomly or based on initial setup
-        return coinflip(play_choices)
+    def initial_choice(self, hawk_odds=None):
+        # first round : choose what to play randomly or based on initial hawk odds
+        opts = {}
+        if hawk_odds:
+            opts["weight"] = hawk_odds
+        return coinflip(play_choices, **opts)
 
     @property
     def neighbors(self):
@@ -126,6 +129,7 @@ class HawkDoveModel(mesa.Model):
         include_diagonals=True,
         risk_attitudes="variable",
         agent_risk_level=None,
+        hawk_odds=0.5,
     ):
         super().__init__()
         # assume a fully-populated square grid
@@ -134,6 +138,8 @@ class HawkDoveModel(mesa.Model):
         # and von neumann (exclude diagonals)
         self.include_diagonals = include_diagonals
         self.risk_attitudes = risk_attitudes
+        # distribution of first choice (50/50 by default)
+        self.hawk_odds = hawk_odds
 
         # initialize a single grid (each square inhabited by a single agent);
         # configure the grid to wrap around so everyone has neighbors
@@ -147,7 +153,7 @@ class HawkDoveModel(mesa.Model):
             agent_opts["risk_level"] = agent_risk_level
 
         for i in range(self.num_agents):
-            agent = HawkDoveAgent(i, self, **agent_opts)
+            agent = HawkDoveAgent(i, self, hawk_odds=self.hawk_odds, **agent_opts)
             self.schedule.add(agent)
             # place randomly in an empty spot
             self.grid.move_to_empty(agent)
