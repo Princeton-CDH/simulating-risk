@@ -28,8 +28,7 @@ Players arranged on a lattice [try both 4 neighbors (AYBD) and 8 neighbors (XYZA
  
 Each player on a lattice (grid in Mesa):
 - Has parameter `r` [from 0 to 8, or 0 to 4 for four neighbors]
-- Let `h` be the number of neighbors who played HAWK during the previous round. If `h` > `r`, then play DOVE. Otherwise play HAWK. 
-  - [TODO: make sure comparison and risk attitude is defined consistently with other simulations]
+- Let `d` be the number of neighbors who played DOVE during the previous round. If `d > r`, then play HAWK. Otherwise play DOVE. (Agents who are risk-avoidant only play HAWK if there are a lot of doves around them. More risk-avoidance requires a higher number of doves to get an agent to play HAWK.)
   - Choice for the first round could be randomly determined, or add parameters to see how initial conditions matter?
   - [OR VARY FIRST ROUND: what proportion starts as HAWK
     - [Who is a HAWK and who is a DOVE is randomly determined; proportion set at the beginning of each simulation. E.g. 30% are HAWKS; if we have 100 players, then each player has a 30% chance of being HAWK]
