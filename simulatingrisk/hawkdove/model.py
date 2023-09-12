@@ -59,9 +59,9 @@ class HawkDoveAgent(mesa.Agent):
         )
 
     @property
-    def num_hawk_neighbors(self):
-        """count how many neighbors played HAWK on the last round"""
-        return len([n for n in self.neighbors if n.last_choice == Play.HAWK])
+    def num_dove_neighbors(self):
+        """count how many neighbors played DOVE on the last round"""
+        return len([n for n in self.neighbors if n.last_choice == Play.DOVE])
 
     def choose(self):
         "decide what to play this round"
@@ -70,12 +70,14 @@ class HawkDoveAgent(mesa.Agent):
             # store previous  choice
             self.last_choice = self.choice
 
-            # TODO: how to make risk attitude consistent with other sims?
+            # choose based on the number of neighbors who played
+            # dove last round and agent risk level
+
             # agent with r = 0 should always take the risky choice
             #   (any risk is acceptable).
             # agent with r = max should always take the safe option
             #   (no risk is acceptable)
-            if self.risk_level < self.num_hawk_neighbors:
+            if self.num_dove_neighbors > self.risk_level:
                 self.choice = Play.HAWK
             else:
                 self.choice = Play.DOVE

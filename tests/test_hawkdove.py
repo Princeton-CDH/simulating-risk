@@ -49,7 +49,7 @@ def test_model_variable_risk_level():
     assert len(risk_levels) > 1
 
 
-def test_num_hawk_neighbors():
+def test_num_dove_neighbors():
     # initialize an agent with a mock model
     agent = HawkDoveAgent(1, Mock())
     mock_neighbors = [
@@ -60,7 +60,7 @@ def test_num_hawk_neighbors():
     ]
 
     with patch.object(HawkDoveAgent, "neighbors", mock_neighbors):
-        assert agent.num_hawk_neighbors == 3
+        assert agent.num_dove_neighbors == 1
 
 
 def test_agent_choose():
@@ -73,21 +73,21 @@ def test_agent_choose():
     # on subsequent rounds, choose based on neighbors and risk level
     agent.model.schedule.steps = 1
 
-    # given a specified number of hawk neighbors and risk level
-    with patch.object(HawkDoveAgent, "num_hawk_neighbors", 3):
+    # given a specified number of dove neighbors and risk level
+    with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
         # an agent with `r=0` will always take the risky choice
         # (any risk is acceptable).
         agent.risk_level = 0
         agent.choose()
         assert agent.choice == Play.HAWK
 
-        # risk level 2 with 3 hawks will play hawk
-        # (but this doesn't really make sense...)
+        # risk level 2 with 3 doves will play dove
         agent.risk_level = 2
         agent.choose()
         assert agent.choice == Play.HAWK
 
-        # risk level three will not
+        # risk level three with 3 doves will play dove
+        # (strictly greater comparison)
         agent.risk_level = 3
         agent.choose()
         assert agent.choice == Play.DOVE
