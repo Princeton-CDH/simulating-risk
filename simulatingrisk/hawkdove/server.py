@@ -80,7 +80,21 @@ jupyterviz_params = {
         "values": ["variable", "single"],
         "description": "Agent initial risk level",
     },
-    "agent_risk_level": {"type": "SliderInt", "min": 0, "max": 8, "step": 1, "value": 2}
+    "agent_risk_level": {
+        "type": "SliderInt",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "value": 2,
+    },
+    "hawk_odds": {
+        "type": "SliderFloat",
+        "value": 0.5,
+        "label": "Hawk Odds (first choice)",
+        "min": 0.0,
+        "max": 1.0,
+        "step": 0.1,
+    },
     # "risk_adjustment": {
     #     "type": "Select",
     #     "value": "adopt",

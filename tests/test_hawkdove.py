@@ -28,6 +28,17 @@ def test_agent_initial_choice():
         assert math.isclose(total, half_agents, rel_tol=0.05)
 
 
+def test_agent_initial_choice_hawkodds():
+    grid_size = 100
+    # specify hawk-odds other than 05
+    model = HawkDoveModel(grid_size, include_diagonals=False, hawk_odds=0.3)
+    initial_choices = [a.choice for a in model.schedule.agents]
+    choice_count = Counter(initial_choices)
+    # expect about 30% hawks
+    expected_hawks = model.num_agents * 0.3
+    assert math.isclose(choice_count[Play.HAWK], expected_hawks, rel_tol=0.05)
+
+
 def test_agent_initial_risk_level():
     agent = HawkDoveAgent(1, Mock(), risk_level=2)
     assert agent.risk_level == 2
