@@ -17,7 +17,8 @@ flowchart LR
 always takes risky choice
 (any risk is acceptable)"]
     reu["<b>0.5</b>
-expected utility"]
+risk neutral
+(expected utility)"]
     r1["<b>1.0</b>
 always takes safe choice
 (no risk is acceptable)"]
