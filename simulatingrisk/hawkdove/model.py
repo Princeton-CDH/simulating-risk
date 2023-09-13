@@ -163,7 +163,10 @@ class HawkDoveModel(mesa.Model):
             self.grid.move_to_empty(agent)
 
         self.datacollector = mesa.DataCollector(
-            model_reporters={"max_agent_points": "max_agent_points"},
+            model_reporters={
+                "max_agent_points": "max_agent_points",
+                "percent_hawk": "percent_hawk",
+            },
             agent_reporters={"risk_level": "risk_level", "choice": "choice_label"},
         )
 
@@ -178,3 +181,9 @@ class HawkDoveModel(mesa.Model):
     def max_agent_points(self):
         # what is the current largest point total of any agent?
         return max([a.points for a in self.schedule.agents])
+
+    @property
+    def percent_hawk(self):
+        # what percent of agents chose hawk?
+        hawks = [a for a in self.schedule.agents if a.choice == Play.HAWK]
+        return len(hawks) / self.num_agents

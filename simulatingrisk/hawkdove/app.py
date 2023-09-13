@@ -4,6 +4,7 @@ import pandas as pd
 import altair as alt
 import solara
 
+
 from simulatingrisk.hawkdove.model import HawkDoveModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
@@ -24,11 +25,33 @@ def plot_wealth(model):
     return solara.FigureAltair(chart)
 
 
+def plot_hawks(model):
+    """plot percent of agents who chose hawk over last several rounds;
+    for use with jupyterviz/solara"""
+
+    model_df = model.datacollector.get_model_vars_dataframe().reset_index()
+
+    # limit to last N rounds (how many ?)
+    last_n_rounds = model_df.tail(50)
+    chart = (
+        alt.Chart(last_n_rounds)
+        .mark_bar(color="orange")
+        .encode(
+            x=alt.X("index", title="Step"),
+            y=alt.Y(
+                "percent_hawk",
+                title="Percent who chose hawk",
+                scale=alt.Scale(domain=[0, 1]),
+            ),
+        )
+    )
+    return solara.FigureAltair(chart)
+
+
 page = JupyterViz(
     HawkDoveModel,
     jupyterviz_params,
-    # measures=[],
-    measures=[plot_wealth],
+    measures=[plot_hawks],
     name="Hawk/Dove with risk attitudes",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
