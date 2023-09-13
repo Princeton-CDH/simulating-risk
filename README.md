@@ -4,7 +4,7 @@ The code in this repository is associated with the CDH project [Simulating risk,
 
 Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/), using Agent Based Modeling to explore risk attitudes within populations.
 
-Across simulations, we define agents with risk attitudes tracked via a numeric `r` or `risk_level` 0.0 - 1.0, where `r` is that agent's minimum acceptable risk level for taking the risky bet. An agent with `r=1` will always take the safe option (no risk is acceptable); an agent with `r=0` will always take the risky choice (any risk is acceptable). When the risky bet might be better or worse than the safe bet by the same amount (for example, the risky bet yields 3 or 1 and the safe bet yields 2), r = 0.5 corresponds to expected utility maximization.
+Across simulations, we define agents with risk attitudes tracked via a numeric `r` or `risk_level` 0.0 - 1.0, where `r` is that agent's minimum acceptable risk level for taking the risky bet. An agent with `r=1` will always take the safe option (no risk is acceptable); an agent with `r=0` will always take the risky choice (any risk is acceptable). When the risky bet might be better or worse than the safe bet by the same amount (for example, the risky bet yields 3 or 1 and the safe bet yields 2), `r = 0.5⁻` corresponds to expected utility maximization.
 
 
 
@@ -16,9 +16,9 @@ flowchart LR
     r0["<b>0.0</b>
 always takes risky choice
 (any risk is acceptable)"]
-    reu["<b>0.5</b>
+    reu["<b>0.5⁻</b>
 risk neutral
-(expected utility)"]
+(expected utility maximizer)"]
     r1["<b>1.0</b>
 always takes safe choice
 (no risk is acceptable)"]
