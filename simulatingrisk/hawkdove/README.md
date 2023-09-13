@@ -9,7 +9,7 @@ This is a variant of the Hawk/Dove Game: https://en.wikipedia.org/wiki/Chicken_(
 | | H | D|
 |-|-|-|
 | H | 0, 0 | 3, 1|
-| D |1, 3| 2, 2|
+| D |1, 3| 2.1, 2.1|
 
 BACKGROUND: An unpublished paper by Blessenohl shows that the equilibrium in this game is different for EU maximizers than for REU maximizers (all with the same risk-attitude), and that REU maximizers do better as a population (basically, play DOVE more often)
 

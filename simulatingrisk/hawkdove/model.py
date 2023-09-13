@@ -54,6 +54,10 @@ class HawkDoveAgent(mesa.Agent):
         return coinflip(play_choices, **opts)
 
     @property
+    def choice_label(self):
+        return "hawk" if self.choice == Play.HAWK else "dove"
+
+    @property
     def neighbors(self):
         # use configured neighborhood (with or without diagonals) on the model;
         # don't include the current agent
@@ -70,7 +74,7 @@ class HawkDoveAgent(mesa.Agent):
         "decide what to play this round"
         # after the first round, choose based on what neighbors did last time
         if self.model.schedule.steps > 0:
-            # store previous  choice
+            # store previous choice
             self.last_choice = self.choice
 
             # choose based on the number of neighbors who played
@@ -96,7 +100,7 @@ class HawkDoveAgent(mesa.Agent):
     def payoff(self, other):
         """
         If I play HAWK and neighbor plays DOVE: 3
-        If I play DOVE and neighbor plays DOVE: 2
+        If I play DOVE and neighbor plays DOVE: 2.1
         If I play DOVE and neighbor plays HAWK: 1
         If I play HAWK and neighbor plays HAWK: 0
         """
@@ -107,7 +111,7 @@ class HawkDoveAgent(mesa.Agent):
                 return 0
         elif self.choice == Play.DOVE:
             if other.choice == Play.DOVE:
-                return 2
+                return 2.1
             if other.choice == Play.HAWK:
                 return 1
 
@@ -160,7 +164,7 @@ class HawkDoveModel(mesa.Model):
 
         self.datacollector = mesa.DataCollector(
             model_reporters={"max_agent_points": "max_agent_points"},
-            agent_reporters={"risk_level": "risk_level", "choice": "choice"},
+            agent_reporters={"risk_level": "risk_level", "choice": "choice_label"},
         )
 
     def step(self):

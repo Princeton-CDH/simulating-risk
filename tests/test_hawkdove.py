@@ -116,7 +116,7 @@ def test_agent_choose():
 
 def test_agent_payoff():
     # If I play HAWK and neighbor plays DOVE: 3
-    # If I play DOVE and neighbor plays DOVE: 2
+    # If I play DOVE and neighbor plays DOVE: 2.1
     # If I play DOVE and neighbor plays HAWK: 1
     # If I play HAWK and neighbor plays HAWK: 0
 
@@ -137,5 +137,5 @@ def test_agent_payoff():
     # if both play dove, payoff is two for both
     agent.choice = Play.DOVE
     other_agent.choice = Play.DOVE
-    assert agent.payoff(other_agent) == 2
-    assert other_agent.payoff(agent) == 2
+    assert agent.payoff(other_agent) == 2.1
+    assert other_agent.payoff(agent) == 2.1
