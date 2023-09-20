@@ -67,14 +67,12 @@ jupyterviz_params = {
 }
 
 
-def plot_total_agents(viz):
+def plot_total_agents(model):
     """plot total agents over time to provide an indicator of population size"""
     fig = Figure()
     ax = fig.subplots()
     # generate a line plot of total number of agents
-    model_df = viz.model.datacollector.get_model_vars_dataframe()
+    model_df = model.datacollector.get_model_vars_dataframe()
     ax.plot(model_df.num_agents)
     ax.set_title("total agents")
-    # You have to specify the dependencies as follows, so that the figure
-    # auto-updates when viz.model or viz.df is changed.
-    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])
+    solara.FigureMatplotlib(fig)

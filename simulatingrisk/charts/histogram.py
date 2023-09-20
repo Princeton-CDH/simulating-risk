@@ -55,7 +55,7 @@ while r < 1.05:
     r += 0.1
 
 
-def plot_risk_histogram(viz):
+def plot_risk_histogram(model):
     """histogram plot of agent risk levels; for use with jupyterviz/solara"""
 
     # adapted from mesa visualiation tutorial
@@ -66,11 +66,11 @@ def plot_risk_histogram(viz):
     fig = Figure()
     ax = fig.subplots()
     # generate a histogram of current risk levels
-    risk_levels = [agent.risk_level for agent in viz.model.schedule.agents]
+    risk_levels = [agent.risk_level for agent in model.schedule.agents]
     # Note: you have to use Matplotlib's OOP API instead of plt.hist
     # because plt.hist is not thread-safe.
     ax.hist(risk_levels, bins=risk_bins)
     ax.set_title("risk levels")
     # You have to specify the dependencies as follows, so that the figure
     # auto-updates when viz.model or viz.df is changed.
-    solara.FigureMatplotlib(fig, dependencies=[viz.model, viz.df])
+    solara.FigureMatplotlib(fig, dependencies=[model])
