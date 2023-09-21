@@ -10,15 +10,7 @@ app = Flask(__name__)
 
 # get first blueprint?
 
-apps["__default__"] = AppScript("../simulatingrisk/risky_bet/app.py")
-app.register_blueprint(blueprint, url_prefix="/risky_bet/")
+apps["__default__"] = AppScript("../simulatingrisk/app.py")
+app.register_blueprint(blueprint, url_prefix="/simulatingrisk/")
 
-# get second blueprint?
-# apps["__default__"] = AppScript("../simulatingrisk/hawkdove/app.py")
-# app.register_blueprint(blueprint, url_prefix="/hawkdove/", name="hawkdove")
-
-
-# boiler plate
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+application = app
