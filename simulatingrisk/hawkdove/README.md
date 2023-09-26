@@ -25,6 +25,12 @@ Players arranged on a lattice [try both 4 neighbors (AYBD) and 8 neighbors (XYZA
 |A | **I** |  B |
 | C | D | E |
 
+- Payoffs are determined as follows:
+   -  Look at what each neighbor did, then:
+   -  If I play HAWK and neighbor plays DOVE: 3
+   -  If I play DOVE and neighbor plays DOVE: 2.1
+   -  If I play DOVE and neighbor plays HAWK: 1
+   - If I play HAWK and neighbor plays HAWK: 0
  
 Each player on a lattice (grid in Mesa):
 - Has parameter `r` [from 0 to 8, or 0 to 4 for four neighbors]
@@ -37,11 +43,6 @@ Each player on a lattice (grid in Mesa):
   - [OR VARY FIRST ROUND: what proportion starts as HAWK
     - [Who is a HAWK and who is a DOVE is randomly determined; proportion set at the beginning of each simulation. E.g. 30% are HAWKS; if we have 100 players, then each player has a 30% chance of being HAWK]
    - Call this initial parameter HAWK-ODDS
-- Payoffs are determined as follows:
-   -  Look at what each neighbor did, then:
-   -  If I play HAWK and neighbor plays DOVE: 3
-   -  If I play DOVE and neighbor plays DOVE: 2
-   -  If I play DOVE and neighbor plays HAWK: 1
-   - If I play HAWK and neighbor plays HAWK: 0
+
 
 
