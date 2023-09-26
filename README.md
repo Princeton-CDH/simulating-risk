@@ -18,7 +18,7 @@ flowchart LR
     r0["<b>0.0</b>
 always takes risky choice
 (any risk is acceptable)"]
-    reu["<b>0.5⁻</b>
+    reu["<b>0.5</b>
 risk neutral
 (expected utility maximizer)"]
     r1["<b>1.0</b>
