@@ -31,9 +31,12 @@ def plot_hawks(model):
 
     model_df = model.datacollector.get_model_vars_dataframe().reset_index()
 
+    # calculate a rolling average for % hawk
+    model_df["rollingavg_percent_hawk"] = model_df.percent_hawk.rolling(10).mean()
+
     # limit to last N rounds (how many ?)
     last_n_rounds = model_df.tail(50)
-    chart = (
+    bar_chart = (
         alt.Chart(last_n_rounds)
         .mark_bar(color="orange")
         .encode(
@@ -45,7 +48,21 @@ def plot_hawks(model):
             ),
         )
     )
-    return solara.FigureAltair(chart)
+    # graph rolling average as a line over the bar chart
+    line = (
+        alt.Chart(last_n_rounds)
+        .mark_line(color="blue")
+        .encode(
+            x=alt.X("index", title="Step"),
+            y=alt.Y(
+                "rollingavg_percent_hawk",
+                title="% hawk (rolling average)",
+                scale=alt.Scale(domain=[0, 1]),
+            ),
+        )
+    )
+
+    return solara.FigureAltair(bar_chart + line)
 
 
 page = JupyterViz(
