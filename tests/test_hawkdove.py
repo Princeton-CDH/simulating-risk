@@ -44,8 +44,23 @@ def test_agent_initial_risk_level():
     assert agent.risk_level == 2
 
 
+def test_agent_repr():
+    agent_id = 1
+    risk_level = 3
+    agent = HawkDoveAgent(agent_id, Mock(), risk_level=risk_level)
+    assert repr(agent) == f"<HawkDoveAgent id={agent_id} r={risk_level}>"
+
+
 def test_model_single_risk_level():
     risk_level = 3
+    model = HawkDoveModel(
+        5, include_diagonals=True, risk_attitudes="single", agent_risk_level=risk_level
+    )
+    for agent in model.schedule.agents:
+        assert agent.risk_level == risk_level
+
+    # handle zero properly (should not be treated the same as None)
+    risk_level = 0
     model = HawkDoveModel(
         5, include_diagonals=True, risk_attitudes="single", agent_risk_level=risk_level
     )

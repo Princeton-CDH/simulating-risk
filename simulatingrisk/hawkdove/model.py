@@ -44,7 +44,16 @@ class HawkDoveAgent(mesa.Agent):
         # - based partially on neighborhood size,
         #  which is configurable at the model level
         num_neighbors = 8 if self.model.include_diagonals else 4
-        self.risk_level = risk_level or self.random.randint(0, num_neighbors)
+        # if risk level is None, generate a random risk level
+        # NOTE: this means we allow risk level zero
+        if risk_level is None:
+            self.risk_level = self.random.randint(0, num_neighbors)
+        else:
+            # otherwise, used as passed
+            self.risk_level = risk_level
+
+    def __repr__(self):
+        return f"<HawkDoveAgent id={self.unique_id} r={self.risk_level}>"
 
     def initial_choice(self, hawk_odds=None):
         # first round : choose what to play randomly or based on initial hawk odds
@@ -153,7 +162,7 @@ class HawkDoveModel(mesa.Model):
         agent_opts = {}
         # when started in single risk attitude mode, initialize all agents
         # with the specified risk level
-        if risk_attitudes == "single" and agent_risk_level:
+        if risk_attitudes == "single" and agent_risk_level is not None:
             agent_opts["risk_level"] = agent_risk_level
 
         for i in range(self.num_agents):
@@ -167,7 +176,11 @@ class HawkDoveModel(mesa.Model):
                 "max_agent_points": "max_agent_points",
                 "percent_hawk": "percent_hawk",
             },
-            agent_reporters={"risk_level": "risk_level", "choice": "choice_label"},
+            agent_reporters={
+                "risk_level": "risk_level",
+                "choice": "choice_label",
+                "points": "points",
+            },
         )
 
     def step(self):
