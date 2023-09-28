@@ -11,7 +11,7 @@ from simulatingrisk.risky_bet.model import RiskyBetModel
 from simulatingrisk.risky_food.model import RiskyFoodModel
 
 
-def riskybet_batch_run(args):
+def riskybet_batch_run(args=None):
     results = batch_run(
         RiskyBetModel,
         parameters={
@@ -33,7 +33,7 @@ def riskybet_batch_run(args):
     save_results("riskybet", results)
 
 
-def riskyfood_batch_run(args):
+def riskyfood_batch_run(args=None):
     results = batch_run(
         RiskyFoodModel,
         # only parameter to this one currently is number of agents
@@ -83,6 +83,7 @@ def hawkdove_batch_run(args):
         number_processes=1,
         data_collection_period=1,
         display_progress=True,
+        max_steps=200,  # converges very quickly, so don't run 1000 times
     )
     # include the mode in the output filename
     save_results("hawkdove_risk-%s" % args.risk_attitudes, results)
@@ -127,4 +128,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     # run appropriate function based on the selected subcommand
-    args.func(args)
+    # if a subcommand is not specified, no function is set
+    if hasattr(args, "func"):
+        args.func(args)
+    else:
+        parser.print_help()
+        exit(-1)
