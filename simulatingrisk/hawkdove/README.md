@@ -76,5 +76,19 @@ In other words, when $r(p) > 0.52$. An EU maximizer, with $r(p) = p$, will play 
 
 Payoffs were chosen to avoid the case in which two choices had equal expected utility for some number of neighbors. For example, if the payoff of $(D,D)$ was $(2,2)$, then at $p = 0.5$ (4 of 8 neighbors), then EU maximizers would be indifferent between HAWK and DOVE; in this case, no r-value would correspond to EU maximization, since $r = 4$ strictly prefers DOVE and $r = 3$ strictly prefers HAWK.
 
+Another way to visualize the risk attitudes and choices in this game is this table, which shows when agents will play Hawk or Dove based on their risk attitudes (going down on the left side) and the number of neighbors playing Dove (across the top).
 
+<table>
+   <tr><td colspan="2"></td><td colspan="9"># of neighors playing DOVE</td></tr>
+   <tr><td><th>r</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+   <tr><td rowspan="4">risk seeking</td><th>0</th><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><th>1</th><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><th>2</th><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><th>3</th><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><td>neutral</td></td><th>4</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><td rowspan="4">risk avoidant</td><th>5</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td></tr>
+   <tr><th>6</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td></tr>
+   <tr><th>7</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td></tr>
+   <tr><th>8</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td></tr>
+</table>
 
