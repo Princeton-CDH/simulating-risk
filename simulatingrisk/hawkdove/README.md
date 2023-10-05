@@ -44,6 +44,30 @@ Each player on a lattice (grid in Mesa):
 
 ## Payoffs and risk attitudes
 
+This game has a discrete set of options instead of probability, so instead of defining `r` as a value between 0.0 and 1.0, we use discrete values based on the choices. For the game that includes diagonal neighbors when agents play all neighbors:
+
+<table>
+   <tr><td></td></td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+   <tr>
+      <td>Plays H when:</td>
+      <td>$\geq1$ D</td>
+      <td>$\geq2$ D</td>
+      <td>$\geq3$ D</td>
+      <td>$\geq4$ D</td>
+      <td>$\geq5$ D</td>
+      <td>$\geq6$ D</td>
+      <td>$\geq7$ D</td>
+      <td>$\geq8$ D</td>
+      <td>all D</td>
+   </tr>
+   <tr><td></td>
+      <td colspan="4">risk seeking</td>
+      <td>EU maximizer<br>(risk neutral)</td>
+   <td colspan="4">risk avoidant</td>
+   </tr>
+</table>
+
+
 An REU maximizer will play HAWK when
 ```math
 r(p) > \frac{(D,H)-(H,H)}{(H,D)-(D,D)}
