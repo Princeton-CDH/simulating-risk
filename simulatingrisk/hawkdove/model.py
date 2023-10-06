@@ -1,5 +1,7 @@
 from enum import Enum
+from collections import deque
 import math
+import statistics
 
 import mesa
 
@@ -134,7 +136,12 @@ class HawkDoveAgent(mesa.Agent):
 class HawkDoveModel(mesa.Model):
     """ """
 
+    #: whether the simulation is running
     running = True  # required for batch run
+    #: size of deque/fifo for recent values
+    rolling_window = 30
+    #: minimum size before calculating rolling average
+    min_window = 15
 
     def __init__(
         self,
@@ -153,6 +160,10 @@ class HawkDoveModel(mesa.Model):
         self.risk_attitudes = risk_attitudes
         # distribution of first choice (50/50 by default)
         self.hawk_odds = hawk_odds
+
+        # create fifos to track recent behavior to detect convergence
+        self.recent_percent_hawk = deque([], maxlen=self.rolling_window)
+        self.recent_rolling_percent_hawk = deque([], maxlen=self.rolling_window)
 
         # initialize a single grid (each square inhabited by a single agent);
         # configure the grid to wrap around so everyone has neighbors
@@ -175,6 +186,7 @@ class HawkDoveModel(mesa.Model):
             model_reporters={
                 "max_agent_points": "max_agent_points",
                 "percent_hawk": "percent_hawk",
+                "rolling_percent_hawk": "rolling_percent_hawk",
             },
             agent_reporters={
                 "risk_level": "risk_level",
@@ -189,6 +201,12 @@ class HawkDoveModel(mesa.Model):
         """
         self.schedule.step()
         self.datacollector.collect(self)
+        if self.converged:
+            self.running = False
+            print(
+                f"Stopping after {self.schedule.steps} rounds. "
+                + f"Final rolling average % hawk: {self.rolling_percent_hawk}"
+            )
 
     @property
     def max_agent_points(self):
@@ -199,4 +217,28 @@ class HawkDoveModel(mesa.Model):
     def percent_hawk(self):
         # what percent of agents chose hawk?
         hawks = [a for a in self.schedule.agents if a.choice == Play.HAWK]
-        return len(hawks) / self.num_agents
+        phawk = len(hawks) / self.num_agents
+        # add to recent values
+        self.recent_percent_hawk.append(phawk)
+        return phawk
+
+    @property
+    def rolling_percent_hawk(self):
+        # make sure we have enough values to check
+        if len(self.recent_percent_hawk) > self.min_window:
+            rolling_phawk = statistics.mean(self.recent_percent_hawk)
+            # add to recent values
+            self.recent_rolling_percent_hawk.append(rolling_phawk)
+            return rolling_phawk
+
+    @property
+    def converged(self):
+        # check if the simulation is stable and should stop running
+        # calculating based on rolling percent hawk; when this is stable
+        # within our rolling window, return true
+        # - currently checking for single value;
+        #  could allow for a small amount variation if necessary
+        return (
+            len(self.recent_rolling_percent_hawk) > self.min_window
+            and len(set(self.recent_rolling_percent_hawk)) == 1
+        )

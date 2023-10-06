@@ -31,16 +31,20 @@ def plot_hawks(model):
 
     model_df = model.datacollector.get_model_vars_dataframe().reset_index()
 
-    # calculate a rolling average for % hawk
-    model_df["rollingavg_percent_hawk"] = model_df.percent_hawk.rolling(10).mean()
-
     # limit to last N rounds (how many ?)
     last_n_rounds = model_df.tail(50)
+    # determine domain of the chart;
+    # starting domain 0-50 so it doesn't jump / expand as much
+    max_index = max(model_df.last_valid_index() or 0, 50)
+    min_index = max(max_index - 50, 0)
+
     bar_chart = (
         alt.Chart(last_n_rounds)
         .mark_bar(color="orange")
         .encode(
-            x=alt.X("index", title="Step"),
+            x=alt.X(
+                "index", title="Step", scale=alt.Scale(domain=[min_index, max_index])
+            ),
             y=alt.Y(
                 "percent_hawk",
                 title="Percent who chose hawk",
@@ -48,21 +52,25 @@ def plot_hawks(model):
             ),
         )
     )
-    # graph rolling average as a line over the bar chart
-    line = (
-        alt.Chart(last_n_rounds)
-        .mark_line(color="blue")
-        .encode(
-            x=alt.X("index", title="Step"),
-            y=alt.Y(
-                "rollingavg_percent_hawk",
-                title="% hawk (rolling average)",
-                scale=alt.Scale(domain=[0, 1]),
-            ),
+    # graph rolling average as a line over the bar chart,
+    # once we have enough rounds
+    if model_df.rolling_percent_hawk.any():
+        line = (
+            alt.Chart(last_n_rounds)
+            .mark_line(color="blue")
+            .encode(
+                x=alt.X("index", title="Step"),
+                y=alt.Y(
+                    "rolling_percent_hawk",
+                    title="% hawk (rolling average)",
+                    scale=alt.Scale(domain=[0, 1]),
+                ),
+            )
         )
-    )
+        # add the rolling average line on top of the bar chart
+        bar_chart += line
 
-    return solara.FigureAltair(bar_chart + line)
+    return solara.FigureAltair(bar_chart)
 
 
 page = JupyterViz(
