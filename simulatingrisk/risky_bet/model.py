@@ -221,15 +221,16 @@ class RiskyBetModel(mesa.Model):
 
     @property
     def risk_q1(self):
-        if self.agent_risk_levels:
-            risk_median = self.risk_median
-            # first quartile is the median of values less than the median
-            return statistics.median(
-                [r for r in self.agent_risk_levels if r < risk_median]
-            )
+        risk_median = self.risk_median
+        # first quartile is the median of values less than the median
+        submedian_values = [r for r in self.agent_risk_levels if r < risk_median]
+        if submedian_values:
+            return statistics.median(submedian_values)
 
     @property
     def risk_q3(self):
         risk_median = self.risk_median
         # third quartile is the median of values greater than the median
-        return statistics.median([r for r in self.agent_risk_levels if r > risk_median])
+        supermedian_values = [r for r in self.agent_risk_levels if r > risk_median]
+        if supermedian_values:
+            return statistics.median(supermedian_values)
