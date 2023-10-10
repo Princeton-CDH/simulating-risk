@@ -47,9 +47,9 @@ Each player on a lattice (grid in Mesa):
 This game has a discrete set of options instead of probability, so instead of defining `r` as a value between 0.0 and 1.0, we use discrete values based on the choices. For the game that includes diagonal neighbors when agents play all neighbors:
 
 <table>
-   <tr><td></td></td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
+   <tr><th>r</th></th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
    <tr>
-      <td>Plays H when:</td>
+      <th>Plays H when:</th>
       <td>$\geq1$ D</td>
       <td>$\geq2$ D</td>
       <td>$\geq3$ D</td>
@@ -79,7 +79,7 @@ Payoffs were chosen to avoid the case in which two choices had equal expected ut
 Another way to visualize the risk attitudes and choices in this game is this table, which shows when agents will play Hawk or Dove based on their risk attitudes (going down on the left side) and the number of neighbors playing Dove (across the top).
 
 <table>
-   <tr><td colspan="2"></td><td colspan="9"># of neighors playing DOVE</td></tr>
+   <tr><td colspan="2"></td><th colspan="9"># of neighors playing DOVE</thr></tr>
    <tr><td><th>r</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>
    <tr><td rowspan="4">risk seeking</td><th>0</th><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
    <tr><th>1</th><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
