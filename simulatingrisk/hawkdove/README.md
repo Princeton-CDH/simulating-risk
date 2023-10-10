@@ -58,7 +58,7 @@ This game has a discrete set of options instead of probability, so instead of de
       <td>$\geq6$ D</td>
       <td>$\geq7$ D</td>
       <td>$\geq8$ D</td>
-      <td>all D</td>
+      <td>never</td>
    </tr>
    <tr><td></td>
       <td colspan="4">risk seeking</td>
