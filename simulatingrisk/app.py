@@ -7,7 +7,8 @@ from simulatingrisk.risky_food.app import page as riskyfood_page
 
 @solara.component
 def Home():
-    solara.Markdown("Home")
+    with open("simulatingrisk/about_app.md") as readmefile:
+        return solara.Markdown("\n".join(readmefile.readlines()))
 
 
 @solara.component
@@ -26,8 +27,8 @@ def riskyfood():
 
 
 routes = [
-    solara.Route(path="/", component=Home, label="home"),
+    solara.Route(path="/", component=Home, label="Home"),
     solara.Route(path="hawkdove", component=hawkdove, label="Hawk/Dove"),
     solara.Route(path="riskybet", component=riskybet, label="Risky Bet"),
-    solara.Route(path="riskyfood", component=riskybet, label="Risky Food"),
+    solara.Route(path="riskyfood", component=riskyfood, label="Risky Food"),
 ]
