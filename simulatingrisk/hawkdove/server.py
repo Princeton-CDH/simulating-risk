@@ -6,12 +6,10 @@ import altair as alt
 import solara
 import pandas as pd
 
-from simulatingrisk.hawkdove.model import Play
+from simulatingrisk.hawkdove.model import Play, divergent_colors_9, divergent_colors_5
 
 
 def agent_portrayal(agent):
-    from simulatingrisk.hawkdove.model import divergent_colors_9, divergent_colors_5
-
     # initial display
     portrayal = {
         # styles for mesa runserver

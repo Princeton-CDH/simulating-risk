@@ -1,4 +1,7 @@
+import math
+
 import mesa
+from simulatingrisk.risky_bet.model import divergent_colors
 
 
 def risk_index(risk_level):
@@ -21,9 +24,6 @@ def risk_index(risk_level):
 
 
 def agent_portrayal(agent):
-    import math
-    from simulatingrisk.risky_bet.model import divergent_colors
-
     # initial display
     portrayal = {
         # styles for mesa runserver
