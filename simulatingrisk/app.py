@@ -27,7 +27,7 @@ def riskyfood():
 
 
 routes = [
-    solara.Route(path="/", component=Home, label="Home"),
+    solara.Route(path="/", component=Home, label="Simulating Risk"),
     solara.Route(path="hawkdove", component=hawkdove, label="Hawk/Dove"),
     solara.Route(path="riskybet", component=riskybet, label="Risky Bet"),
     solara.Route(path="riskyfood", component=riskyfood, label="Risky Food"),
