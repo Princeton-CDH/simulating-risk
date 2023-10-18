@@ -67,7 +67,10 @@ def test_agent_repr():
     agent_id = 1
     risk_level = 3
     agent = HawkDoveSingleRiskAgent(agent_id, Mock(agent_risk_level=risk_level))
-    assert repr(agent) == f"<HawkDoveSingleRiskAgent id={agent_id} r={risk_level}>"
+    assert (
+        repr(agent)
+        == f"<HawkDoveSingleRiskAgent id={agent_id} r={risk_level} points=0>"
+    )
 
 
 def test_model_single_risk_level():

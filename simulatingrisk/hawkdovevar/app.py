@@ -12,6 +12,24 @@ from simulatingrisk.hawkdove.app import plot_hawks
 
 jupyterviz_params_var = jupyterviz_params.copy()
 del jupyterviz_params_var["agent_risk_level"]
+jupyterviz_params_var.update(
+    {
+        "risk_adjustment": {
+            "type": "Select",
+            "value": "adopt",
+            "values": ["none", "adopt", "average"],
+            "description": "If and how agents update their risk level",
+        },
+        "adjust_every": {
+            "type": "SliderInt",
+            "min": 1,
+            "max": 30,
+            "step": 1,
+            "value": 10,
+            "description": "How many rounds between risk adjustment",
+        },
+    }
+)
 
 page = JupyterViz(
     HawkDoveVariableRiskModel,
