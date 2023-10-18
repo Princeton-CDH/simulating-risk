@@ -50,7 +50,7 @@ class HawkDoveAgent(mesa.Agent):
         raise NotImplementedError
 
     def __repr__(self):
-        return f"<HawkDoveAgent id={self.unique_id} r={self.risk_level}>"
+        return f"<{self.__class__.__name__} id={self.unique_id} r={self.risk_level}>"
 
     def initial_choice(self, hawk_odds=None):
         # first round : choose what to play randomly or based on initial hawk odds
