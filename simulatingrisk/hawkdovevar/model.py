@@ -93,7 +93,6 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
                 f"Unsupported risk adjustment '{risk_adjustment}'; "
                 + f"must be one of {risk_adjust_opts}"
             )
-
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
 
