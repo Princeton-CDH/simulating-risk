@@ -35,24 +35,19 @@ class HawkDoveAgent(mesa.Agent):
     An agent with a risk attitude playing Hawk or Dove
     """
 
-    def __init__(self, unique_id, model, risk_level=None, hawk_odds=None):
+    def __init__(self, unique_id, model, hawk_odds=None):
         super().__init__(unique_id, model)
 
         self.points = 0
         self.choice = self.initial_choice(hawk_odds)
         self.last_choice = None
 
-        # risk level
-        # - based partially on neighborhood size,
-        #  which is configurable at the model level
-        num_neighbors = 8 if self.model.include_diagonals else 4
-        # if risk level is None, generate a random risk level
-        # NOTE: this means we allow risk level zero
-        if risk_level is None:
-            self.risk_level = self.random.randint(0, num_neighbors)
-        else:
-            # otherwise, used as passed
-            self.risk_level = risk_level
+        # risk level must be set by base class, since initial
+        # conditions are specific to single / variable risk games
+        self.set_risk_level()
+
+    def set_risk_level(self):
+        raise NotImplementedError
 
     def __repr__(self):
         return f"<HawkDoveAgent id={self.unique_id} r={self.risk_level}>"
@@ -60,7 +55,7 @@ class HawkDoveAgent(mesa.Agent):
     def initial_choice(self, hawk_odds=None):
         # first round : choose what to play randomly or based on initial hawk odds
         opts = {}
-        if hawk_odds:
+        if hawk_odds is not None:
             opts["weight"] = hawk_odds
         return coinflip(play_choices, **opts)
 
@@ -142,13 +137,13 @@ class HawkDoveModel(mesa.Model):
     rolling_window = 30
     #: minimum size before calculating rolling average
     min_window = 15
+    #: class to use when initializing agents
+    agent_class = HawkDoveAgent
 
     def __init__(
         self,
         grid_size,
         include_diagonals=True,
-        risk_attitudes="variable",
-        agent_risk_level=None,
         hawk_odds=0.5,
     ):
         super().__init__()
@@ -157,7 +152,6 @@ class HawkDoveModel(mesa.Model):
         # mesa get_neighbors supports moore neighborhood (include diagonals)
         # and von neumann (exclude diagonals)
         self.include_diagonals = include_diagonals
-        self.risk_attitudes = risk_attitudes
         # distribution of first choice (50/50 by default)
         self.hawk_odds = hawk_odds
 
@@ -170,16 +164,12 @@ class HawkDoveModel(mesa.Model):
         self.grid = mesa.space.SingleGrid(grid_size, grid_size, True)
         self.schedule = mesa.time.StagedActivation(self, ["choose", "play"])
 
-        agent_opts = {}
-        # when started in single risk attitude mode, initialize all agents
-        # with the specified risk level
-        if risk_attitudes == "single" and agent_risk_level is not None:
-            agent_opts["risk_level"] = agent_risk_level
-
+        # initialize all agents
+        agent_opts = self.new_agent_options()
         for i in range(self.num_agents):
-            agent = HawkDoveAgent(i, self, hawk_odds=self.hawk_odds, **agent_opts)
+            # add to scheduler and place randomly in an empty spot
+            agent = self.agent_class(i, self, **agent_opts)
             self.schedule.add(agent)
-            # place randomly in an empty spot
             self.grid.move_to_empty(agent)
 
         self.datacollector = mesa.DataCollector(
@@ -194,6 +184,11 @@ class HawkDoveModel(mesa.Model):
                 "points": "points",
             },
         )
+
+    def new_agent_options(self):
+        # generate and return a dictionary with common options
+        # for initializing all agents
+        return {"hawk_odds": self.hawk_odds}
 
     def step(self):
         """
@@ -241,4 +236,37 @@ class HawkDoveModel(mesa.Model):
         return (
             len(self.recent_rolling_percent_hawk) > self.min_window
             and len(set(self.recent_rolling_percent_hawk)) == 1
+        )
+
+
+class HawkDoveSingleRiskAgent(HawkDoveAgent):
+    """
+    An agent with a risk attitude playing Hawk or Dove; must be initialized
+    with a risk level
+    """
+
+    def set_risk_level(self):
+        self.risk_level = self.model.agent_risk_level
+
+
+class HawkDoveSingleRiskModel(HawkDoveModel):
+    """hawk/dove simulation where all agents have the same risk atttitude"""
+
+    #: class to use when initializing agents
+    agent_class = HawkDoveSingleRiskAgent
+
+    risk_attitudes = "single"
+
+    def __init__(
+        self,
+        grid_size,
+        agent_risk_level,
+        include_diagonals=True,
+        hawk_odds=0.5,
+    ):
+        # store agent risk level
+        self.agent_risk_level = agent_risk_level
+        # pass through options and initialize base class
+        super().__init__(
+            grid_size, include_diagonals=include_diagonals, hawk_odds=hawk_odds
         )
