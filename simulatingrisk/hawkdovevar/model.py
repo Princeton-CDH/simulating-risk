@@ -5,7 +5,9 @@ from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
 class HawkDoveVariableRiskAgent(HawkDoveAgent):
     """
-    An agent with random risk attitude playing Hawk or Dove
+    An agent with random risk attitude playing Hawk or Dove. Optionally
+    adjusts risks based on most successful neighbor, depending on model
+    configuration.
     """
 
     def set_risk_level(self):
@@ -25,6 +27,7 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
     def most_successful_neighbor(self):
         """identify and return the neighbor with the most points"""
         # sort neighbors by points, highest points first
+        # adapted from risky bet wealthiest neighbor
         return sorted(self.neighbors, key=lambda x: x.points, reverse=True)[0]
 
     def adjust_risk(self):
@@ -65,6 +68,8 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
     risk_attitudes = "variable"
     agent_class = HawkDoveVariableRiskAgent
 
+    supported_risk_adjustments = (None, "adopt", "average")
+
     def __init__(
         self,
         grid_size,
@@ -76,10 +81,19 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
         super().__init__(
             grid_size, include_diagonals=include_diagonals, hawk_odds=hawk_odds
         )
-
         # convert string input from solara app parameters to None
         if risk_adjustment == "none":
             risk_adjustment = None
+        # make sure risk adjustment is valid
+        if risk_adjustment not in self.supported_risk_adjustments:
+            risk_adjust_opts = ", ".join(
+                [opt or "none" for opt in self.supported_risk_adjustments]
+            )
+            raise ValueError(
+                f"Unsupported risk adjustment '{risk_adjustment}'; "
+                + f"must be one of {risk_adjust_opts}"
+            )
+
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
 
