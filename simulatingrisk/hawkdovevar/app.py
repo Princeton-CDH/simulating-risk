@@ -10,7 +10,10 @@ from simulatingrisk.hawkdove.server import (
 )
 from simulatingrisk.hawkdove.app import plot_hawks
 
+# adjust single-risk params for variable risk
 jupyterviz_params_var = jupyterviz_params.copy()
+# remove parameter for agent risk level;
+# add parameters for adaptive risk strategies
 del jupyterviz_params_var["agent_risk_level"]
 jupyterviz_params_var.update(
     {

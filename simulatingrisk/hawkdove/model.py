@@ -218,18 +218,6 @@ class HawkDoveModel(mesa.Model):
             )
 
     @property
-    def adjustment_round(self) -> bool:
-        """is the current round an adjustment round?"""
-        # check if the current step is an adjustment round
-        # when risk adjustment is enabled, agents should adjust their risk
-        # strategy every N rounds;
-        return (
-            self.risk_adjustment
-            and self.schedule.steps > 0
-            and self.schedule.steps % self.adjust_round_n == 0
-        )
-
-    @property
     def max_agent_points(self):
         # what is the current largest point total of any agent?
         return max([a.points for a in self.schedule.agents])
