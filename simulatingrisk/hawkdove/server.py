@@ -72,12 +72,6 @@ jupyterviz_params = {
         "value": True,
         "label": "Include diagonal neighbors",
     },
-    "risk_attitudes": {
-        "type": "Select",
-        "value": "variable",
-        "values": ["variable", "single"],
-        "description": "Agent initial risk level",
-    },
     "agent_risk_level": {
         "type": "SliderInt",
         "min": 0,
@@ -93,12 +87,6 @@ jupyterviz_params = {
         "max": 1.0,
         "step": 0.1,
     },
-    # "risk_adjustment": {
-    #     "type": "Select",
-    #     "value": "adopt",
-    #     "values": ["adopt", "average"],
-    #     "description": "How agents update their risk level",
-    # },
 }
 
 
