@@ -5,7 +5,7 @@ import altair as alt
 import solara
 
 
-from simulatingrisk.hawkdove.model import HawkDoveModel
+from simulatingrisk.hawkdove.model import HawkDoveSingleRiskModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
     jupyterviz_params,
@@ -74,10 +74,10 @@ def plot_hawks(model):
 
 
 page = JupyterViz(
-    HawkDoveModel,
+    HawkDoveSingleRiskModel,
     jupyterviz_params,
     measures=[plot_hawks],
-    name="Hawk/Dove with risk attitudes",
+    name="Hawk/Dove game with risk attitudes; all agents have the same risk attitude",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
 )
