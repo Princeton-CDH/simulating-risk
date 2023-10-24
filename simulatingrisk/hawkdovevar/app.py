@@ -24,6 +24,7 @@ jupyterviz_params_var.update(
             "description": "If and how agents update their risk level",
         },
         "adjust_every": {
+            "label": "Adjustment frequency (# rounds)",
             "type": "SliderInt",
             "min": 1,
             "max": 30,
