@@ -41,6 +41,14 @@ def test_init():
         HawkDoveVariableRiskModel(3, risk_adjustment="bogus")
 
 
+def test_num_neighbors():
+    with_diagonals = HawkDoveVariableRiskModel(3)
+    assert with_diagonals.num_neighbors == 8
+
+    no_diagonals = HawkDoveVariableRiskModel(3, include_diagonals=False)
+    assert no_diagonals.num_neighbors == 4
+
+
 def test_init_variable_risk_level():
     model = HawkDoveVariableRiskModel(
         5,

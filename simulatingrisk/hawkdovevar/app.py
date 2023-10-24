@@ -49,19 +49,20 @@ def agents_by_risk(model):
         total=("AgentID", "count")
     )
 
-    # draw a bar chart to indicate the number of agents for each
-    # risk attitude
-    # configure domain to always display all statuses
-    # TODO: limit to 4 when not including diagonals
-    # (fixme: include diagonal checkbox param not working?)
+    # bar chart to show number of agents for each risk attitude
+    # configure domain to always display all statuses;
+    # limit changes depending on if diagonals are included
+    # (NOTE: bug in mesa 2.12, checkbox param does not propagate)
     bar_chart = (
         alt.Chart(grouped)
-        .mark_bar(width=10)
+        .mark_bar(width=15)
         .encode(
             x=alt.X(
                 "risk_level",
                 title="risk attitude",
-                scale=alt.Scale(domain=[0, 8]),
+                # don't display any 0.5 ticks when max is 4
+                axis=alt.Axis(tickCount=model.num_neighbors + 1),
+                scale=alt.Scale(domain=[0, model.num_neighbors]),
             ),
             y=alt.Y("total", title="Number of agents"),
         )
