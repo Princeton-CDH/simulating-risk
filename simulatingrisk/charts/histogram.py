@@ -73,4 +73,4 @@ def plot_risk_histogram(model):
     ax.set_title("risk levels")
     # You have to specify the dependencies as follows, so that the figure
     # auto-updates when viz.model or viz.df is changed.
-    solara.FigureMatplotlib(fig, dependencies=[model])
+    solara.FigureMatplotlib(fig)
