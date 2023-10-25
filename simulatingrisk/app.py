@@ -1,3 +1,5 @@
+import os.path
+
 import solara
 
 from simulatingrisk.hawkdove.app import page as hawkdove_page
@@ -8,7 +10,8 @@ from simulatingrisk.risky_food.app import page as riskyfood_page
 
 @solara.component
 def Home():
-    with open("simulatingrisk/about_app.md") as readmefile:
+    # load about markdown file in the same directory
+    with open(os.path.join(os.path.dirname(__file__), "about_app.md")) as readmefile:
         return solara.Markdown("\n".join(readmefile.readlines()))
 
 
