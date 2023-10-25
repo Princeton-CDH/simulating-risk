@@ -5,16 +5,13 @@ from mesa.experimental import JupyterViz
 from simulatingrisk.hawkdovevar.model import HawkDoveVariableRiskModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
-    jupyterviz_params,
+    common_jupyterviz_params,
     draw_hawkdove_agent_space,
 )
 from simulatingrisk.hawkdove.app import plot_hawks
 
-# adjust single-risk params for variable risk
-jupyterviz_params_var = jupyterviz_params.copy()
-# remove parameter for agent risk level;
-# add parameters for adaptive risk strategies
-del jupyterviz_params_var["agent_risk_level"]
+# start with common hawk/dove params, then add params for variable risk
+jupyterviz_params_var = common_jupyterviz_params.copy()
 jupyterviz_params_var.update(
     {
         "risk_adjustment": {

@@ -57,8 +57,8 @@ model_params = {
     "grid_size": grid_size,
 }
 
-
-jupyterviz_params = {
+# parameters common to both hawk/dove variants
+common_jupyterviz_params = {
     "grid_size": {
         "type": "SliderInt",
         "value": grid_size,
@@ -72,13 +72,6 @@ jupyterviz_params = {
         "value": True,
         "label": "Include diagonal neighbors",
     },
-    "agent_risk_level": {
-        "type": "SliderInt",
-        "min": 0,
-        "max": 8,
-        "step": 1,
-        "value": 2,
-    },
     "hawk_odds": {
         "type": "SliderFloat",
         "value": 0.5,
@@ -87,6 +80,16 @@ jupyterviz_params = {
         "max": 1.0,
         "step": 0.1,
     },
+}
+
+# in single-risk variant, risk level is set for all agents at init time
+jupyterviz_params = common_jupyterviz_params.copy()
+jupyterviz_params["agent_risk_level"] = {
+    "type": "SliderInt",
+    "min": 0,
+    "max": 8,
+    "step": 1,
+    "value": 2,
 }
 
 
