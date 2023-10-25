@@ -10,7 +10,6 @@ from simulatingrisk.hawkdove.model import (
     HawkDoveSingleRiskModel,
     HawkDoveSingleRiskAgent,
 )
-from simulatingrisk.hawkdovevar.model import HawkDoveVariableRiskModel
 
 
 def test_agent_neighbors():
@@ -67,7 +66,10 @@ def test_agent_repr():
     agent_id = 1
     risk_level = 3
     agent = HawkDoveSingleRiskAgent(agent_id, Mock(agent_risk_level=risk_level))
-    assert repr(agent) == f"<HawkDoveSingleRiskAgent id={agent_id} r={risk_level}>"
+    assert (
+        repr(agent)
+        == f"<HawkDoveSingleRiskAgent id={agent_id} r={risk_level} points=0>"
+    )
 
 
 def test_model_single_risk_level():
@@ -85,16 +87,6 @@ def test_model_single_risk_level():
     )
     for agent in model.schedule.agents:
         assert agent.risk_level == risk_level
-
-
-def test_variable_risk_level():
-    model = HawkDoveVariableRiskModel(
-        5,
-        include_diagonals=True,
-    )
-    # when risk level is variable/random, agents should have different risk levels
-    risk_levels = set([agent.risk_level for agent in model.schedule.agents])
-    assert len(risk_levels) > 1
 
 
 def test_num_dove_neighbors():

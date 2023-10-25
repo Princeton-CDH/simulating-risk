@@ -50,7 +50,10 @@ class HawkDoveAgent(mesa.Agent):
         raise NotImplementedError
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={self.unique_id} r={self.risk_level}>"
+        return (
+            f"<{self.__class__.__name__} id={self.unique_id} "
+            + f"r={self.risk_level} points={self.points}>"
+        )
 
     def initial_choice(self, hawk_odds=None):
         # first round : choose what to play randomly or based on initial hawk odds
@@ -129,7 +132,18 @@ class HawkDoveAgent(mesa.Agent):
 
 
 class HawkDoveModel(mesa.Model):
-    """ """
+    """
+    Model for hawk/dove game with risk attitudes.
+
+    :param grid_size: number for square grid size (creates n*n agents)
+    :param include_diagonals: whether agents should include diagonals
+        or not when considering neighbors (default: True)
+    :param hawk_odds: odds for playing hawk on the first round (default: 0.5)
+    :param risk_adjustment: strategy agents should use for adjusting risk;
+        None (default), adopt, or average
+    :param adjust_every: when risk adjustment is enabled, adjust every
+        N rounds (default: 10)
+    """
 
     #: whether the simulation is running
     running = True  # required for batch run

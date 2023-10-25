@@ -61,16 +61,12 @@ def plot_risk_histogram(model):
     # adapted from mesa visualiation tutorial
     # https://mesa.readthedocs.io/en/stable/tutorials/visualization_tutorial.html#Building-your-own-visualization-component
 
-    # Note: you must initialize a figure using this method instead of
+    # Note: per Mesa docs, has to be initialized using this method instead of
     # plt.figure(), for thread safety purpose
     fig = Figure()
     ax = fig.subplots()
     # generate a histogram of current risk levels
     risk_levels = [agent.risk_level for agent in model.schedule.agents]
-    # Note: you have to use Matplotlib's OOP API instead of plt.hist
-    # because plt.hist is not thread-safe.
     ax.hist(risk_levels, bins=risk_bins)
     ax.set_title("risk levels")
-    # You have to specify the dependencies as follows, so that the figure
-    # auto-updates when viz.model or viz.df is changed.
-    solara.FigureMatplotlib(fig, dependencies=[model])
+    solara.FigureMatplotlib(fig)
