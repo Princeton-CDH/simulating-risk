@@ -1,4 +1,5 @@
 import statistics
+from collections import Counter
 
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
@@ -113,3 +114,78 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
             and self.schedule.steps > 0
             and self.schedule.steps % self.adjust_round_n == 0
         )
+
+    def get_data_collector_options(self):
+        # in addition to common hawk/dove data points,
+        # we want to include population risk category
+        opts = super().get_data_collector_options()
+        opts["model_reporters"]["population_risk_category"] = "population_risk_category"
+        return opts
+
+    @property
+    def population_risk_category(self):
+        # calculate a category of risk distribution for the population
+        # based on the proportion of agents in different risk categories
+        # (categorization scheme defined by LB)
+
+        # tally the number of agents with each risk level
+        risk_counts = Counter([a.risk_level for a in self.schedule.agents])
+        # count the number of agents in three groups:
+        #  Risk-inclined (RI) : r = 0, 1, 2
+        #  Risk-moderate (RM): r = 3, 4, 5
+        #  Risk-avoidant (RA): r = 6, 7, 8
+        total = {
+            "risk_inclined": risk_counts[0] + risk_counts[1] + risk_counts[2],
+            "risk_moderate": risk_counts[3] + risk_counts[4] + risk_counts[5],
+            "risk_avoidant": risk_counts[6] + risk_counts[7] + risk_counts[8],
+        }
+        # for each group, calculate percent of agents in that category
+        total_agents = len(self.schedule.agents)
+        percent = {key: val / total_agents for key, val in total.items()}
+
+        # majority risk inclined (> 50%)
+        if percent["risk_inclined"] > 0.5:
+            # If < 10% are RM & < 10% are RA: let c = 1
+            if percent["risk_moderate"] < 0.1 and percent["risk_avoidant"] < 0.1:
+                return 1
+            # If > 10% are RM & < 10% are RA: let c = 2
+            if percent["risk_moderate"] > 0.1 and percent["risk_avoidant"] < 0.1:
+                return 2
+            # If > 10% are RM & > 10% are RA: let c = 3
+            if percent["risk_moderate"] > 0.1 and percent["risk_avoidant"] > 0.1:
+                return 3
+            # If < 10% are RM & > 10% are RA: let c = 4
+            if percent["risk_moderate"] < 0.1 and percent["risk_avoidant"] > 0.1:
+                return 4
+
+        # majority risk moderate
+        if percent["risk_moderate"] > 0.5:
+            # If < 10% are RI & < 10% are RA: let c = 7
+            if percent["risk_inclined"] < 0.1 and percent["risk_avoidant"] < 0.1:
+                return 7
+            # If > 10% are RI & < 10% are RA: let c = 5
+            if percent["risk_inclined"] > 0.1 and percent["risk_avoidant"] < 0.1:
+                return 5
+            # If > 10% are RI & > 10% are RA: let c = 6
+            if percent["risk_inclined"] > 0.1 and percent["risk_avoidant"] > 0.1:
+                return 6
+            # If < 10% are RI & > 10% are RA: let c = 8
+            if percent["risk_inclined"] < 0.1 and percent["risk_avoidant"] > 0.1:
+                return 8
+
+        # majority risk avoidant
+        if percent["risk_avoidant"] > 0.5:
+            # If < 10% are RM & < 10% are RI: let c = 12
+            if percent["risk_moderate"] < 0.1 and percent["risk_inclined"] < 0.1:
+                return 12
+            # If > 10% are RM & < 10% are RI: let c = 11
+            if percent["risk_moderate"] > 0.1 and percent["risk_inclined"] < 0.1:
+                return 11
+            # If > 10% are RM & > 10% are RI: let c = 10
+            if percent["risk_moderate"] > 0.1 and percent["risk_inclined"] > 0.1:
+                return 10
+            # If < 10% are RM & > 10% are RI: let c = 9
+            if percent["risk_moderate"] < 0.1 and percent["risk_inclined"] > 0.1:
+                return 9
+
+        return 13
