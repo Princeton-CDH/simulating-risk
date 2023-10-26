@@ -13,9 +13,9 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
     def set_risk_level(self):
         # risk level is based partially on neighborhood size,
         #  which is configurable at the model level
-        num_neighbors = 8 if self.model.include_diagonals else 4
-        # generate a random risk level
-        self.risk_level = self.random.randint(0, num_neighbors)
+
+        # generate a random risk level between zero and number of neighbors
+        self.risk_level = self.random.randint(0, self.model.num_neighbors)
 
     def play(self):
         super().play()
@@ -93,9 +93,14 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
                 f"Unsupported risk adjustment '{risk_adjustment}'; "
                 + f"must be one of {risk_adjust_opts}"
             )
-
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
+
+    @property
+    def num_neighbors(self) -> int:
+        # number of neighbors for each agent - depends on whether
+        # diagonals are included or not
+        return 8 if self.include_diagonals else 4
 
     @property
     def adjustment_round(self) -> bool:
