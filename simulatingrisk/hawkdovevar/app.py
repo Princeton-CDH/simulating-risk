@@ -35,7 +35,7 @@ jupyterviz_params_var.update(
 )
 
 
-def agents_by_risk(model):
+def plot_agents_by_risk(model):
     """plot total number of agents for each risk attitude"""
     agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
     if agent_df.empty:
@@ -70,11 +70,16 @@ def agents_by_risk(model):
     return solara.FigureAltair(bar_chart)
 
 
-def hawks_by_risk(model):
+def plot_hawks_by_risk(model):
     """plot rolling mean of percent of agents in each risk attitude
     who chose hawk over last several rounds"""
 
-    agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
+    # in the first round, mesa returns a dataframe full of NAs; ignore that
+    agent_df = (
+        model.datacollector.get_agent_vars_dataframe()
+        .reset_index()
+        .dropna(subset=["AgentID"])
+    )
     if agent_df.empty:
         return
 
@@ -121,7 +126,7 @@ def hawks_by_risk(model):
 page = JupyterViz(
     HawkDoveVariableRiskModel,
     jupyterviz_params_var,
-    measures=[plot_hawks, agents_by_risk, hawks_by_risk],
+    measures=[plot_hawks, plot_agents_by_risk, plot_hawks_by_risk],
     name="Hawk/Dove game with variable risk attitudes",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
