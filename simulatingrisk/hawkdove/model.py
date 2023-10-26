@@ -186,18 +186,23 @@ class HawkDoveModel(mesa.Model):
             self.schedule.add(agent)
             self.grid.move_to_empty(agent)
 
-        self.datacollector = mesa.DataCollector(
-            model_reporters={
+        self.datacollector = mesa.DataCollector(**self.get_data_collector_options())
+
+    def get_data_collector_options(self):
+        # method to return options for data collection,
+        # so subclasses can modify
+        return {
+            "model_reporters": {
                 "max_agent_points": "max_agent_points",
                 "percent_hawk": "percent_hawk",
                 "rolling_percent_hawk": "rolling_percent_hawk",
             },
-            agent_reporters={
+            "agent_reporters": {
                 "risk_level": "risk_level",
                 "choice": "choice_label",
                 "points": "points",
             },
-        )
+        }
 
     def new_agent_options(self):
         # generate and return a dictionary with common options
@@ -214,7 +219,7 @@ class HawkDoveModel(mesa.Model):
             self.running = False
             print(
                 f"Stopping after {self.schedule.steps} rounds. "
-                + f"Final rolling average % hawk: {self.rolling_percent_hawk}"
+                + f"Final rolling average % hawk: {round(self.rolling_percent_hawk, 2)}"
             )
 
     @property
@@ -247,9 +252,13 @@ class HawkDoveModel(mesa.Model):
         # within our rolling window, return true
         # - currently checking for single value;
         #  could allow for a small amount variation if necessary
+
+        # in variable risk with risk adjustment, numbers are not strictly equal
+        # but do get close and fairly stable; round to two digits before comparing
+        rounded_set = set([round(x, 2) for x in self.recent_rolling_percent_hawk])
         return (
             len(self.recent_rolling_percent_hawk) > self.min_window
-            and len(set(self.recent_rolling_percent_hawk)) == 1
+            and len(rounded_set) == 1
         )
 
 
