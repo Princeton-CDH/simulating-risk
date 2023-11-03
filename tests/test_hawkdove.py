@@ -108,7 +108,6 @@ def test_agent_choose():
     # on the first round, nothing should happen (uses initial choice)
     agent.model.schedule.steps = 0
     agent.choose()
-    assert agent.last_choice is None
 
     # on subsequent rounds, choose based on neighbors and risk level
     agent.model.schedule.steps = 1
@@ -137,10 +136,24 @@ def test_agent_choose():
         agent.choose()
         assert agent.choice == Play.DOVE
 
-        # test last choice is updated when choose runs
-        agent.choice = "foo"  # set to confirm stored
-        agent.choose()
-        assert agent.last_choice == "foo"
+
+def test_agent_play():
+    agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=3))
+    # on the first round, last choice should be unset
+    assert agent.last_choice is None
+    assert agent.points == 0
+
+    # set initial choice and supply mock neighbors
+    # so we can test expected results
+    agent.choice = Play.HAWK
+    neighbor_hawk = Mock(choice=Play.HAWK)
+    neighbor_dove = Mock(choice=Play.DOVE)
+    with patch.object(HawkDoveAgent, "neighbors", [neighbor_hawk, neighbor_dove]):
+        agent.play()
+        # should get 3 points against dove and 0 against the hawk
+        assert agent.points == 3 + 0
+        # should store current choice for next round
+        assert agent.last_choice == Play.HAWK
 
 
 def test_agent_payoff():
