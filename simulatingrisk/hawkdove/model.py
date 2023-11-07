@@ -308,25 +308,18 @@ class HawkDoveSingleRiskAgent(HawkDoveAgent):
 
 
 class HawkDoveSingleRiskModel(HawkDoveModel):
-    """hawk/dove simulation where all agents have the same risk atttitude"""
+    """hawk/dove simulation where all agents have the same risk atttitude.
+    Adds a required `agent_risk_level` parameter; supports all
+    parameters in :class:`HawkDoveModel`.
+    """
 
     #: class to use when initializing agents
     agent_class = HawkDoveSingleRiskAgent
 
     risk_attitudes = "single"
 
-    def __init__(
-        self,
-        grid_size,
-        agent_risk_level,
-        *args,
-        **kwargs
-        # neighborhood=None,
-        # hawk_odds=0.5,
-    ):
+    def __init__(self, grid_size, agent_risk_level, *args, **kwargs):
         # store agent risk level
         self.agent_risk_level = agent_risk_level
         # pass through options and initialize base class
-        # if neighborhood is not None:
-        # opts['neighborhood'] = neighborhood
-        super().__init__(grid_size, *args, **kwargs)  # hawk_odds=hawk_odds, **opts)
+        super().__init__(grid_size, *args, **kwargs)

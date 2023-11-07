@@ -100,12 +100,11 @@ class RiskState(IntEnum):
 
 class HawkDoveVariableRiskModel(HawkDoveModel):
     """
-    Model for hawk/dove game with variable risk attitudes.
+    Model for hawk/dove game with variable risk attitudes.  Supports
+    all parameters in :class:`~simulatingrisk.hawkdove.model.HawkDoveModel`
+    and adds several parmeters to control if and how agents adjust
+    their risk attitudes (strategy, frequency, and neighborhood size).
 
-    :param grid_size: number for square grid size (creates n*n agents)
-    :param include_diagonals: whether agents should include diagonals
-        or not when considering neighbors (default: True)
-    :param hawk_odds: odds for playing hawk on the first round (default: 0.5)
     :param risk_adjustment: strategy agents should use for adjusting risk;
         None (default), adopt, or average
     :param adjust_every: when risk adjustment is enabled, adjust every
