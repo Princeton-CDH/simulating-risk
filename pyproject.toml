@@ -11,8 +11,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    # "mesa>=2.1",
-    "mesa @ git+https://github.com/projectmesa/mesa.git@main",
+    "mesa>=2.1.2",
+    # "mesa @ git+https://github.com/projectmesa/mesa.git@main",
     "matplotlib",
     "altair>5.0.1"
 ]

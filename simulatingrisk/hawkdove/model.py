@@ -83,9 +83,6 @@ class HawkDoveAgent(mesa.Agent):
         "decide what to play this round"
         # after the first round, choose based on what neighbors did last time
         if self.model.schedule.steps > 0:
-            # store previous choice
-            self.last_choice = self.choice
-
             # choose based on the number of neighbors who played
             # dove last round and agent risk level
 
@@ -105,6 +102,9 @@ class HawkDoveAgent(mesa.Agent):
             payoff += self.payoff(n)
         # update total points based on payoff this round
         self.points += payoff
+
+        # store this round's choice as previous choice
+        self.last_choice = self.choice
 
     def payoff(self, other):
         """
