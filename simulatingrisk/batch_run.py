@@ -78,9 +78,10 @@ def hawkdove_singlerisk_batch_run(args):
 
 def hawkdove_variablerisk_batch_run(args):
     params = {
-        "grid_size": 20,
+        "grid_size": 10,
+        "risk_adjustment": "adopt",  # run adopt only for now
     }
-    iterations = 5
+    iterations = 100
     results = batch_run(
         HawkDoveVariableRiskModel,
         parameters=params,
@@ -88,7 +89,7 @@ def hawkdove_variablerisk_batch_run(args):
         number_processes=1,
         data_collection_period=1,
         display_progress=True,
-        max_steps=200,  # converges very quickly, so don't run 1000 times
+        max_steps=250,  # converges fairly quickly, don't run 1000 times
     )
     # include the mode in the output filename
     save_results("hawkdove_variable", results)

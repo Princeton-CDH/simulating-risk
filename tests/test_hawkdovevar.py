@@ -6,6 +6,7 @@ import pytest
 from simulatingrisk.hawkdovevar.model import (
     HawkDoveVariableRiskModel,
     HawkDoveVariableRiskAgent,
+    RiskState,
 )
 
 
@@ -82,6 +83,37 @@ def test_adjustment_round(params, expect_adjust_step):
             assert model.adjustment_round
         else:
             assert not model.adjustment_round
+
+
+def test_population_risk_category():
+    model = HawkDoveVariableRiskModel(3)
+    model.schedule = Mock()
+
+    # majority risk inclined
+    model.schedule.agents = [Mock(risk_level=0), Mock(risk_level=1), Mock(risk_level=2)]
+    assert model.population_risk_category == RiskState.c1
+    # three risk-inclined agents and one risk moderate
+    model.schedule.agents.append(Mock(risk_level=4))
+    assert model.population_risk_category == RiskState.c2
+
+    # majority risk moderate
+    model.schedule.agents = [Mock(risk_level=4), Mock(risk_level=3), Mock(risk_level=5)]
+    assert model.population_risk_category == RiskState.c7
+
+    # majority risk avoidant
+    model.schedule.agents = [Mock(risk_level=6), Mock(risk_level=7), Mock(risk_level=8)]
+    assert model.population_risk_category == RiskState.c12
+
+
+def test_riskstate_label():
+    # enum value or integer value
+    assert RiskState.category(RiskState.c1) == "majority risk inclined"
+    assert RiskState.category(2) == "majority risk inclined"
+    assert RiskState.category(RiskState.c5) == "majority risk moderate"
+    assert RiskState.category(6) == "majority risk moderate"
+    assert RiskState.category(RiskState.c11) == "majority risk avoidant"
+    assert RiskState.category(RiskState.c13) == "no majority"
+    assert RiskState.category(13) == "no majority"
 
 
 def test_most_successful_neighbor():
