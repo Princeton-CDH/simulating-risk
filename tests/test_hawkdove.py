@@ -93,6 +93,19 @@ def test_bad_neighborhood_size():
         agent.get_neighbors(5)
 
 
+def test_choose_neighborhood_size():
+    # choose neighborhood size is based on play neighborhood,
+    # but can't go higher than 8
+    opts = {"agent_risk_level": 1}  # common option, irrelevant for this test
+    model = HawkDoveSingleRiskModel(3, play_neighborhood=4, **opts)
+    assert model.choose_neighborhood == 4
+    model = HawkDoveSingleRiskModel(3, play_neighborhood=8, **opts)
+    assert model.choose_neighborhood == 8
+    #
+    model = HawkDoveSingleRiskModel(3, play_neighborhood=24, **opts)
+    assert model.choose_neighborhood == 8
+
+
 def test_num_dove_neighbors():
     # initialize an agent with a mock model
     agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=2))
