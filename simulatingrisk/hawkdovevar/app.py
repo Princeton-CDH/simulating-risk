@@ -9,6 +9,7 @@ from simulatingrisk.hawkdove.server import (
     agent_portrayal,
     common_jupyterviz_params,
     draw_hawkdove_agent_space,
+    neighborhood_sizes,
 )
 from simulatingrisk.hawkdove.app import plot_hawks
 
@@ -30,6 +31,12 @@ jupyterviz_params_var.update(
             "step": 1,
             "value": 10,
             "description": "How many rounds between risk adjustment",
+        },
+        "adjust_neighborhood": {
+            "type": "Select",
+            "value": 8,
+            "values": neighborhood_sizes,
+            "label": "Neighborhood size (look at when adjusting)",
         },
     }
 )
@@ -61,8 +68,8 @@ def plot_agents_by_risk(model):
                 "risk_level",
                 title="risk attitude",
                 # don't display any 0.5 ticks when max is 4
-                axis=alt.Axis(tickCount=model.num_neighbors + 1),
-                scale=alt.Scale(domain=[0, model.num_neighbors]),
+                axis=alt.Axis(tickCount=model.choose_neighborhood + 1),
+                scale=alt.Scale(domain=[0, model.choose_neighborhood]),
             ),
             y=alt.Y("total", title="Number of agents"),
         )

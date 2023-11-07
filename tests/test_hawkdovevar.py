@@ -15,23 +15,26 @@ def test_init():
     # defaults
     assert model.risk_adjustment is None
     assert model.hawk_odds == 0.5
-    assert model.include_diagonals is True
+    assert model.play_neighborhood == 8
+    assert model.adjust_neighborhood == 8
     # unused but should be set to default
     assert model.adjust_round_n == 10
 
     # init with risk adjustment
     model = HawkDoveVariableRiskModel(
         5,
-        include_diagonals=False,
+        play_neighborhood=4,
         hawk_odds=0.2,
         risk_adjustment="adopt",
         adjust_every=5,
+        adjust_neighborhood=24,
     )
 
     assert model.risk_adjustment == "adopt"
     assert model.adjust_round_n == 5
     assert model.hawk_odds == 0.2
-    assert model.include_diagonals is False
+    assert model.play_neighborhood == 4
+    assert model.adjust_neighborhood == 24
 
     # handle string none for solara app parameters
     model = HawkDoveVariableRiskModel(5, risk_adjustment="none")
@@ -42,19 +45,8 @@ def test_init():
         HawkDoveVariableRiskModel(3, risk_adjustment="bogus")
 
 
-def test_num_neighbors():
-    with_diagonals = HawkDoveVariableRiskModel(3)
-    assert with_diagonals.num_neighbors == 8
-
-    no_diagonals = HawkDoveVariableRiskModel(3, include_diagonals=False)
-    assert no_diagonals.num_neighbors == 4
-
-
 def test_init_variable_risk_level():
-    model = HawkDoveVariableRiskModel(
-        5,
-        include_diagonals=True,
-    )
+    model = HawkDoveVariableRiskModel(5)
     # when risk level is variable/random, agents should have different risk levels
     risk_levels = set([agent.risk_level for agent in model.schedule.agents])
     assert len(risk_levels) > 1
@@ -126,7 +118,7 @@ def test_most_successful_neighbor():
         Mock(points=31),
     ]
 
-    with patch.object(HawkDoveVariableRiskAgent, "neighbors", mock_neighbors):
+    with patch.object(HawkDoveVariableRiskAgent, "adjust_neighbors", mock_neighbors):
         assert agent.most_successful_neighbor.points == 31
 
 
@@ -135,7 +127,7 @@ def test_agent_play_adjust():
     agent = HawkDoveVariableRiskAgent(1, mock_model)
     # simulate no neighbors to skip payoff calculation
     with patch.object(
-        HawkDoveVariableRiskAgent, "neighbors", new=[]
+        HawkDoveVariableRiskAgent, "play_neighbors", new=[]
     ) as mock_adjust_risk:
         with patch.object(HawkDoveVariableRiskAgent, "adjust_risk") as mock_adjust_risk:
             # when it is not an adjustment round, should not call adjust risk

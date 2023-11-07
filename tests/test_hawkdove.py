@@ -85,6 +85,14 @@ def test_model_single_risk_level():
         assert agent.risk_level == risk_level
 
 
+def test_bad_neighborhood_size():
+    with pytest.raises(ValueError):
+        HawkDoveSingleRiskModel(3, play_neighborhood=3, agent_risk_level=6)
+    with pytest.raises(ValueError):
+        agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=2))
+        agent.get_neighbors(5)
+
+
 def test_num_dove_neighbors():
     # initialize an agent with a mock model
     agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=2))
