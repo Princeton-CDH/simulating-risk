@@ -1,5 +1,6 @@
 import statistics
 from collections import Counter
+from enum import Enum
 
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
@@ -50,6 +51,44 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
                 self.risk_level = round(
                     statistics.mean([self.risk_level, best.risk_level])
                 )
+
+
+class RiskState(Enum):
+    """Categorization of population risk states"""
+
+    # majority risk inclined
+    c1 = 1
+    c2 = 2
+    c3 = 3
+    c4 = 4
+
+    # majority risk moderate
+    c5 = 5
+    c6 = 6
+    c7 = 7
+    c8 = 8
+
+    # majority risk avoidant
+    c9 = 9
+    c10 = 10
+    c11 = 11
+    c12 = 12
+
+    # no clear majority
+    c13 = 13
+
+    @classmethod
+    def category(cls, val):
+        # handle both integer and risk state enum value
+        if isinstance(val, RiskState):
+            val = val.value
+        if val in {1, 2, 3, 4}:
+            return "majority risk inclined"
+        if val in {5, 6, 7, 8}:
+            return "majority risk moderate"
+        if val in {9, 10, 11, 12}:
+            return "majority risk avoidant"
+        return "no majority"
 
 
 class HawkDoveVariableRiskModel(HawkDoveModel):
@@ -147,45 +186,45 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
         if percent["risk_inclined"] > 0.5:
             # If < 10% are RM & < 10% are RA: let c = 1
             if percent["risk_moderate"] < 0.1 and percent["risk_avoidant"] < 0.1:
-                return 1
+                return RiskState.c1
             # If > 10% are RM & < 10% are RA: let c = 2
             if percent["risk_moderate"] > 0.1 and percent["risk_avoidant"] < 0.1:
-                return 2
+                return RiskState.c2
             # If > 10% are RM & > 10% are RA: let c = 3
             if percent["risk_moderate"] > 0.1 and percent["risk_avoidant"] > 0.1:
-                return 3
+                return RiskState.c3
             # If < 10% are RM & > 10% are RA: let c = 4
             if percent["risk_moderate"] < 0.1 and percent["risk_avoidant"] > 0.1:
-                return 4
+                return RiskState.c4
 
         # majority risk moderate
         if percent["risk_moderate"] > 0.5:
             # If < 10% are RI & < 10% are RA: let c = 7
             if percent["risk_inclined"] < 0.1 and percent["risk_avoidant"] < 0.1:
-                return 7
+                return RiskState.c7
             # If > 10% are RI & < 10% are RA: let c = 5
             if percent["risk_inclined"] > 0.1 and percent["risk_avoidant"] < 0.1:
-                return 5
+                return RiskState.c5
             # If > 10% are RI & > 10% are RA: let c = 6
             if percent["risk_inclined"] > 0.1 and percent["risk_avoidant"] > 0.1:
-                return 6
+                return RiskState.c6
             # If < 10% are RI & > 10% are RA: let c = 8
             if percent["risk_inclined"] < 0.1 and percent["risk_avoidant"] > 0.1:
-                return 8
+                return RiskState.c8
 
         # majority risk avoidant
         if percent["risk_avoidant"] > 0.5:
             # If < 10% are RM & < 10% are RI: let c = 12
             if percent["risk_moderate"] < 0.1 and percent["risk_inclined"] < 0.1:
-                return 12
+                return RiskState.c12
             # If > 10% are RM & < 10% are RI: let c = 11
             if percent["risk_moderate"] > 0.1 and percent["risk_inclined"] < 0.1:
-                return 11
+                return RiskState.c11
             # If > 10% are RM & > 10% are RI: let c = 10
             if percent["risk_moderate"] > 0.1 and percent["risk_inclined"] > 0.1:
-                return 10
+                return RiskState.c10
             # If < 10% are RM & > 10% are RI: let c = 9
             if percent["risk_moderate"] < 0.1 and percent["risk_inclined"] > 0.1:
-                return 9
+                return RiskState.c9
 
-        return 13
+        return RiskState.c13
