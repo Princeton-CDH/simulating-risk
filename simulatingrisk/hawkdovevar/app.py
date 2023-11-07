@@ -36,7 +36,7 @@ jupyterviz_params_var.update(
             "type": "Select",
             "value": 8,
             "values": neighborhood_sizes,
-            "label": "Neighborhood size (look at when adjusting)",
+            "label": "Adjustment neighborhood size",
         },
     }
 )
