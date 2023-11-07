@@ -6,7 +6,12 @@ import altair as alt
 import solara
 import pandas as pd
 
-from simulatingrisk.hawkdove.model import Play, divergent_colors_9, divergent_colors_5
+from simulatingrisk.hawkdove.model import (
+    Play,
+    divergent_colors_9,
+    divergent_colors_5,
+    HawkDoveModel,
+)
 
 
 def agent_portrayal(agent):
@@ -26,7 +31,7 @@ def agent_portrayal(agent):
     }
 
     # color based on risk level
-    if agent.model.include_diagonals:
+    if agent.model.play_neighborhood >= 8:
         colors = divergent_colors_9
     else:
         colors = divergent_colors_5
@@ -57,6 +62,8 @@ model_params = {
     "grid_size": grid_size,
 }
 
+neighborhood_sizes = sorted(list(HawkDoveModel.neighborhood_sizes))
+
 # parameters common to both hawk/dove variants
 common_jupyterviz_params = {
     "grid_size": {
@@ -67,10 +74,11 @@ common_jupyterviz_params = {
         "max": 100,
         "step": 1,
     },
-    "include_diagonals": {
-        "type": "Checkbox",
-        "value": True,
-        "label": "Include diagonal neighbors",
+    "play_neighborhood": {
+        "type": "Select",
+        "value": 8,
+        "values": neighborhood_sizes,
+        "label": "Neighborhood size (play against)",
     },
     "hawk_odds": {
         "type": "SliderFloat",

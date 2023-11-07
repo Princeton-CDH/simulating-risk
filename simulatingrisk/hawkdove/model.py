@@ -66,18 +66,38 @@ class HawkDoveAgent(mesa.Agent):
     def choice_label(self):
         return "hawk" if self.choice == Play.HAWK else "dove"
 
+    def get_neighbors(self, size):
+        """get all neighbors for a supported neighborhood size"""
+        check_neighborhood_size(size)
+        # 4 and 8 neighborhood use default radius 1
+        # 8 and 24 both use moore neighborhood (includes diagonals)
+        opts = {"moore": True}
+        if size == 4:
+            # use von neumann neighborhood instead of moore (no diagonal)
+            opts["moore"] = False
+
+        # for 24 size neighborhood, use radius 2
+        if size == 24:
+            opts["radius"] = 2
+
+        return self.model.grid.get_neighbors(self.pos, include_center=False, **opts)
+
     @property
-    def neighbors(self):
-        # use configured neighborhood (with or without diagonals) on the model;
-        # don't include the current agent
-        return self.model.grid.get_neighbors(
-            self.pos, moore=self.model.include_diagonals, include_center=False
-        )
+    def play_neighbors(self):
+        """neighbors to play against, based on model neighborhood size"""
+        return self.get_neighbors(self.model.play_neighborhood)
+
+    @property
+    def choose_neighbors(self):
+        """neighbors to look at when deciding what to play,
+        based on model neighborhood size"""
+        return self.get_neighbors(self.model.choose_neighborhood)
 
     @property
     def num_dove_neighbors(self):
-        """count how many neighbors played DOVE on the last round"""
-        return len([n for n in self.neighbors if n.last_choice == Play.DOVE])
+        """count how many neighbors played DOVE on the last round
+        (uses `choose_neighborhood` size from model)"""
+        return len([n for n in self.choose_neighbors if n.last_choice == Play.DOVE])
 
     def choose(self):
         "decide what to play this round"
@@ -98,7 +118,7 @@ class HawkDoveAgent(mesa.Agent):
     def play(self):
         # play against each neighbor and calculate cumulative payoff
         payoff = 0
-        for n in self.neighbors:
+        for n in self.play_neighbors:
             payoff += self.payoff(n)
         # update total points based on payoff this round
         self.points += payoff
@@ -136,8 +156,8 @@ class HawkDoveModel(mesa.Model):
     Model for hawk/dove game with risk attitudes.
 
     :param grid_size: number for square grid size (creates n*n agents)
-    :param include_diagonals: whether agents should include diagonals
-        or not when considering neighbors (default: True)
+    :param play_neighborhood: size of neighborhood each agent plays
+        against; 4, 8, or 24 (default: 8)
     :param hawk_odds: odds for playing hawk on the first round (default: 0.5)
     :param risk_adjustment: strategy agents should use for adjusting risk;
         None (default), adopt, or average
@@ -153,19 +173,25 @@ class HawkDoveModel(mesa.Model):
     min_window = 15
     #: class to use when initializing agents
     agent_class = HawkDoveAgent
+    #: supported neighborhood sizes
+    neighborhood_sizes = {4, 8, 24}
 
     def __init__(
         self,
         grid_size,
-        include_diagonals=True,
+        play_neighborhood=8,
         hawk_odds=0.5,
     ):
         super().__init__()
         # assume a fully-populated square grid
         self.num_agents = grid_size * grid_size
-        # mesa get_neighbors supports moore neighborhood (include diagonals)
-        # and von neumann (exclude diagonals)
-        self.include_diagonals = include_diagonals
+        check_neighborhood_size(play_neighborhood)
+        self.play_neighborhood = play_neighborhood
+        # since we define risk attitudes from 0-8 or 0-4,
+        # the neighborhood for choosing what to play cannot be bigger than 8;
+        # use the smaller of the play neighborhood or 8
+        self.choose_neighborhood = min(8, play_neighborhood)
+
         # distribution of first choice (50/50 by default)
         self.hawk_odds = hawk_odds
 
@@ -262,6 +288,15 @@ class HawkDoveModel(mesa.Model):
         )
 
 
+def check_neighborhood_size(size):
+    # neighborhood size check, shared by model and agent
+    if size not in HawkDoveModel.neighborhood_sizes:
+        raise ValueError(
+            f"{size} is not a supported neighborhood size; "
+            + f"must be one of {HawkDoveModel.neighborhood_sizes}"
+        )
+
+
 class HawkDoveSingleRiskAgent(HawkDoveAgent):
     """
     An agent with a risk attitude playing Hawk or Dove; must be initialized
@@ -284,12 +319,14 @@ class HawkDoveSingleRiskModel(HawkDoveModel):
         self,
         grid_size,
         agent_risk_level,
-        include_diagonals=True,
-        hawk_odds=0.5,
+        *args,
+        **kwargs
+        # neighborhood=None,
+        # hawk_odds=0.5,
     ):
         # store agent risk level
         self.agent_risk_level = agent_risk_level
         # pass through options and initialize base class
-        super().__init__(
-            grid_size, include_diagonals=include_diagonals, hawk_odds=hawk_odds
-        )
+        # if neighborhood is not None:
+        # opts['neighborhood'] = neighborhood
+        super().__init__(grid_size, *args, **kwargs)  # hawk_odds=hawk_odds, **opts)

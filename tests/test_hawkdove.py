@@ -13,21 +13,23 @@ from simulatingrisk.hawkdove.model import (
 
 
 def test_agent_neighbors():
-    # initialize model with a small grid, include diagonals
-    model = HawkDoveSingleRiskModel(3, include_diagonals=True, agent_risk_level=4)
+    # initialize model with a small grid, neighborhood of 8
+    model = HawkDoveSingleRiskModel(3, play_neighborhood=8, agent_risk_level=4)
     # every agent should have 8 neighbors when diagonals are included
-    assert all([len(agent.neighbors) == 8 for agent in model.schedule.agents])
+    assert all([len(agent.play_neighbors) == 8 for agent in model.schedule.agents])
 
-    # every agent should have 4 neighbors when diagonals are not included
-    model = HawkDoveSingleRiskModel(3, include_diagonals=False, agent_risk_level=2)
-    assert all([len(agent.neighbors) == 4 for agent in model.schedule.agents])
+    # neighborhood of 4
+    model = HawkDoveSingleRiskModel(3, play_neighborhood=4, agent_risk_level=2)
+    assert all([len(agent.play_neighbors) == 4 for agent in model.schedule.agents])
+
+    # neighborhood of 24 (grid needs to be at least 5x5)
+    model = HawkDoveSingleRiskModel(5, play_neighborhood=24, agent_risk_level=5)
+    assert all([len(agent.play_neighbors) == 24 for agent in model.schedule.agents])
 
 
 def test_agent_initial_choice():
     grid_size = 100
-    model = HawkDoveSingleRiskModel(
-        grid_size, include_diagonals=False, agent_risk_level=5
-    )
+    model = HawkDoveSingleRiskModel(grid_size, agent_risk_level=5)
     # for now, initial choice is random (hawk-odds param still todo)
     initial_choices = [a.choice for a in model.schedule.agents]
     choice_count = Counter(initial_choices)
@@ -40,9 +42,7 @@ def test_agent_initial_choice():
 def test_agent_initial_choice_hawkodds():
     grid_size = 100
     # specify hawk-odds other than 05
-    model = HawkDoveSingleRiskModel(
-        grid_size, include_diagonals=False, hawk_odds=0.3, agent_risk_level=2
-    )
+    model = HawkDoveSingleRiskModel(grid_size, hawk_odds=0.3, agent_risk_level=2)
     initial_choices = [a.choice for a in model.schedule.agents]
     choice_count = Counter(initial_choices)
     # expect about 30% hawks
@@ -74,17 +74,13 @@ def test_agent_repr():
 
 def test_model_single_risk_level():
     risk_level = 3
-    model = HawkDoveSingleRiskModel(
-        5, include_diagonals=True, agent_risk_level=risk_level
-    )
+    model = HawkDoveSingleRiskModel(5, agent_risk_level=risk_level)
     for agent in model.schedule.agents:
         assert agent.risk_level == risk_level
 
     # handle zero properly (should not be treated the same as None)
     risk_level = 0
-    model = HawkDoveSingleRiskModel(
-        5, include_diagonals=True, agent_risk_level=risk_level
-    )
+    model = HawkDoveSingleRiskModel(5, agent_risk_level=risk_level)
     for agent in model.schedule.agents:
         assert agent.risk_level == risk_level
 
@@ -99,7 +95,7 @@ def test_num_dove_neighbors():
         Mock(last_choice=Play.DOVE),
     ]
 
-    with patch.object(HawkDoveSingleRiskAgent, "neighbors", mock_neighbors):
+    with patch.object(HawkDoveSingleRiskAgent, "choose_neighbors", mock_neighbors):
         assert agent.num_dove_neighbors == 1
 
 
@@ -148,7 +144,7 @@ def test_agent_play():
     agent.choice = Play.HAWK
     neighbor_hawk = Mock(choice=Play.HAWK)
     neighbor_dove = Mock(choice=Play.DOVE)
-    with patch.object(HawkDoveAgent, "neighbors", [neighbor_hawk, neighbor_dove]):
+    with patch.object(HawkDoveAgent, "play_neighbors", [neighbor_hawk, neighbor_dove]):
         agent.play()
         # should get 3 points against dove and 0 against the hawk
         assert agent.points == 3 + 0
