@@ -5,7 +5,7 @@ from enum import IntEnum
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
 
-class HawkDoveVariableRiskAgent(HawkDoveAgent):
+class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     """
     An agent with random risk attitude playing Hawk or Dove. Optionally
     adjusts risks based on most successful neighbor, depending on model
@@ -98,7 +98,7 @@ class RiskState(IntEnum):
         return "no majority"
 
 
-class HawkDoveVariableRiskModel(HawkDoveModel):
+class HawkDoveMultipleRiskModel(HawkDoveModel):
     """
     Model for hawk/dove game with variable risk attitudes.  Supports
     all parameters in :class:`~simulatingrisk.hawkdove.model.HawkDoveModel`
@@ -114,7 +114,7 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
     """
 
     risk_attitudes = "variable"
-    agent_class = HawkDoveVariableRiskAgent
+    agent_class = HawkDoveMultipleRiskAgent
 
     supported_risk_adjustments = (None, "adopt", "average")
 

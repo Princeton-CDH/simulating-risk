@@ -7,7 +7,7 @@ from datetime import datetime
 from mesa import batch_run
 
 from simulatingrisk.hawkdove.model import HawkDoveSingleRiskModel
-from simulatingrisk.hawkdovevar.model import HawkDoveVariableRiskModel
+from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 from simulatingrisk.risky_bet.model import RiskyBetModel
 from simulatingrisk.risky_food.model import RiskyFoodModel
 
@@ -76,14 +76,14 @@ def hawkdove_singlerisk_batch_run(args):
     save_results("hawkdove_single", results)
 
 
-def hawkdove_variablerisk_batch_run(args):
+def hawkdove_multiplerisk_batch_run(args):
     params = {
         "grid_size": 10,
         "risk_adjustment": "adopt",  # run adopt only for now
     }
     iterations = 100
     results = batch_run(
-        HawkDoveVariableRiskModel,
+        HawkDoveMultipleRiskModel,
         parameters=params,
         iterations=iterations,
         number_processes=1,
@@ -92,7 +92,7 @@ def hawkdove_variablerisk_batch_run(args):
         max_steps=250,  # converges fairly quickly, don't run 1000 times
     )
     # include the mode in the output filename
-    save_results("hawkdove_variable", results)
+    save_results("hawkdove_multiple", results)
 
 
 def save_results(simulation, results):
@@ -132,8 +132,8 @@ if __name__ == "__main__":
     #     help="Mode for initializing agent risk attitudes",
     # )
     hawkdove_parser.set_defaults(func=hawkdove_singlerisk_batch_run)
-    hawkdovevar_parser = subparsers.add_parser("hawkdove-var")
-    hawkdovevar_parser.set_defaults(func=hawkdove_variablerisk_batch_run)
+    hawkdove_multi_parser = subparsers.add_parser("hawkdove-multi")
+    hawkdove_multi_parser.set_defaults(func=hawkdove_multiplerisk_batch_run)
 
     args = parser.parse_args()
     # run appropriate function based on the selected subcommand

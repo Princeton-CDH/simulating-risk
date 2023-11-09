@@ -4,7 +4,7 @@ from mesa.experimental import JupyterViz
 import solara
 
 
-from simulatingrisk.hawkdovevar.model import HawkDoveVariableRiskModel
+from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
     common_jupyterviz_params,
@@ -131,10 +131,10 @@ def plot_hawks_by_risk(model):
 
 
 page = JupyterViz(
-    HawkDoveVariableRiskModel,
+    HawkDoveMultipleRiskModel,
     jupyterviz_params_var,
     measures=[plot_hawks, plot_agents_by_risk, plot_hawks_by_risk],
-    name="Hawk/Dove game with variable risk attitudes",
+    name="Hawk/Dove game with multiple risk attitudes",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
 )
