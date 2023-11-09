@@ -80,6 +80,12 @@ common_jupyterviz_params = {
         "values": neighborhood_sizes,
         "label": "Play neighborhood size",
     },
+    "observed_neighborhood": {
+        "type": "Select",
+        "value": 8,
+        "values": neighborhood_sizes,
+        "label": "Observed neighborhood (determines choice of play)",
+    },
     "hawk_odds": {
         "type": "SliderFloat",
         "value": 0.5,

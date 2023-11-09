@@ -17,8 +17,10 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         #  which is configurable at the model level
 
         # generate a random risk level between zero and number of neighbors
-        # in the "choose" neighborhood (look at to determine choice of play)
-        self.risk_level = self.random.randint(0, self.model.choose_neighborhood)
+        # in the play neighborhood but don't go higher than 8
+        self.risk_level = self.random.randint(
+            0, min(self.model.max_risk_level, self.model.play_neighborhood)
+        )
 
     def play(self):
         super().play()
