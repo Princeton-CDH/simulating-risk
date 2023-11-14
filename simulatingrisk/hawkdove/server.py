@@ -9,7 +9,6 @@ import pandas as pd
 from simulatingrisk.hawkdove.model import (
     Play,
     divergent_colors_9,
-    divergent_colors_5,
     HawkDoveModel,
 )
 
@@ -30,11 +29,8 @@ def agent_portrayal(agent):
         # "color": "tab:gray",
     }
 
-    # color based on risk level
-    if agent.model.play_neighborhood >= 8:
-        colors = divergent_colors_9
-    else:
-        colors = divergent_colors_5
+    # color based on risk level; risk levels are always 0-8
+    colors = divergent_colors_9
 
     portrayal["Color"] = colors[agent.risk_level]
     # copy to lowercase color for solara

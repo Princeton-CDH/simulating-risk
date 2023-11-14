@@ -67,9 +67,8 @@ def plot_agents_by_risk(model):
             x=alt.X(
                 "risk_level",
                 title="risk attitude",
-                # don't display any 0.5 ticks when max is 4
-                axis=alt.Axis(tickCount=model.play_neighborhood + 1),
-                scale=alt.Scale(domain=[0, model.play_neighborhood]),
+                axis=alt.Axis(tickCount=model.max_risk_level + 1),
+                scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
             ),
             y=alt.Y("total", title="Number of agents"),
         )
