@@ -104,10 +104,7 @@ class HawkDoveAgent(mesa.Agent):
         """adjust the number of dove neighbors based on ratio between
         play neighborhood and observed neighborhood, to scale observations
         to the range of agent risk level."""
-        ratio = (
-            min(self.model.max_risk_level, self.model.play_neighborhood)
-            / self.model.observed_neighborhood
-        )
+        ratio = self.model.max_risk_level / self.model.observed_neighborhood
         # always round to an integer
         return round(ratio * self.num_dove_neighbors)
 
@@ -189,7 +186,9 @@ class HawkDoveModel(mesa.Model):
     agent_class = HawkDoveAgent
     #: supported neighborhood sizes
     neighborhood_sizes = {4, 8, 24}
-    #: maximum risk level, no matter neighborhood size
+    #: minimu risk level
+    min_risk_level = 0  # TODO: allow -1 ?
+    #: maximum risk level allowed
     max_risk_level = 8
 
     def __init__(
@@ -335,10 +334,17 @@ class HawkDoveSingleRiskModel(HawkDoveModel):
     risk_attitudes = "single"
 
     def __init__(self, grid_size, agent_risk_level, *args, **kwargs):
+        if (
+            agent_risk_level > self.max_risk_level
+            or agent_risk_level < self.min_risk_level
+        ):
+            raise ValueError(
+                f"Agent risk level {agent_risk_level} is out of range; must be between "
+                + f"{self.min_risk_level} - {self.max_risk_level}"
+            )
+
         # store agent risk level
-        # NOTE: code assumes risk level matches play neighborhood...
-        # should we check that? possible to submit a bad param
-        # in solara since we don't adjust inputs based on other params
         self.agent_risk_level = agent_risk_level
+
         # pass through options and initialize base class
         super().__init__(grid_size, *args, **kwargs)

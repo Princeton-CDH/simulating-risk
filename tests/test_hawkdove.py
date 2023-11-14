@@ -159,46 +159,19 @@ def test_proportional_num_dove_neighbors():
     model = HawkDoveSingleRiskModel(4, agent_risk_level=3)
     agent = HawkDoveSingleRiskAgent(1, model)
 
-    ## equal play/observed
-    model.play_neighborhood = 4
+    ## equal play/observed; scales to 8 (risk level range)
     model.observed_neighborhood = 4
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
-        assert agent.proportional_num_dove_neighbors == 3
+        assert agent.proportional_num_dove_neighbors == 6
 
-    model.play_neighborhood = 8
     model.observed_neighborhood = 8
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 5):
         assert agent.proportional_num_dove_neighbors == 5
 
-    ## observe fewer than play / risk attitude range
-    model.observed_neighborhood = 4  # still playing against 8
-    with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
-        assert agent.proportional_num_dove_neighbors == 6
-
-    model.observed_neighborhood = 4
-    model.play_neighborhood = 24  # play 24, but max risk level is 8
-    with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
-        assert agent.proportional_num_dove_neighbors == 6
-
-    model.observed_neighborhood = 8  # still playing 24, max risk level still 8
-    with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
-        assert agent.proportional_num_dove_neighbors == 3
-
-    # observe more than we play
+    # observe more than 8
     model.observed_neighborhood = 24
-    model.play_neighborhood = 8
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 20):
         assert agent.proportional_num_dove_neighbors == 7
-
-    # observe more than we play
-    model.observed_neighborhood = 24
-    model.play_neighborhood = 4
-    with patch.object(HawkDoveAgent, "num_dove_neighbors", 20):
-        assert agent.proportional_num_dove_neighbors == 3
-
-    model.observed_neighborhood = 8
-    with patch.object(HawkDoveAgent, "num_dove_neighbors", 4):
-        assert agent.proportional_num_dove_neighbors == 2
 
 
 def test_agent_choose_when_observe_play_differ():
