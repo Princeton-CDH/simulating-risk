@@ -31,14 +31,14 @@ Players arranged on a lattice [options for both 4 neighbors (AYBD) and 8 neighbo
    -  If I play DOVE and neighbor plays DOVE: 2.1
    -  If I play DOVE and neighbor plays HAWK: 1
    - If I play HAWK and neighbor plays HAWK: 0
- 
+
 Each player on a lattice (grid in Mesa):
-- Has parameter $r$ [from 0 to 8, or 0 to 4 for four neighbors]
+- Has parameter $r$ [from 0 to 8]
 - Let `d` be the number of neighbors who played DOVE during the previous round. If $d > r$, then play HAWK. Otherwise play DOVE. (Agents who are risk-avoidant only play HAWK if there are a lot of doves around them. More risk-avoidance requires a higher number of doves to get an agent to play HAWK.)
 - The proportion of neighbors who play DOVE corresponds to your probability of encountering a DOVE when playing a randomly-selected neighbor. The intended interpretation is that you maximize REU for this probability of your opponent playing DOVE. Thus, $r$ corresponds to the probability above which playing HAWK maximizes REU.
   - Choice for the first round could be randomly determined, or add parameters to see how initial conditions matter?
   - [OR VARY FIRST ROUND: what proportion starts as HAWK
-    - Who is a HAWK and who is a DOVE is randomly determined; proportion set at the beginning of each simulation. E.g. 30% are HAWKS; if we have 100 players, then each player has a 30% chance of being HAWK; 
+    - Who is a HAWK and who is a DOVE is randomly determined; proportion set at the beginning of each simulation. E.g. 30% are HAWKS; if we have 100 players, then each player has a 30% chance of being HAWK;
    - Call this initial parameter HAWK-ODDS; default is 50/50
 
 
@@ -91,4 +91,3 @@ Another way to visualize the risk attitudes and choices in this game is this tab
    <tr><th>7</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td></tr>
    <tr><th>8</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td></tr>
 </table>
-

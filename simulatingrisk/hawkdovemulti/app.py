@@ -4,11 +4,12 @@ from mesa.experimental import JupyterViz
 import solara
 
 
-from simulatingrisk.hawkdovevar.model import HawkDoveVariableRiskModel
+from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
     common_jupyterviz_params,
     draw_hawkdove_agent_space,
+    neighborhood_sizes,
 )
 from simulatingrisk.hawkdove.app import plot_hawks
 
@@ -30,6 +31,12 @@ jupyterviz_params_var.update(
             "step": 1,
             "value": 10,
             "description": "How many rounds between risk adjustment",
+        },
+        "adjust_neighborhood": {
+            "type": "Select",
+            "value": 8,
+            "values": neighborhood_sizes,
+            "label": "Adjustment neighborhood size",
         },
     }
 )
@@ -60,9 +67,8 @@ def plot_agents_by_risk(model):
             x=alt.X(
                 "risk_level",
                 title="risk attitude",
-                # don't display any 0.5 ticks when max is 4
-                axis=alt.Axis(tickCount=model.num_neighbors + 1),
-                scale=alt.Scale(domain=[0, model.num_neighbors]),
+                axis=alt.Axis(tickCount=model.max_risk_level + 1),
+                scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
             ),
             y=alt.Y("total", title="Number of agents"),
         )
@@ -124,10 +130,10 @@ def plot_hawks_by_risk(model):
 
 
 page = JupyterViz(
-    HawkDoveVariableRiskModel,
+    HawkDoveMultipleRiskModel,
     jupyterviz_params_var,
     measures=[plot_hawks, plot_agents_by_risk, plot_hawks_by_risk],
-    name="Hawk/Dove game with variable risk attitudes",
+    name="Hawk/Dove game with multiple risk attitudes",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
 )

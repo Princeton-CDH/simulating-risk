@@ -3,7 +3,7 @@ import os.path
 import solara
 
 from simulatingrisk.hawkdove.app import page as hawkdove_page
-from simulatingrisk.hawkdovevar.app import page as hawkdove_var_page
+from simulatingrisk.hawkdovemulti.app import page as hawkdove_multi_page
 from simulatingrisk.risky_bet.app import page as riskybet_page
 from simulatingrisk.risky_food.app import page as riskyfood_page
 
@@ -21,8 +21,8 @@ def hawkdove():
 
 
 @solara.component
-def hawkdove_var():
-    return hawkdove_var_page
+def hawkdove_multi():
+    return hawkdove_multi_page
 
 
 @solara.component
@@ -41,7 +41,9 @@ routes = [
         path="hawkdove-single", component=hawkdove, label="Hawk/Dove (single r)"
     ),
     solara.Route(
-        path="hawkdove-variable", component=hawkdove_var, label="Hawk/Dove (variable r)"
+        path="hawkdove-multiple",
+        component=hawkdove_multi,
+        label="Hawk/Dove (multiple r)",
     ),
     solara.Route(path="riskybet", component=riskybet, label="Risky Bet"),
     solara.Route(path="riskyfood", component=riskyfood, label="Risky Food"),

@@ -1,11 +1,11 @@
 import statistics
 from collections import Counter
-from enum import Enum
+from enum import IntEnum
 
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
 
-class HawkDoveVariableRiskAgent(HawkDoveAgent):
+class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     """
     An agent with random risk attitude playing Hawk or Dove. Optionally
     adjusts risks based on most successful neighbor, depending on model
@@ -16,8 +16,11 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
         # risk level is based partially on neighborhood size,
         #  which is configurable at the model level
 
-        # generate a random risk level between zero and number of neighbors
-        self.risk_level = self.random.randint(0, self.model.num_neighbors)
+        # generate a random risk level between zero and 8
+        # (using same range for all neighborhood sizes)
+        self.risk_level = self.random.randint(
+            self.model.min_risk_level, self.model.max_risk_level
+        )
 
     def play(self):
         super().play()
@@ -26,11 +29,17 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
             self.adjust_risk()
 
     @property
+    def adjust_neighbors(self):
+        """neighbors to look at when adjusting risk attitude; uses
+        model adjust_neighborhood size"""
+        return self.get_neighbors(self.model.adjust_neighborhood)
+
+    @property
     def most_successful_neighbor(self):
         """identify and return the neighbor with the most points"""
         # sort neighbors by points, highest points first
         # adapted from risky bet wealthiest neighbor
-        return sorted(self.neighbors, key=lambda x: x.points, reverse=True)[0]
+        return sorted(self.adjust_neighbors, key=lambda x: x.points, reverse=True)[0]
 
     def adjust_risk(self):
         # look at neighbors
@@ -53,7 +62,7 @@ class HawkDoveVariableRiskAgent(HawkDoveAgent):
                 )
 
 
-class RiskState(Enum):
+class RiskState(IntEnum):
     """Categorization of population risk states"""
 
     # majority risk inclined
@@ -91,36 +100,36 @@ class RiskState(Enum):
         return "no majority"
 
 
-class HawkDoveVariableRiskModel(HawkDoveModel):
+class HawkDoveMultipleRiskModel(HawkDoveModel):
     """
-    Model for hawk/dove game with variable risk attitudes.
+    Model for hawk/dove game with variable risk attitudes.  Supports
+    all parameters in :class:`~simulatingrisk.hawkdove.model.HawkDoveModel`
+    and adds several parmeters to control if and how agents adjust
+    their risk attitudes (strategy, frequency, and neighborhood size).
 
-    :param grid_size: number for square grid size (creates n*n agents)
-    :param include_diagonals: whether agents should include diagonals
-        or not when considering neighbors (default: True)
-    :param hawk_odds: odds for playing hawk on the first round (default: 0.5)
     :param risk_adjustment: strategy agents should use for adjusting risk;
         None (default), adopt, or average
     :param adjust_every: when risk adjustment is enabled, adjust every
         N rounds (default: 10)
+    :param adjust_neighborhood: size of neighborhood to look at when
+        adjusting risk attitudes; 4, 8, or 24 (default: play_neighborhood)
     """
 
     risk_attitudes = "variable"
-    agent_class = HawkDoveVariableRiskAgent
+    agent_class = HawkDoveMultipleRiskAgent
 
     supported_risk_adjustments = (None, "adopt", "average")
 
     def __init__(
         self,
         grid_size,
-        include_diagonals=True,
-        hawk_odds=0.5,
         risk_adjustment=None,
         adjust_every=10,
+        adjust_neighborhood=None,
+        *args,
+        **kwargs,
     ):
-        super().__init__(
-            grid_size, include_diagonals=include_diagonals, hawk_odds=hawk_odds
-        )
+        super().__init__(grid_size, *args, **kwargs)
         # convert string input from solara app parameters to None
         if risk_adjustment == "none":
             risk_adjustment = None
@@ -135,12 +144,9 @@ class HawkDoveVariableRiskModel(HawkDoveModel):
             )
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
-
-    @property
-    def num_neighbors(self) -> int:
-        # number of neighbors for each agent - depends on whether
-        # diagonals are included or not
-        return 8 if self.include_diagonals else 4
+        # if adjust neighborhood is not specified, then use the same size
+        # as play neighborhood
+        self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
 
     @property
     def adjustment_round(self) -> bool:
