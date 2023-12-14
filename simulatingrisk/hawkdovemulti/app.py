@@ -38,6 +38,14 @@ jupyterviz_params_var.update(
             "values": neighborhood_sizes,
             "label": "Adjustment neighborhood size",
         },
+        "adjust_payoff": {
+            "type": "Select",
+            "label": "Adjustment comparison period",
+            "value": "recent",
+            "values": ["recent", "total"],
+            "description": "Compare recent payoff (since last adjustment "
+            + "round) or total (cumulative from start) when adjusting risk attitudes",
+        },
     }
 )
 
