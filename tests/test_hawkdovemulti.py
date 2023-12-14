@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 
 import pytest
 
+from simulatingrisk.hawkdove.model import Play
 from simulatingrisk.hawkdovemulti.model import (
     HawkDoveMultipleRiskModel,
     HawkDoveMultipleRiskAgent,
@@ -162,6 +163,30 @@ def test_compare_payoff():
     agent_recent.recent_points = 25
     assert agent_recent.compare_payoff_field == "recent_points"
     assert agent_recent.compare_payoff == 25
+
+
+def test_agent_play_points():
+    mock_model = HawkDoveMultipleRiskModel(3)
+    agent = HawkDoveMultipleRiskAgent(1, mock_model)
+    agent.points = 100
+    agent.recent_points = 10
+
+    # set initial choice and supply mock neighbors
+    # so we can test expected results
+    agent.choice = Play.HAWK
+    neighbor_hawk = Mock(choice=Play.HAWK)
+    neighbor_dove = Mock(choice=Play.DOVE)
+    neighbor_dove2 = Mock(choice=Play.DOVE)
+    with patch.object(
+        HawkDoveMultipleRiskAgent,
+        "play_neighbors",
+        [neighbor_hawk, neighbor_dove, neighbor_dove2],
+    ):
+        agent.play()
+        # should get 3*2 points against dove and 0 against the hawk
+        # payoff for current round should be added to points and recent points
+        assert agent.points == 106
+        assert agent.recent_points == 16
 
 
 def test_agent_play_adjust():
