@@ -1,6 +1,7 @@
 import statistics
 from collections import Counter
 from enum import IntEnum
+from functools import cached_property
 
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
@@ -49,19 +50,28 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         model adjust_neighborhood size"""
         return self.get_neighbors(self.model.adjust_neighborhood)
 
+    @cached_property
+    def compare_payoff_field(self):
+        """determine which payoff to compare depending on model option:
+        (cumulative/total or points since last adjustment round)"""
+        return "recent_points" if self.model.adjust_payoff == "recent" else "points"
+
+    @property
+    def compare_payoff(self):
+        """payoff value to use for adjustment comparison
+        (depends on model configuration)"""
+        return getattr(self, self.compare_payoff_field)
+
     @property
     def most_successful_neighbor(self):
         """identify and return the neighbor with the most points"""
         # sort neighbors by points, highest points first
         # adapted from risky bet wealthiest neighbor
 
-        # determine which payoff to compare depending on model option:
-        # (cumulative/total or points since last adjustment round)
-        compare_value = (
-            "recent_points" if self.model.adjust_payoff == "recent" else "points"
-        )
         return sorted(
-            self.adjust_neighbors, key=lambda x: getattr(x, compare_value), reverse=True
+            self.adjust_neighbors,
+            key=lambda x: getattr(x, self.compare_payoff_field),
+            reverse=True,
         )[0]
 
     def adjust_risk(self):
@@ -72,7 +82,10 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         best = self.most_successful_neighbor
         # if most successful neighbor has more points and a different
         # risk attitude, adjust
-        if best.points > self.points and best.risk_level != self.risk_level:
+        if (
+            best.compare_payoff > self.compare_payoff
+            and best.risk_level != self.risk_level
+        ):
             # adjust risk based on model configuration
             if self.model.risk_adjustment == "adopt":
                 # adopt neighbor's risk level
