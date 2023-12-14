@@ -13,11 +13,8 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     configuration.
     """
 
-    def __init__(self, unique_id, model, hawk_odds=None):
-        super().__init__(unique_id, model, hawk_odds=hawk_odds)
-
-        # track points since last risk attitude adjustment round
-        self.recent_points = 0
+    #: points since last adjustment round; starts at 0
+    recent_points = 0
 
     def set_risk_level(self):
         # risk level is based partially on neighborhood size,
