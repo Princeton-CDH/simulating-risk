@@ -13,7 +13,7 @@ page = JupyterViz(
     jupyterviz_params,
     measures=[plot_total_agents, plot_risk_histogram],
     name="Risky Food",
-    space_drawer=None,  # no agent portrayal because this model does not use a grid
+    space_drawer=False,  # no agent portrayal because this model does not use a grid
 )
 # required to render the visualization with Jupyter/Solara
 page
