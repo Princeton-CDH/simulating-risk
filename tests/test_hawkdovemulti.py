@@ -140,11 +140,37 @@ def test_most_successful_neighbor():
         assert agent_recent.most_successful_neighbor.recent_points == 13
 
 
+def test_compare_payoff():
+    # test payoff fields depending on model config (recent/total)
+    agent_total = HawkDoveMultipleRiskAgent(
+        1,
+        HawkDoveMultipleRiskModel(1, observed_neighborhood=8, adjust_payoff="total"),
+        1000,
+    )
+    agent_total.points = 100
+    agent_total.recent_points = 10
+
+    assert agent_total.compare_payoff_field == "points"
+    assert agent_total.compare_payoff == 100
+
+    agent_recent = HawkDoveMultipleRiskAgent(
+        2,
+        HawkDoveMultipleRiskModel(1, observed_neighborhood=8, adjust_payoff="recent"),
+        1000,
+    )
+    agent_recent.points = 250
+    agent_recent.recent_points = 25
+    assert agent_recent.compare_payoff_field == "recent_points"
+    assert agent_recent.compare_payoff == 25
+
+
 def test_agent_play_adjust():
     mock_model = Mock(
         risk_adjustment="adopt", observed_neighborhood=4, max_risk_level=8
     )
     agent = HawkDoveMultipleRiskAgent(1, mock_model)
+    # simulate points from previous rounds
+    agent.recent_points = 250
     # simulate no neighbors to skip payoff calculation
     with patch.object(
         HawkDoveMultipleRiskAgent, "play_neighbors", new=[]
@@ -154,30 +180,38 @@ def test_agent_play_adjust():
             mock_model.adjustment_round = False
             agent.play()
             assert mock_adjust_risk.call_count == 0
+            # recent points should not be reset if not an adjustment round
+            assert agent.recent_points
 
             # should call adjust risk when the model indicates
             mock_model.adjustment_round = True
             agent.play()
             assert mock_adjust_risk.call_count == 1
+            # recent points should reset on adjustment round
+            assert agent.recent_points == 0
 
 
-def test_adjust_risk_adopt():
+def test_adjust_risk_adopt_total():
     # initialize an agent with a mock model
-    agent = HawkDoveMultipleRiskAgent(
-        1, Mock(risk_adjustment="adopt", observed_neighborhood=4, max_risk_level=8)
+    model = Mock(
+        risk_adjustment="adopt",
+        observed_neighborhood=4,
+        max_risk_level=8,
+        adjust_payoff="total",
     )
+    agent = HawkDoveMultipleRiskAgent(1, model)
     # set a known risk level
     agent.risk_level = 2
     # adjust wealth as if the model had run
     agent.points = 20
-    agent.recent_points = 12
     # set a mock neighbor with more points than current agent
-    neighbor = Mock(points=1500, risk_level=3)
+    neighbor = HawkDoveMultipleRiskAgent(2, model)
+    neighbor.risk_level = 3
+    neighbor.points = 15000
     with patch.object(HawkDoveMultipleRiskAgent, "most_successful_neighbor", neighbor):
         agent.adjust_risk()
         # default behavior is to adopt successful risk level
         assert agent.risk_level == neighbor.risk_level
-        # recent points should reset
         agent.recent_points = 0
 
         # now simulate a wealthiest neighbor with fewer points than current agent
@@ -191,6 +225,41 @@ def test_adjust_risk_adopt():
         agent.recent_points = 0
 
 
+def test_adjust_risk_adopt_recent():
+    # initialize an agent with a mock model
+    model = Mock(
+        risk_adjustment="adopt",
+        observed_neighborhood=4,
+        max_risk_level=8,
+        adjust_payoff="recent",
+    )
+
+    agent = HawkDoveMultipleRiskAgent(1, model)
+    # set a known risk level
+    agent.risk_level = 2
+    # adjust wealth as if the model had run
+    agent.recent_points = 12
+    agent.points = 3000
+    # set a mock neighbor with more points than current agent
+    neighbor = HawkDoveMultipleRiskAgent(2, model)
+    neighbor.risk_level = 3
+    neighbor.recent_points = 1500
+    neighbor.points = 200
+    with patch.object(HawkDoveMultipleRiskAgent, "most_successful_neighbor", neighbor):
+        agent.adjust_risk()
+        # default behavior is to adopt successful risk level
+        assert agent.risk_level == neighbor.risk_level
+
+        # now simulate a wealthiest neighbor with fewer points than current agent
+        neighbor.recent_points = 12
+        agent.recent_points = 5
+        neighbor.risk_level = 3
+        prev_risk_level = agent.risk_level
+        agent.adjust_risk()
+        # risk level should not be changed
+        assert agent.risk_level == prev_risk_level
+
+
 def test_adjust_risk_average():
     # same as previous test, but with average risk adjustment strategy
     agent = HawkDoveMultipleRiskAgent(
@@ -201,7 +270,7 @@ def test_adjust_risk_average():
     # adjust points  as if the model had run
     agent.points = 300
     # set a neighbor with more points than current agent
-    neighbor = Mock(points=350, risk_level=3)
+    neighbor = Mock(compare_payoff=350, risk_level=3)
     with patch.object(HawkDoveMultipleRiskAgent, "most_successful_neighbor", neighbor):
         prev_risk_level = agent.risk_level
         agent.adjust_risk()
