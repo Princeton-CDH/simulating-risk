@@ -12,6 +12,12 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     configuration.
     """
 
+    def __init__(self, unique_id, model, hawk_odds=None):
+        super().__init__(unique_id, model, hawk_odds=hawk_odds)
+
+        # track points since last risk attitude adjustment round
+        self.recent_points = 0
+
     def set_risk_level(self):
         # risk level is based partially on neighborhood size,
         #  which is configurable at the model level
@@ -23,10 +29,19 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         )
 
     def play(self):
+        # save total points before playing so we only need to calculate
+        # current round payoff once
+        prev_points = self.points
         super().play()
         # when enabled by the model, periodically adjust risk level
+
+        # add payoff from current round to recent points
+        self.recent_points += self.points - prev_points
+
         if self.model.adjustment_round:
             self.adjust_risk()
+            # reset to zero to track points until next adjustment round
+            self.recent_points = 0
 
     @property
     def adjust_neighbors(self):
@@ -39,7 +54,15 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         """identify and return the neighbor with the most points"""
         # sort neighbors by points, highest points first
         # adapted from risky bet wealthiest neighbor
-        return sorted(self.adjust_neighbors, key=lambda x: x.points, reverse=True)[0]
+
+        # determine which payoff to compare depending on model option:
+        # (cumulative/total or points since last adjustment round)
+        compare_value = (
+            "recent_points" if self.model.adjust_payoff == "recent" else "points"
+        )
+        return sorted(
+            self.adjust_neighbors, key=lambda x: getattr(x, compare_value), reverse=True
+        )[0]
 
     def adjust_risk(self):
         # look at neighbors
@@ -113,12 +136,16 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         N rounds (default: 10)
     :param adjust_neighborhood: size of neighborhood to look at when
         adjusting risk attitudes; 4, 8, or 24 (default: play_neighborhood)
+    :param adjust_payoff: when comparing neighbors points for risk adjustment,
+        consider cumulative payoff (`total`) or payoff since the
+        last adjustment round (`recent`) (default: recent)
     """
 
     risk_attitudes = "variable"
     agent_class = HawkDoveMultipleRiskAgent
 
     supported_risk_adjustments = (None, "adopt", "average")
+    supported_adjust_payoffs = ("recent", "total")
 
     def __init__(
         self,
@@ -126,6 +153,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         risk_adjustment=None,
         adjust_every=10,
         adjust_neighborhood=None,
+        adjust_payoff="recent",
         *args,
         **kwargs,
     ):
@@ -142,11 +170,19 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 f"Unsupported risk adjustment '{risk_adjustment}'; "
                 + f"must be one of {risk_adjust_opts}"
             )
+        if adjust_payoff not in self.supported_adjust_payoffs:
+            adjust_payoffs_opts = ", ".join(self.supported_adjust_payoffs)
+            raise ValueError(
+                f"Unsupported adjust payoff option '{adjust_payoff}'; "
+                + f"must be one of {adjust_payoffs_opts}"
+            )
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
         # if adjust neighborhood is not specified, then use the same size
         # as play neighborhood
         self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
+        # store whether to compare cumulative payoff or since last adjustment round
+        self.adjust_payoff = adjust_payoff
 
     @property
     def adjustment_round(self) -> bool:
