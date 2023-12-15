@@ -23,6 +23,12 @@ jupyterviz_params_var.update(
             "values": ["none", "adopt", "average"],
             "description": "If and how agents update their risk level",
         },
+        "risk_distribution": {
+            "type": "Select",
+            "value": "uniform",
+            "values": HawkDoveMultipleRiskModel.risk_distribution_options,
+            "description": "Distribution for initial risk attitudes",
+        },
         "adjust_every": {
             "label": "Adjustment frequency (# rounds)",
             "type": "SliderInt",
@@ -42,7 +48,7 @@ jupyterviz_params_var.update(
             "type": "Select",
             "label": "Adjustment comparison period",
             "value": "recent",
-            "values": ["recent", "total"],
+            "values": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
             "description": "Compare recent payoff (since last adjustment "
             + "round) or total (cumulative from start) when adjusting risk attitudes",
         },
