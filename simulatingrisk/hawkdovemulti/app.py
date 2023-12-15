@@ -11,6 +11,7 @@ from simulatingrisk.hawkdove.server import (
     draw_hawkdove_agent_space,
     neighborhood_sizes,
 )
+from simulatingrisk.hawkdove.model import divergent_colors_9
 from simulatingrisk.hawkdove.app import plot_hawks
 
 # start with common hawk/dove params, then add params for variable risk
@@ -40,6 +41,9 @@ jupyterviz_params_var.update(
         },
     }
 )
+
+# use same divergent color scale across charts
+color_scale_opts = {"domain": list(range(9)), "range": divergent_colors_9}
 
 
 def plot_agents_by_risk(model):
@@ -71,6 +75,9 @@ def plot_agents_by_risk(model):
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
             ),
             y=alt.Y("total", title="Number of agents"),
+            # NOTE: could apply divergent color scheme here, but it's actually
+            # distracting from the main point of this chart, which is quantitative
+            # color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
     )
     return solara.FigureAltair(bar_chart)
@@ -123,7 +130,7 @@ def plot_hawks_by_risk(model):
                 title="rolling % hawk",
                 scale=alt.Scale(domain=[0, 1]),
             ),
-            color=alt.Color("risk_level:N"),
+            color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
     )
     return solara.FigureAltair(chart)
