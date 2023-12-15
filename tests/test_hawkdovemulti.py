@@ -303,3 +303,59 @@ def test_adjust_risk_average():
         assert agent.risk_level == round(
             statistics.mean([neighbor.risk_level, prev_risk_level])
         )
+
+
+def test_risk_level_in_bounds():
+    model = HawkDoveMultipleRiskModel(3)
+    for i in range(8):
+        assert model._risk_level_in_bounds(i)
+
+    assert not model._risk_level_in_bounds(-1)
+    assert not model._risk_level_in_bounds(10)
+
+
+def test_get_risk_attitude_generator():
+    model = HawkDoveMultipleRiskModel(3)
+    model.random = Mock()
+
+    # check that the correct methods are called depending on risk distribution
+    model.risk_distribution = "uniform"
+    next(model.get_risk_attitude_generator())
+    model.random.randint.assert_called_with(model.min_risk_level, model.max_risk_level)
+
+    model.risk_distribution = "normal"
+    model.random.gauss.return_value = 3.3  # value to convert to int
+    next(model.get_risk_attitude_generator())
+    model.random.gauss.assert_called_with(4, 1.5)
+
+    model.risk_distribution = "skewed left"
+    model.random.triangular.return_value = 2.1  # value to round
+    next(model.get_risk_attitude_generator())
+    model.random.triangular.assert_called_with(
+        model.min_risk_level, model.max_risk_level, 0
+    )
+
+    model.risk_distribution = "skewed right"
+    model.random.triangular.return_value = 7.6  # value to round
+    next(model.get_risk_attitude_generator())
+    model.random.triangular.assert_called_with(
+        model.min_risk_level, model.max_risk_level, 8
+    )
+
+    # bimodal returns values from from two different distributions; call twice
+    model.risk_distribution = "bimodal"
+    model.random.gauss.return_value = 3.2
+    risk_gen = model.get_risk_attitude_generator()
+    next(risk_gen)
+    next(risk_gen)
+    model.random.gauss.assert_any_call(1, 0.75)
+    model.random.gauss.assert_any_call(7, 0.75)
+
+
+def test_get_risk_attitude():
+    model = HawkDoveMultipleRiskModel(3)
+    model.risk_attitude_generator = (x for x in [3, -1, -5, 4])
+    # should return value in range as-is
+    assert model.get_risk_attitude() == 3
+    # values out of range should be skipped and next valid value returned
+    assert model.get_risk_attitude() == 4
