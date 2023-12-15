@@ -3,6 +3,7 @@ from collections import Counter
 from enum import IntEnum
 from functools import cached_property
 
+
 from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
 
 
@@ -17,14 +18,8 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     recent_points = 0
 
     def set_risk_level(self):
-        # risk level is based partially on neighborhood size,
-        #  which is configurable at the model level
-
-        # generate a random risk level between zero and 8
-        # (using same range for all neighborhood sizes)
-        self.risk_level = self.random.randint(
-            self.model.min_risk_level, self.model.max_risk_level
-        )
+        # get risk attitude from model based on configured distribution
+        self.risk_level = self.model.get_risk_attitude()
 
     def play(self):
         # save total points before playing so we only need to calculate
@@ -156,21 +151,36 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
     supported_risk_adjustments = (None, "adopt", "average")
     supported_adjust_payoffs = ("recent", "total")
+    risk_distribution_options = (
+        "uniform",
+        "normal",
+        "skewed left",
+        "skewed right",
+        "bimodal",
+    )
 
     def __init__(
         self,
         grid_size,
         risk_adjustment=None,
+        risk_distribution="normal",
         adjust_every=10,
         adjust_neighborhood=None,
         adjust_payoff="recent",
         *args,
         **kwargs,
     ):
-        super().__init__(grid_size, *args, **kwargs)
         # convert string input from solara app parameters to None
         if risk_adjustment == "none":
             risk_adjustment = None
+
+        # check parameters
+        if risk_distribution not in self.risk_distribution_options:
+            raise ValueError(
+                f"Unsupported risk distribution '{risk_distribution}'; "
+                + f"must be one of { ', '.join(self.risk_distribution_options) }"
+            )
+
         # make sure risk adjustment is valid
         if risk_adjustment not in self.supported_risk_adjustments:
             risk_adjust_opts = ", ".join(
@@ -186,6 +196,14 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 f"Unsupported adjust payoff option '{adjust_payoff}'; "
                 + f"must be one of {adjust_payoffs_opts}"
             )
+
+        # initialize a risk attitude generator based on configured distrbution
+        # must be set before calling super for agent init
+        self.risk_distribution = risk_distribution
+        self.risk_attitude_generator = self.get_risk_attitude_generator()
+
+        super().__init__(grid_size, *args, **kwargs)
+
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
         # if adjust neighborhood is not specified, then use the same size
@@ -193,6 +211,52 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
         # store whether to compare cumulative payoff or since last adjustment round
         self.adjust_payoff = adjust_payoff
+
+    def _risk_level_in_bounds(self, value):
+        # check if a generated risk level is within bounds
+        return self.min_risk_level <= value <= self.max_risk_level
+
+    def get_risk_attitude_generator(self):
+        """return a generator that will return risk attitudes for individual
+        agents based on the configured distribution."""
+        if self.risk_distribution == "uniform":
+            # uniform/random: generate random integer within risk level range
+            while True:
+                yield self.random.randint(self.min_risk_level, self.max_risk_level)
+        if self.risk_distribution == "normal":
+            # return values from a normal distribution centered around 4
+            while True:
+                yield int(self.random.gauss(4, 1.5))
+        elif self.risk_distribution == "skewed left":
+            # return values from a triangler distribution centered around 0
+            while True:
+                yield round(
+                    self.random.triangular(self.min_risk_level, self.max_risk_level, 0)
+                )
+        elif self.risk_distribution == "skewed right":
+            # return values from a triangler distribution centered around 8
+            while True:
+                yield round(
+                    self.random.triangular(self.min_risk_level, self.max_risk_level, 8)
+                )
+        elif self.risk_distribution == "bimodal":
+            # to generate a bimodal distribution, alternately generate
+            # values from two different normal distributions centered
+            # around the beginning and end of our risk attitude range
+            while True:
+                yield int(self.random.gauss(1, 0.75))
+                yield int(self.random.gauss(7, 0.75))
+
+    def get_risk_attitude(self):
+        """return the next value from risk attitude generator, based on
+        configured distribution."""
+        val = next(self.risk_attitude_generator)
+        # occasionally generators will return values that are out of range.
+        # rather than capping to the min/max and messing up the distribution,
+        # just get the next value
+        while not self._risk_level_in_bounds(val):
+            val = next(self.risk_attitude_generator)
+        return val
 
     @property
     def adjustment_round(self) -> bool:
