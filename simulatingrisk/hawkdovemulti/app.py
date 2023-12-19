@@ -11,7 +11,7 @@ from simulatingrisk.hawkdove.server import (
     draw_hawkdove_agent_space,
     neighborhood_sizes,
 )
-from simulatingrisk.hawkdove.model import divergent_colors_9
+from simulatingrisk.hawkdove.model import divergent_colors_10
 from simulatingrisk.hawkdove.app import plot_hawks
 
 # start with common hawk/dove params, then add params for variable risk
@@ -57,7 +57,7 @@ jupyterviz_params_var.update(
 )
 
 # use same divergent color scale across charts
-color_scale_opts = {"domain": list(range(9)), "range": divergent_colors_9}
+color_scale_opts = {"domain": list(range(10)), "range": divergent_colors_10}
 
 
 def plot_agents_by_risk(model):

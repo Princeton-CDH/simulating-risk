@@ -13,19 +13,20 @@ play_choices = [Play.HAWK, Play.DOVE]
 
 # divergent color scheme, nine colors
 # from https://colorbrewer2.org/?type=diverging&scheme=RdYlGn&n=9
-divergent_colors_9 = [
+divergent_colors_10 = [
+    "#a50026",
     "#d73027",
     "#f46d43",
     "#fdae61",
     "#fee08b",
-    "#ffffbf",
     "#d9ef8b",
     "#a6d96a",
     "#66bd63",
     "#1a9850",
+    "#006837",
 ]
 
-# divergent color scheme, ficolors
+# divergent color scheme, five colors
 # from https://colorbrewer2.org/?type=diverging&scheme=RdYlGn&n=5
 divergent_colors_5 = ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]
 
