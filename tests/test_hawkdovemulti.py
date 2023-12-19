@@ -94,11 +94,11 @@ def test_population_risk_category():
     assert model.population_risk_category == RiskState.c2
 
     # majority risk moderate
-    model.schedule.agents = [Mock(risk_level=4), Mock(risk_level=3), Mock(risk_level=5)]
+    model.schedule.agents = [Mock(risk_level=4), Mock(risk_level=5), Mock(risk_level=6)]
     assert model.population_risk_category == RiskState.c7
 
     # majority risk avoidant
-    model.schedule.agents = [Mock(risk_level=6), Mock(risk_level=7), Mock(risk_level=8)]
+    model.schedule.agents = [Mock(risk_level=7), Mock(risk_level=8), Mock(risk_level=9)]
     assert model.population_risk_category == RiskState.c12
 
 

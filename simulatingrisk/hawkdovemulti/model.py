@@ -291,8 +291,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         #  Risk-avoidant (RA): r = 6, 7, 8
         total = {
             "risk_inclined": risk_counts[0] + risk_counts[1] + risk_counts[2],
-            "risk_moderate": risk_counts[3] + risk_counts[4] + risk_counts[5],
-            "risk_avoidant": risk_counts[6] + risk_counts[7] + risk_counts[8],
+            "risk_moderate": risk_counts[3]
+            + risk_counts[4]
+            + risk_counts[5]
+            + risk_counts[6],
+            "risk_avoidant": risk_counts[7] + risk_counts[8] + risk_counts[9],
         }
         # for each group, calculate percent of agents in that category
         total_agents = len(self.schedule.agents)
