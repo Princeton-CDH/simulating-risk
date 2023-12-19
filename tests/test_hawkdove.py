@@ -125,6 +125,8 @@ def test_agent_choose():
     agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=3))
     # on the first round, nothing should happen (uses initial choice)
     agent.model.schedule.steps = 0
+    # disable random play for now
+    agent.model.random_play_odds = 0
     agent.choose()
 
     # on subsequent rounds, choose based on neighbors and risk level
@@ -152,6 +154,33 @@ def test_agent_choose():
         # agent with risk level 8 will always play dove
         agent.risk_level = 8
         agent.choose()
+        assert agent.choice == Play.DOVE
+
+
+@patch("simulatingrisk.hawkdove.model.coinflip")
+def test_agent_choose_random(mock_coinflip):
+    agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=3))
+    agent.model.schedule.steps = 1
+    # reset after init, which calls coinflip for initial play
+    mock_coinflip.reset_mock()
+    with patch.object(HawkDoveAgent, "proportional_num_dove_neighbors", 2):
+        # if random play is disabled, should not flip a coin
+        agent.model.random_play_odds = 0
+        agent.choose()
+        assert mock_coinflip.call_count == 0
+
+        # some chance of random play
+        agent.model.random_play_odds = 0.5
+        mock_coinflip.side_effect = [True, Play.DOVE]
+        agent.choose()
+        # should call twice: once for random play, once for choice
+        assert mock_coinflip.call_count == 2
+        # called for random play with model odds
+        mock_coinflip.assert_any_call(
+            [True, False], weight=agent.model.random_play_odds
+        )
+        # called a second time to determine which play to make
+        mock_coinflip.assert_any_call([Play.HAWK, Play.DOVE])
         assert agent.choice == Play.DOVE
 
 
