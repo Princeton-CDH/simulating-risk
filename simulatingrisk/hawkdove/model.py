@@ -11,8 +11,8 @@ Play = Enum("Play", ["HAWK", "DOVE"])
 play_choices = [Play.HAWK, Play.DOVE]
 
 
-# divergent color scheme, nine colors
-# from https://colorbrewer2.org/?type=diverging&scheme=RdYlGn&n=9
+# divergent color scheme, ten colors
+# from https://colorbrewer2.org/?type=diverging&scheme=RdYlGn&n=10
 divergent_colors_10 = [
     "#a50026",
     "#d73027",
@@ -111,19 +111,33 @@ class HawkDoveAgent(mesa.Agent):
 
     def choose(self):
         "decide what to play this round"
-        # after the first round, choose based on what neighbors did last time
-        if self.model.schedule.steps > 0:
-            # choose based on the number of neighbors who played
-            # dove last round and agent risk level
+        # first choice is random since we don't have any information
+        # about neighbors' choices
+        if self.model.schedule.steps == 0:
+            return
 
-            # agent with r = 0 should always take the risky choice
-            #   (any risk is acceptable).
-            # agent with r = max should always take the safe option
-            #   (no risk is acceptable)
-            if self.proportional_num_dove_neighbors >= self.risk_level:
-                self.choice = Play.HAWK
-            else:
-                self.choice = Play.DOVE
+        # after the first round, choose based on what neighbors did last time
+
+        # choose based on the number of neighbors who played
+        # dove last round and agent risk level
+
+        # agent with r = 0 should always take the risky choice
+        #   (any risk is acceptable).
+        # agent with r = max should always take the safe option
+        #   (no risk is acceptable)
+        if self.proportional_num_dove_neighbors >= self.risk_level:
+            choice = Play.HAWK
+        else:
+            choice = Play.DOVE
+
+        # based on model configuration, should agent play randomly instead?
+        if self.model.random_play_odds and coinflip(
+            [True, False], weight=self.model.random_play_odds
+        ):
+            # if a random play is selected, flip a coin between hawk and dove
+            choice = coinflip([Play.HAWK, Play.DOVE])
+
+        self.choice = choice
 
     def play(self):
         # play against each neighbor and calculate cumulative payoff
@@ -198,6 +212,7 @@ class HawkDoveModel(mesa.Model):
         play_neighborhood=8,
         observed_neighborhood=8,
         hawk_odds=0.5,
+        random_play_odds=0.01,
     ):
         super().__init__()
         # assume a fully-populated square grid
@@ -210,6 +225,8 @@ class HawkDoveModel(mesa.Model):
 
         # distribution of first choice (50/50 by default)
         self.hawk_odds = hawk_odds
+        # how often should agents make a random play
+        self.random_play_odds = random_play_odds
 
         # create fifos to track recent behavior to detect convergence
         self.recent_percent_hawk = deque([], maxlen=self.rolling_window)
