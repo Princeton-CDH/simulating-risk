@@ -144,10 +144,10 @@ def test_agent_choose():
         assert agent.choice == Play.HAWK
 
         # risk level three with 3 doves will play dove
-        # (strictly greater comparison)
+        # (greater than or equal)
         agent.risk_level = 3
         agent.choose()
-        assert agent.choice == Play.DOVE
+        assert agent.choice == Play.HAWK
 
         # agent with risk level 8 will always play dove
         agent.risk_level = 8
@@ -159,19 +159,19 @@ def test_proportional_num_dove_neighbors():
     model = HawkDoveSingleRiskModel(4, agent_risk_level=3)
     agent = HawkDoveSingleRiskAgent(1, model)
 
-    ## equal play/observed; scales to 8 (risk level range)
+    ## equal play/observed; scales to 9 (risk level range)
     model.observed_neighborhood = 4
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 3):
-        assert agent.proportional_num_dove_neighbors == 6
+        assert agent.proportional_num_dove_neighbors == 7
 
     model.observed_neighborhood = 8
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 5):
-        assert agent.proportional_num_dove_neighbors == 5
+        assert agent.proportional_num_dove_neighbors == 6
 
     # observe more than 8
     model.observed_neighborhood = 24
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 20):
-        assert agent.proportional_num_dove_neighbors == 7
+        assert agent.proportional_num_dove_neighbors == 8
 
 
 def test_agent_choose_when_observe_play_differ():
@@ -209,7 +209,7 @@ def test_agent_play():
 
 def test_agent_payoff():
     # If I play HAWK and neighbor plays DOVE: 3
-    # If I play DOVE and neighbor plays DOVE: 2.1
+    # If I play DOVE and neighbor plays DOVE: 2
     # If I play DOVE and neighbor plays HAWK: 1
     # If I play HAWK and neighbor plays HAWK: 0
 
@@ -230,5 +230,5 @@ def test_agent_payoff():
     # if both play dove, payoff is two for both
     agent.choice = Play.DOVE
     other_agent.choice = Play.DOVE
-    assert agent.payoff(other_agent) == 2.1
-    assert other_agent.payoff(agent) == 2.1
+    assert agent.payoff(other_agent) == 2
+    assert other_agent.payoff(agent) == 2
