@@ -119,7 +119,7 @@ class HawkDoveAgent(mesa.Agent):
             #   (any risk is acceptable).
             # agent with r = max should always take the safe option
             #   (no risk is acceptable)
-            if self.proportional_num_dove_neighbors > self.risk_level:
+            if self.proportional_num_dove_neighbors >= self.risk_level:
                 self.choice = Play.HAWK
             else:
                 self.choice = Play.DOVE
@@ -138,7 +138,7 @@ class HawkDoveAgent(mesa.Agent):
     def payoff(self, other):
         """
         If I play HAWK and neighbor plays DOVE: 3
-        If I play DOVE and neighbor plays DOVE: 2.1
+        If I play DOVE and neighbor plays DOVE: 2
         If I play DOVE and neighbor plays HAWK: 1
         If I play HAWK and neighbor plays HAWK: 0
         """
@@ -149,7 +149,7 @@ class HawkDoveAgent(mesa.Agent):
                 return 0
         elif self.choice == Play.DOVE:
             if other.choice == Play.DOVE:
-                return 2.1
+                return 2
             if other.choice == Play.HAWK:
                 return 1
 
@@ -187,9 +187,9 @@ class HawkDoveModel(mesa.Model):
     #: supported neighborhood sizes
     neighborhood_sizes = {4, 8, 24}
     #: minimu risk level
-    min_risk_level = 0  # TODO: allow -1 ?
+    min_risk_level = 0
     #: maximum risk level allowed
-    max_risk_level = 8
+    max_risk_level = 9
 
     def __init__(
         self,
