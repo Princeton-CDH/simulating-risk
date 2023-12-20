@@ -90,6 +90,14 @@ common_jupyterviz_params = {
         "max": 1.0,
         "step": 0.1,
     },
+    "random_play_odds": {
+        "type": "SliderFloat",
+        "value": 0.01,
+        "label": "Random play odds",
+        "min": 0.0,
+        "max": 1.0,
+        "step": 0.01,
+    },
 }
 
 # in single-risk variant, risk level is set for all agents at init time
