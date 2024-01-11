@@ -127,6 +127,11 @@ class RiskState(IntEnum):
             return "majority risk avoidant"
         return "no majority"
 
+    def __str__(self):
+        # override string method to return just the numeric value,
+        # for better serialization of collected data
+        return str(self.value)
+
 
 class HawkDoveMultipleRiskModel(HawkDoveModel):
     """
