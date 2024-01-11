@@ -128,7 +128,7 @@ def batch_run(params, iterations, number_processes, max_steps, progressbar):
                     pbar.update()
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         prog="hawk/dove batch_run",
         description="Batch run for hawk/dove multi risk attitude simulation",
@@ -163,3 +163,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     batch_run(params, args.iterations, args.processes, args.max_steps, args.progress)
+
+
+if __name__ == "__main__":
+    main()

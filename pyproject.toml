@@ -18,6 +18,10 @@ dependencies = [
 ]
 dynamic = ["version", "readme"]
 
+[project.scripts]
+simrisk-hawkdovemulti-batchrun = "simulatingrisk.hawkdovemulti.batch_run:main"
+
+
 [tool.setuptools.dynamic]
 version = {attr = "simulatingrisk.__version__"}
 readme = {file = ["README.md"]}
