@@ -94,12 +94,6 @@ def batch_run(params, iterations, number_processes, max_steps, progressbar):
         model_dict_writer = None
         agent_dict_writer = None
 
-        # if number of processes is not specified, python will use all
-        # available CPUs; use one less than the max since we have a
-        # main thread writing out the data
-        if number_processes is None:
-            number_processes = max(1, os.cpu_count() - 1)
-
         # adapted from mesa batch run code
         with tqdm(total=total_runs, disable=not progressbar) as pbar:
             with multiprocessing.Pool(number_processes) as pool:
