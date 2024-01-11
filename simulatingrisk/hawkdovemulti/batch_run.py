@@ -147,6 +147,7 @@ def main():
         help="Maximum steps to run simulations if they have not already "
         + "converged (default: %(default)s)",
         default=125,  # typically converges quickly, around step 60 without randomness
+        type=int,
     )
     parser.add_argument(
         "-p",
@@ -161,6 +162,8 @@ def main():
         action=argparse.BooleanOptionalAction,
         default=True,
     )
+    # TODO: should probably add an arg for data dir
+
     args = parser.parse_args()
     batch_run(params, args.iterations, args.processes, args.max_steps, args.progress)
 
