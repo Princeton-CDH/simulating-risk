@@ -276,10 +276,12 @@ class HawkDoveModel(mesa.Model):
         self.datacollector.collect(self)
         if self.converged:
             self.running = False
-            print(
-                f"Stopping after {self.schedule.steps} rounds. "
-                + f"Final rolling average % hawk: {round(self.rolling_percent_hawk, 2)}"
-            )
+            # FIXME: this output is annoying in batch runs
+            # print(
+            #     f"Stopping after {self.schedule.steps} rounds. "
+            #     + "Final rolling average % hawk: "
+            #     + f"{round(self.rolling_percent_hawk, 2)}"
+            # )
 
     @property
     def max_agent_points(self):
