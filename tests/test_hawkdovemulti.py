@@ -326,7 +326,7 @@ def test_get_risk_attitude_generator():
     model.risk_distribution = "normal"
     model.random.gauss.return_value = 3.3  # value to convert to int
     next(model.get_risk_attitude_generator())
-    model.random.gauss.assert_called_with(4, 1.5)
+    model.random.gauss.assert_called_with(4.5, 1.5)
 
     model.risk_distribution = "skewed left"
     model.random.triangular.return_value = 2.1  # value to round
@@ -339,7 +339,7 @@ def test_get_risk_attitude_generator():
     model.random.triangular.return_value = 7.6  # value to round
     next(model.get_risk_attitude_generator())
     model.random.triangular.assert_called_with(
-        model.min_risk_level, model.max_risk_level, 8
+        model.min_risk_level, model.max_risk_level, 9
     )
 
     # bimodal returns values from from two different distributions; call twice
@@ -348,8 +348,8 @@ def test_get_risk_attitude_generator():
     risk_gen = model.get_risk_attitude_generator()
     next(risk_gen)
     next(risk_gen)
-    model.random.gauss.assert_any_call(1, 0.75)
-    model.random.gauss.assert_any_call(7, 0.75)
+    model.random.gauss.assert_any_call(0, 1.5)
+    model.random.gauss.assert_any_call(9, 1.5)
 
 
 def test_get_risk_attitude():
