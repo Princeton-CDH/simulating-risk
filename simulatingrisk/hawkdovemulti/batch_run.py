@@ -23,7 +23,7 @@ params = {
     "observed_neighborhood": neighborhood_sizes,
     "adjust_neighborhood": neighborhood_sizes,
     "hawk_odds": [0.5, 0.25, 0.75],
-    "adjust_every": [1, 5, 10, 15, 20],
+    "adjust_every": [2, 10, 20],
     "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
     "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
     # random?
@@ -62,7 +62,9 @@ def run_hawkdovemulti_model(args):
     return run_data, agent_data
 
 
-def batch_run(params, iterations, number_processes, max_steps, progressbar):
+def batch_run(
+    params, iterations, number_processes, max_steps, progressbar, file_prefix=""
+):
     param_combinations = _make_model_kwargs(params)
     total_param_combinations = len(param_combinations)
     total_runs = total_param_combinations * iterations
@@ -84,8 +86,8 @@ def batch_run(params, iterations, number_processes, max_steps, progressbar):
     data_dir = os.path.join("data", "hawkdovemulti")
     os.makedirs(data_dir, exist_ok=True)
     datestr = datetime.today().isoformat().replace(".", "_").replace(":", "")
-    model_output_filename = os.path.join(data_dir, f"{datestr}_model.csv")
-    agent_output_filename = os.path.join(data_dir, f"{datestr}_agent.csv")
+    model_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_model.csv")
+    agent_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_agent.csv")
     print(
         "Saving data collection results to:\n  %s\n  %s"
         % (model_output_filename, agent_output_filename)
@@ -159,10 +161,21 @@ def main():
         action=argparse.BooleanOptionalAction,
         default=True,
     )
-    # TODO: should probably add an arg for data dir
+    parser.add_argument(
+        "--file-prefix",
+        help="Prefix for data filenames",
+    )
+    # do we need an option to configure output dir?
 
     args = parser.parse_args()
-    batch_run(params, args.iterations, args.processes, args.max_steps, args.progress)
+    batch_run(
+        params,
+        args.iterations,
+        args.processes,
+        args.max_steps,
+        args.progress,
+        args.file_prefix,
+    )
 
 
 if __name__ == "__main__":
