@@ -13,12 +13,15 @@ from mesa.batchrunner import _make_model_kwargs, _collect_data
 from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 
 
+neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
+
 # combination of parameters we want to run
 params = {
     "grid_size": [10, 25, 50],  # 100],
     "risk_adjustment": ["adopt", "average"],
-    "play_neighborhood": [4, 8, 24],
-    "observed_neighborhood": [4, 8, 24],
+    "play_neighborhood": neighborhood_sizes,
+    "observed_neighborhood": neighborhood_sizes,
+    "adjust_neighborhood": neighborhood_sizes,
     "hawk_odds": [0.5, 0.25, 0.75],
     "adjust_every": [1, 5, 10, 15, 20],
     "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
@@ -131,7 +134,7 @@ def main():
         "-i",
         "--iterations",
         type=int,
-        help="Number of iterations to run for each set of arameters "
+        help="Number of iterations to run for each set of parameters "
         + "(default: %(default)s)",
         default=100,
     )
