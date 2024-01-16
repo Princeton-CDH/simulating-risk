@@ -201,7 +201,7 @@ class HawkDoveModel(mesa.Model):
     agent_class = HawkDoveAgent
     #: supported neighborhood sizes
     neighborhood_sizes = {4, 8, 24}
-    #: minimu risk level
+    #: minimum risk level
     min_risk_level = 0
     #: maximum risk level allowed
     max_risk_level = 9
@@ -212,7 +212,7 @@ class HawkDoveModel(mesa.Model):
         play_neighborhood=8,
         observed_neighborhood=8,
         hawk_odds=0.5,
-        random_play_odds=0.01,
+        random_play_odds=0.00,
     ):
         super().__init__()
         # assume a fully-populated square grid
