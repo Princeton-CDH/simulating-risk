@@ -1,6 +1,6 @@
 # Hawk-Dove with risk attitudes
 
-Hawk/Dove game with variable risk attitudes
+Hawk/Dove game with risk attitudes
 
 ## Game description
 
