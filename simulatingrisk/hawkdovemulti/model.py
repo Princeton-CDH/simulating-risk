@@ -224,9 +224,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             while True:
                 yield self.random.randint(self.min_risk_level, self.max_risk_level)
         if self.risk_distribution == "normal":
-            # return values from a normal distribution centered around 4
+            # return values from a normal distribution centered around 4.5
             while True:
-                yield int(self.random.gauss(4, 1.5))
+                yield round(self.random.gauss(4.5, 1.5))
         elif self.risk_distribution == "skewed left":
             # return values from a triangler distribution centered around 0
             while True:
@@ -234,23 +234,31 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                     self.random.triangular(self.min_risk_level, self.max_risk_level, 0)
                 )
         elif self.risk_distribution == "skewed right":
-            # return values from a triangler distribution centered around 8
+            # return values from a triangular distribution centered around 9
             while True:
                 yield round(
-                    self.random.triangular(self.min_risk_level, self.max_risk_level, 8)
+                    self.random.triangular(self.min_risk_level, self.max_risk_level, 9)
                 )
         elif self.risk_distribution == "bimodal":
             # to generate a bimodal distribution, alternately generate
             # values from two different normal distributions centered
             # around the beginning and end of our risk attitude range
             while True:
-                yield int(self.random.gauss(1, 0.75))
-                yield int(self.random.gauss(7, 0.75))
+                yield round(self.random.gauss(0, 1.5))
+                yield round(self.random.gauss(9, 1.5))
+                # NOTE: on smaller grids, using 0/9 makes it extremely
+                # unlikely to get mid-range risk values (4/5)
 
     def get_risk_attitude(self):
         """return the next value from risk attitude generator, based on
         configured distribution."""
         val = next(self.risk_attitude_generator)
+
+        # for bimodal distribution, clamp values to range
+        if self.risk_distribution == "bimodal":
+            return max(self.min_risk_level, min(self.max_risk_level, val))
+
+        # for all other distributions:
         # occasionally generators will return values that are out of range.
         # rather than capping to the min/max and messing up the distribution,
         # just get the next value
