@@ -21,7 +21,7 @@ cd /scratch/network/<USER>/simrisk
 # (typically completes in less than 15 minutes)
 simrisk-hawkdovemulti-batchrun --iterations 1 --max-step 125 --no-progress
 
-# longer run: one iteration, max of 125 steps, no progress bar
+# longer run: 10 iterations, max of 125 steps, no progress bar
 # (typically completes in less than 15 minutes)
 simrisk-hawkdovemulti-batchrun --iterations 10 --max-step 125 --no-progress
 
