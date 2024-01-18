@@ -157,7 +157,7 @@ def main():
     )
     parser.add_argument(
         "--progress",
-        help="Control progress bar display",
+        help="Display progress bar (default: %(default)s)",
         action=argparse.BooleanOptionalAction,
         default=True,
     )
