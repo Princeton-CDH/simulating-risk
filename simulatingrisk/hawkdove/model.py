@@ -280,7 +280,7 @@ class HawkDoveModel(mesa.Model):
             # print(
             #     f"Stopping after {self.schedule.steps} rounds. "
             #     + "Final rolling average % hawk: "
-            #     + f"{round(self.rolling_percent_hawk, 2)}"
+            #     + f"{self.rolling_percent_hawk: .2f}"
             # )
 
     @property
