@@ -89,8 +89,8 @@ def batch_run(
     model_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_model.csv")
     agent_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_agent.csv")
     print(
-        "Saving data collection results to:\n  %s\n  %s"
-        % (model_output_filename, agent_output_filename)
+        f"Saving data collection results to:\n  {model_output_filename}"
+        + f"\n  {agent_output_filename}"
     )
     # open output files so data can be written as it is generated
     with open(model_output_filename, "w", newline="") as model_output_file, open(
