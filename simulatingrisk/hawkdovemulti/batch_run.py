@@ -63,7 +63,7 @@ def run_hawkdovemulti_model(args):
 
 
 def batch_run(
-    params, iterations, number_processes, max_steps, progressbar, file_prefix=""
+    params, iterations, number_processes, max_steps, progressbar, file_prefix
 ):
     param_combinations = _make_model_kwargs(params)
     total_param_combinations = len(param_combinations)
@@ -130,7 +130,9 @@ def batch_run(
 def main():
     parser = argparse.ArgumentParser(
         prog="hawk/dove batch_run",
-        description="Batch run for hawk/dove multi risk attitude simulation",
+        description="Batch run for hawk/dove multiple risk attitude simulation.",
+        epilog="""Data files will be created in data/hawkdovemulti/
+        relative to current path.""",
     )
     parser.add_argument(
         "-i",
@@ -163,9 +165,10 @@ def main():
     )
     parser.add_argument(
         "--file-prefix",
-        help="Prefix for data filenames",
+        help="Prefix for data filenames (no prefix by default)",
+        default="",
     )
-    # do we need an option to configure output dir?
+    # may want to add an option to configure output dir
 
     args = parser.parse_args()
     batch_run(
