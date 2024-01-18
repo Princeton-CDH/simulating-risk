@@ -10,6 +10,16 @@
 #SBATCH --mail-type=fail         # send email if job fails
 #SBATCH --mail-user=EMAIL
 
+# Template for batch running hawkdovemulti simulation with slurm. 
+# Assumes a conda environment named simrisk is set up with required dependencies.
+#
+# Update before using:
+# - EMAIL for slurm notification
+# - customize path for working directory (set username if using Princeton HPC)
+#   (and make sure the directory exists)
+# - add an SBATCH array directive if desired
+# - customize the batch run command as appropriate
+
 module purge
 module load anaconda3/2023.9
 conda activate simrisk
@@ -18,12 +28,11 @@ conda activate simrisk
 cd /scratch/network/<USER>/simrisk
 
 # test run: one iteration, max of 125 steps, no progress bar
-# (typically completes in less than 15 minutes)
-simrisk-hawkdovemulti-batchrun --iterations 1 --max-step 125 --no-progress
+# (typically completes in less than 15 minutes when running on 20 CPUs)
+#simrisk-hawkdovemulti-batchrun --iterations 1 --max-step 125 --no-progress
 
 # longer run: 10 iterations, max of 125 steps, no progress bar
-# (typically completes in less than 15 minutes)
-simrisk-hawkdovemulti-batchrun --iterations 10 --max-step 125 --no-progress
+#simrisk-hawkdovemulti-batchrun --iterations 10 --max-step 125 --no-progress
 
 # To generate data for a larger total number of iterations, 
 # run the script as a job array. 
@@ -31,20 +40,4 @@ simrisk-hawkdovemulti-batchrun --iterations 10 --max-step 125 --no-progress
 # and add a file prefix option to generate separate files that can be grouped
 simrisk-hawkdovemulti-batchrun --iterations 10 --max-step 125 --no-progress --file-prefix "job${SLURM_ARRAY_JOB_ID}_task${SLURM_ARRAY_TASK_ID}_"
 
-3000 in one minute  
-
-8100 with one iteration
-
-try with larger max step?
-
-
-81000 with ten iterations
-
-3000
-
-8100 with one iteration, 125 max step
-00:11:03
-
-
-10 iterations, 125 steps, 2 hours = 66395 runs
 

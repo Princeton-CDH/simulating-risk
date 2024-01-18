@@ -14,6 +14,7 @@ This is a variant of the Hawk/Dove Game: https://en.wikipedia.org/wiki/Chicken_(
 BACKGROUND: An unpublished paper by Simon Blessenohl shows that the equilibrium in this game is different for EU maximizers than for REU maximizers (all with the same risk-attitude), and that REU maximizers do better as a population (basically, play DOVE more often)
 
 We want to know: what happens when different people have _different_ risk-attitudes.
+(See also variant simulation [Hawk/Dove game with multiple risk attitudes](../hawkdovemulti/). )
 
 GAME: Hawk-Dove with risk-attitudes
 
@@ -49,7 +50,7 @@ This game has a discrete set of options instead of probability, so instead of de
    <tr><th>r</th></th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
    <tr>
       <th>Plays H when:</th>
-      <td>never</td>      
+      <td>never</td>
       <td>$\geq1$ D</td>
       <td>$\geq2$ D</td>
       <td>$\geq3$ D</td>
@@ -62,7 +63,7 @@ This game has a discrete set of options instead of probability, so instead of de
    </tr>
    <tr><td></td>
       <td colspan="4">risk seeking</td>
-      <td>EU maximizer<br>(risk neutral)</td>      
+      <td>EU maximizer<br>(risk neutral)</td>
       <td>EU maximizer<br>(risk neutral)</td>
    <td colspan="4">risk avoidant</td>
    </tr>

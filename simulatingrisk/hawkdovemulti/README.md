@@ -1,9 +1,8 @@
 # Hawk-Dove with multiple risk attitudes
 
-This is a variation of the [Hawk/Dove game with risk attitudes]
-(../hawkdove/). This version adds multiple risk attitudes, with options
-for updating risk attitudes periodically based on comparing success of
-neighboring agents.
+This is a variation of the [Hawk/Dove game with risk attitudes](../hawkdove/).
+This version adds multiple risk attitudes, with options for updating
+risk attitudes periodically based on comparing success of neighboring agents.
 
 The basic mechanics of the game are the same. This model adds options
 for agent risk adjustment (none, adopt, average) and period of risk
@@ -21,7 +20,7 @@ Like the base hawk/dove risk attitude game, there is also a
 configuration to add some chance of agents playing hawk/dove randomly
 instead of choosing based on the rules of the game.
 
-## Batch running 
+## Batch running
 
 This module includes a custom batch run script to run the simulation and
 collect data across a large combination of parameters and generate data
@@ -33,7 +32,7 @@ simulatingrisk/hawkdovemulti/batch_run.py
 ```
 Use `-h` or `--help` to see options.
 
-If this project has been installed with pip or similar, the script is 
+If this project has been installed with pip or similar, the script is
 available as `simrisk-hawkdovemulti-batchrun`.
 
 To run the batch run script on an HPC cluster:
@@ -50,14 +49,14 @@ pip install git+https://github.com/Princeton-CDH/simulating-risk.git@hawkdove-ba
 ```
 For convenience, an example [slurm batch script](simrisk_batch.slurm) is
 included for running the batch run script (some portions are
-specific to Princeton's Research Computing HPC environment.) 
+specific to Princeton's Research Computing HPC environment.)
 
 - Customize the slurm batch script as desired, copy it to the cluster, and submit
 the job: `sbatch simrisk_batch.slurm`
 
 By default, the batch run script will use all available processors, and will
 create model and agent data files under a `data/hawkdovemulti/` directory
-relative to the working directory where the script is called. 
+relative to the working directory where the script is called.
 
 
 
