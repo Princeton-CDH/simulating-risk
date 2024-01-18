@@ -43,7 +43,7 @@ To run the batch run script on an HPC cluster:
   conda packages)
 
 ```sh
-module load anaconda3/2023.3
+module load anaconda3/2023.9
 conda create --name simrisk pandas networkx matplotlib numpy tqdm click
 conda activate simrisk
 pip install git+https://github.com/Princeton-CDH/simulating-risk.git@hawkdove-batchrun
