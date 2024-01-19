@@ -40,6 +40,7 @@ def run_hawkdovemulti_model(args):
         model.step()
 
     # collect data for the last step
+    # (scheduler is 1-based index but data collection is 0-based)
     step = model.schedule.steps - 1
 
     model_data, all_agents_data = _collect_data(model, step)
