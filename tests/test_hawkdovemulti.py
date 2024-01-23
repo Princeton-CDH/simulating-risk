@@ -113,6 +113,12 @@ def test_riskstate_label():
     assert RiskState.category(13) == "no majority"
 
 
+def test_riskstate_str():
+    # serialize as string of number for data output in batch runs
+    assert str(RiskState.c1) == "1"
+    assert str(RiskState.c13) == "13"
+
+
 def test_most_successful_neighbor():
     # initialize two agents with a mock model
     # first, measure success based on total/cumulative payoff
