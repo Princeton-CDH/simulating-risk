@@ -13,10 +13,13 @@ classifiers = [
 dependencies = [
     "mesa==2.1.5",
     # "mesa @ git+https://github.com/projectmesa/mesa.git@main",
-    "matplotlib",
+    "matplotlib",  # required by mesa
     "altair>5.0.1"
 ]
 dynamic = ["version", "readme"]
+
+[project.scripts]
+simrisk-hawkdovemulti-batchrun = "simulatingrisk.hawkdovemulti.batch_run:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "simulatingrisk.__version__"}
