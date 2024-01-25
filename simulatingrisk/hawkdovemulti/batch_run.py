@@ -64,7 +64,7 @@ def run_hawkdovemulti_model(args):
 
 
 def batch_run(
-    params, iterations, number_processes, max_steps, progressbar, file_prefix
+    params, iterations, number_processes, max_steps, progressbar, file_prefix, max_runs
 ):
     param_combinations = _make_model_kwargs(params)
     total_param_combinations = len(param_combinations)
@@ -82,6 +82,10 @@ def batch_run(
         for iteration in range(iterations):
             runs_list.append((run_id, iteration, params, max_steps))
             run_id += 1
+
+    # if maximum runs is specified, truncate the list of run arguments
+    if max_runs:
+        runs_list = runs_list[:max_runs]
 
     # collect data in a directory for this model
     data_dir = os.path.join("data", "hawkdovemulti")
@@ -169,6 +173,13 @@ def main():
         help="Prefix for data filenames (no prefix by default)",
         default="",
     )
+    parser.add_argument(
+        "--max-runs",
+        help="Stop after the specified number of runs "
+        + "(for development/troubleshooting)",
+        type=int,
+        default=None,
+    )
     # may want to add an option to configure output dir
 
     args = parser.parse_args()
@@ -179,6 +190,7 @@ def main():
         args.max_steps,
         args.progress,
         args.file_prefix,
+        args.max_runs,
     )
 
 
