@@ -94,3 +94,13 @@ Another way to visualize the risk attitudes and choices in this game is this tab
    <tr><th>8</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td></tr>
    <tr><th>9</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td></tr>
 </table>
+
+## Convergence
+
+The model is configured to stop automatically when it has stabilized. Convergence is based on a stable rolling average of the percent of agents in the simulation playing hawk.
+
+A rolling average of the percent of agents playing hawk is calculated every round based on the percent for the last **30** rounds.  The rolling average is not calculated until after at least **15** rounds.
+
+When we have collected the rolling average for at least **15** rounds and the last **30** rolling averages are the same when rounded to 2 percentage points, we consider the simulation converged.
+
+
