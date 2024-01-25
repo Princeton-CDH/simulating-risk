@@ -193,6 +193,9 @@ class HawkDoveModel(mesa.Model):
 
     #: whether the simulation is running
     running = True  # required for batch run
+    #: readable status (running/converged)
+    status = "running"
+
     #: size of deque/fifo for recent values
     rolling_window = 30
     #: minimum size before calculating rolling average
@@ -255,6 +258,7 @@ class HawkDoveModel(mesa.Model):
                 "max_agent_points": "max_agent_points",
                 "percent_hawk": "percent_hawk",
                 "rolling_percent_hawk": "rolling_percent_hawk",
+                "status": "status",
             },
             "agent_reporters": {
                 "risk_level": "risk_level",
@@ -273,15 +277,14 @@ class HawkDoveModel(mesa.Model):
         A model step. Used for collecting data and advancing the schedule
         """
         self.schedule.step()
-        self.datacollector.collect(self)
+        # check if simulation has converged and should stop running
         if self.converged:
+            self.status = "converged"
             self.running = False
-            # FIXME: this output is annoying in batch runs
-            # print(
-            #     f"Stopping after {self.schedule.steps} rounds. "
-            #     + "Final rolling average % hawk: "
-            #     + f"{self.rolling_percent_hawk: .2f}"
-            # )
+
+        # collect data after status is updated, so data collected
+        # for last round will reflect converged status
+        self.datacollector.collect(self)
 
     @property
     def max_agent_points(self):
