@@ -287,8 +287,43 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # in addition to common hawk/dove data points,
         # we want to include population risk category
         opts = super().get_data_collector_options()
-        opts["model_reporters"]["population_risk_category"] = "population_risk_category"
+        model_reporters = {"population_risk_category": "population_risk_category"}
+        for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
+            field = f"total_r{risk_level}"
+            model_reporters[field] = field
+
+        opts["model_reporters"].update(model_reporters)
         return opts
+
+    def step(self):
+        # delete cached property before the next round begins,
+        # so we recalcate values for current round before collecting data
+        try:
+            del self.total_per_risk_level
+        except AttributeError:
+            # property hasn't been set yet on the first round, ok to ignore
+            pass
+        super().step()
+
+    @cached_property
+    def total_per_risk_level(self):
+        # tally the number of agents for each risk level
+        return Counter([a.risk_level for a in self.schedule.agents])
+
+    def __getattr__(self, attr):
+        # support dynamic properties for data collection on total by risk level
+        if attr.startswith("total_r"):
+            try:
+                r = int(attr.replace("total_r", ""))
+                # only handle risk levels that are in bounds
+                if r > self.max_risk_level or r < self.min_risk_level:
+                    raise AttributeError
+                return self.total_per_risk_level[r]
+            except ValueError:
+                # ignore and throw attribute error
+                pass
+
+        raise AttributeError
 
     @property
     def population_risk_category(self):
@@ -296,9 +331,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # based on the proportion of agents in different risk categories
         # (categorization scheme defined by LB)
 
-        # tally the number of agents with each risk level
-        risk_counts = Counter([a.risk_level for a in self.schedule.agents])
         # count the number of agents in three groups:
+        risk_counts = self.total_per_risk_level
         #  Risk-inclined (RI) : r = 0, 1, 2
         #  Risk-moderate (RM): r = 3, 4, 5
         #  Risk-avoidant (RA): r = 6, 7, 8

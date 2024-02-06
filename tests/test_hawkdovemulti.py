@@ -82,6 +82,71 @@ def test_adjustment_round(params, expect_adjust_step):
             assert not model.adjustment_round
 
 
+def test_total_per_risk_level():
+    model = HawkDoveMultipleRiskModel(3)
+    model.schedule = Mock()
+    # add a few agents with different risk levels
+    mock_agents = [
+        Mock(risk_level=0),
+        Mock(risk_level=1),
+        Mock(risk_level=1),
+        Mock(risk_level=2),
+        Mock(risk_level=2),
+        Mock(risk_level=2),
+        Mock(risk_level=5),
+    ]
+    model.schedule.agents = mock_agents
+
+    totals = model.total_per_risk_level
+    assert totals[0] == 1
+    assert totals[1] == 2
+    assert totals[2] == 3
+    assert totals[4] == 0
+    assert totals[5] == 1
+    assert totals[8] == 0
+
+    # check caching works as desired
+    mock_agents.append(Mock(risk_level=8))
+    model.schedule.agents = mock_agents
+    # cached total should not change even though agents have changed
+    assert model.total_per_risk_level[8] == 0
+    # step should reset catched property
+    with patch("builtins.super"):
+        model.step()
+    # now the count should be updated
+    assert model.total_per_risk_level[8] == 1
+
+
+def test_total_rN_attr():
+    # dynamic attributes to get total per risk level, for data collection
+    model = HawkDoveMultipleRiskModel(3)
+    model.schedule = Mock()
+    # add a few agents with different risk levels
+    model.schedule.agents = [
+        Mock(risk_level=0),
+        Mock(risk_level=1),
+        Mock(risk_level=1),
+        Mock(risk_level=2),
+        Mock(risk_level=2),
+        Mock(risk_level=2),
+    ]
+    assert model.total_r0 == 1
+    assert model.total_r1 == 2
+    assert model.total_r2 == 3
+    assert model.total_r4 == 0
+
+    # error handling
+    # - non-numeric
+    with pytest.raises(AttributeError):
+        model.total_rfour
+    # - out of bounds
+    with pytest.raises(AttributeError):
+        model.total_r23
+    # - unsupported attribute
+    with pytest.raises(AttributeError):
+        model.some_other_total
+
+
 def test_population_risk_category():
     model = HawkDoveMultipleRiskModel(3)
     model.schedule = Mock()
@@ -90,15 +155,18 @@ def test_population_risk_category():
     model.schedule.agents = [Mock(risk_level=0), Mock(risk_level=1), Mock(risk_level=2)]
     assert model.population_risk_category == RiskState.c1
     # three risk-inclined agents and one risk moderate
+    del model.total_per_risk_level  #  reset cached property
     model.schedule.agents.append(Mock(risk_level=4))
     assert model.population_risk_category == RiskState.c2
 
     # majority risk moderate
     model.schedule.agents = [Mock(risk_level=4), Mock(risk_level=5), Mock(risk_level=6)]
+    del model.total_per_risk_level  #  reset cached property
     assert model.population_risk_category == RiskState.c7
 
     # majority risk avoidant
     model.schedule.agents = [Mock(risk_level=7), Mock(risk_level=8), Mock(risk_level=9)]
+    del model.total_per_risk_level  #  reset cached property
     assert model.population_risk_category == RiskState.c12
 
 
