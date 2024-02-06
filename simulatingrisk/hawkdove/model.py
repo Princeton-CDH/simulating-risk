@@ -259,6 +259,8 @@ class HawkDoveModel(mesa.Model):
                 "percent_hawk": "percent_hawk",
                 "rolling_percent_hawk": "rolling_percent_hawk",
                 "status": "status",
+                # explicitly track total agents, instead of inferring from grid size
+                "total_agents": "num_agents",
             },
             "agent_reporters": {
                 "risk_level": "risk_level",
