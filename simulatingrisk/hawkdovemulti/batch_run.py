@@ -64,7 +64,14 @@ def run_hawkdovemulti_model(args):
 
 
 def batch_run(
-    params, iterations, number_processes, max_steps, progressbar, file_prefix
+    params,
+    iterations,
+    number_processes,
+    max_steps,
+    progressbar,
+    collect_agent_data,
+    file_prefix,
+    max_runs,
 ):
     param_combinations = _make_model_kwargs(params)
     total_param_combinations = len(param_combinations)
@@ -83,20 +90,30 @@ def batch_run(
             runs_list.append((run_id, iteration, params, max_steps))
             run_id += 1
 
+    # if maximum runs is specified, truncate the list of run arguments
+    if max_runs:
+        runs_list = runs_list[:max_runs]
+
     # collect data in a directory for this model
     data_dir = os.path.join("data", "hawkdovemulti")
     os.makedirs(data_dir, exist_ok=True)
     datestr = datetime.today().isoformat().replace(".", "_").replace(":", "")
     model_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_model.csv")
-    agent_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_agent.csv")
-    print(
-        f"Saving data collection results to:\n  {model_output_filename}"
-        + f"\n  {agent_output_filename}"
-    )
+    if collect_agent_data:
+        agent_output_filename = os.path.join(
+            data_dir, f"{file_prefix}{datestr}_agent.csv"
+        )
+
+    message = f"Saving data collection results to:\n  {model_output_filename}"
+    if collect_agent_data:
+        message += f"\n  {agent_output_filename}"
+    print(message)
+
     # open output files so data can be written as it is generated
-    with open(model_output_filename, "w", newline="") as model_output_file, open(
-        agent_output_filename, "w", newline=""
-    ) as agent_output_file:
+    with open(model_output_filename, "w", newline="") as model_output_file:
+        if collect_agent_data:
+            agent_output_file = open(agent_output_filename, "w", newline="")
+
         model_dict_writer = None
         agent_dict_writer = None
 
@@ -116,16 +133,20 @@ def batch_run(
 
                     model_dict_writer.writerow(model_data)
 
-                    if agent_dict_writer is None:
-                        # get field names from first entry
-                        agent_dict_writer = csv.DictWriter(
-                            agent_output_file, agent_data[0].keys()
-                        )
-                        agent_dict_writer.writeheader()
+                    if collect_agent_data:
+                        if agent_dict_writer is None:
+                            # get field names from first entry
+                            agent_dict_writer = csv.DictWriter(
+                                agent_output_file, agent_data[0].keys()
+                            )
+                            agent_dict_writer.writeheader()
 
-                    agent_dict_writer.writerows(agent_data)
+                        agent_dict_writer.writerows(agent_data)
 
                     pbar.update()
+
+        if collect_agent_data:
+            agent_output_file.close()
 
 
 def main():
@@ -160,14 +181,27 @@ def main():
     )
     parser.add_argument(
         "--progress",
-        help="Display progress bar (default: %(default)s)",
+        help="Display progress bar",
         action=argparse.BooleanOptionalAction,
         default=True,
+    )
+    parser.add_argument(
+        "--agent-data",
+        help="Store agent data",
+        action=argparse.BooleanOptionalAction,
+        default=False,
     )
     parser.add_argument(
         "--file-prefix",
         help="Prefix for data filenames (no prefix by default)",
         default="",
+    )
+    parser.add_argument(
+        "--max-runs",
+        help="Stop after the specified number of runs "
+        + "(for development/troubleshooting)",
+        type=int,
+        default=None,
     )
     # may want to add an option to configure output dir
 
@@ -178,7 +212,9 @@ def main():
         args.processes,
         args.max_steps,
         args.progress,
+        args.agent_data,
         args.file_prefix,
+        args.max_runs,
     )
 
 

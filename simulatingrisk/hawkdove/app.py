@@ -81,5 +81,6 @@ page = JupyterViz(
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
 )
+
 # required to render the visualization with Jupyter/Solara
 page
