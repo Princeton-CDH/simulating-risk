@@ -348,6 +348,8 @@ def test_adjust_risk_adopt_recent():
         agent.adjust_risk()
         # default behavior is to adopt successful risk level
         assert agent.risk_level == neighbor.risk_level
+        # agent should track that risk attitude was updated
+        assert agent.risk_level_changed
 
         # now simulate a wealthiest neighbor with fewer points than current agent
         neighbor.recent_points = 12
@@ -357,6 +359,8 @@ def test_adjust_risk_adopt_recent():
         agent.adjust_risk()
         # risk level should not be changed
         assert agent.risk_level == prev_risk_level
+        # agent should track that risk attitude was not changed
+        assert not agent.risk_level_changed
 
 
 def test_adjust_risk_average():

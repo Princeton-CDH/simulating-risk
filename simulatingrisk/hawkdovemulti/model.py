@@ -17,6 +17,9 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     #: points since last adjustment round; starts at 0
     recent_points = 0
 
+    #: whether or not risk level changed on the last adjustment round
+    risk_level_changed = None
+
     def set_risk_level(self):
         # get risk attitude from model based on configured distribution
         self.risk_level = self.model.get_risk_attitude()
@@ -72,6 +75,7 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         # either adopt their risk attitude or average theirs with yours
 
         best = self.most_successful_neighbor
+
         # if most successful neighbor has more points and a different
         # risk attitude, adjust
         if (
@@ -88,6 +92,12 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
                 self.risk_level = round(
                     statistics.mean([self.risk_level, best.risk_level])
                 )
+
+            # track that risk attitude has been updated
+            self.risk_level_changed = True
+        else:
+            # track that risk attitude was not changed
+            self.risk_level_changed = False
 
 
 class RiskState(IntEnum):
@@ -304,6 +314,10 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             # property hasn't been set yet on the first round, ok to ignore
             pass
         super().step()
+
+    @property
+    def num_agents_risk_changed(self):
+        return len([a for a in self.schedule.agents if a.risk_level_changed])
 
     @cached_property
     def total_per_risk_level(self):
