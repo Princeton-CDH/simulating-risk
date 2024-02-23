@@ -20,6 +20,20 @@ Like the base hawk/dove risk attitude game, there is also a
 configuration to add some chance of agents playing hawk/dove randomly
 instead of choosing based on the rules of the game.
 
+## Convergence
+
+The model is configured to stop automatically when it has stabilized.
+Convergence is reached when an adjustment round occurs and zero agents
+adjust their risk attitude.
+
+If adjustment is not enabled, convergence logic falls back to the
+implementation of the hawk/dove single-risk attitude simulation, which is
+based on a stable rolling % average of agents playing hawk.
+
+Model and agent data collection also includes reports on whether agents
+updated their risk level in the last adjustment round, and model data collection
+includes a status of "running" or "converged".
+
 ## Batch running
 
 This module includes a custom batch run script to run the simulation and
