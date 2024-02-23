@@ -97,6 +97,34 @@ def plot_agents_by_risk(model):
     return solara.FigureAltair(bar_chart)
 
 
+def plot_agents_risklevel_changed(model):
+    """plot the number of agents who updated their risk attitude on
+    the last adjustment round"""
+    model_df = model.datacollector.get_model_vars_dataframe().reset_index()
+    if model_df.empty:
+        return
+    # model_df = model_df[model_df.index % model.adjust_round_n == 0]
+    model_df = model_df[:: model.adjust_round_n]
+    if model_df.empty:
+        return
+
+    line_chart = (
+        alt.Chart(model_df)
+        .mark_line()
+        .encode(
+            y=alt.Y(
+                "num_agents_risk_changed",
+                title="# agents who updated risk attitude",
+                # axis=alt.Axis(tickCount=model.max_risk_level + 1),
+                scale=alt.Scale(domain=[0, model.num_agents]),
+            ),
+            x=alt.X("index"),
+        )
+    )
+
+    return solara.FigureAltair(line_chart)
+
+
 def plot_hawks_by_risk(model):
     """plot rolling mean of percent of agents in each risk attitude
     who chose hawk over last several rounds"""
@@ -153,7 +181,12 @@ def plot_hawks_by_risk(model):
 page = JupyterViz(
     HawkDoveMultipleRiskModel,
     jupyterviz_params_var,
-    measures=[plot_hawks, plot_agents_by_risk, plot_hawks_by_risk],
+    measures=[
+        plot_agents_by_risk,
+        plot_hawks_by_risk,
+        plot_agents_risklevel_changed,
+        plot_hawks,
+    ],
     name="Hawk/Dove game with multiple risk attitudes",
     agent_portrayal=agent_portrayal,
     space_drawer=draw_hawkdove_agent_space,
