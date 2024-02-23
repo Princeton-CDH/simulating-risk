@@ -18,7 +18,7 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     recent_points = 0
 
     #: whether or not risk level changed on the last adjustment round
-    risk_level_changed = None
+    risk_level_changed = False
 
     def set_risk_level(self):
         # get risk attitude from model based on configured distribution
@@ -297,12 +297,16 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # in addition to common hawk/dove data points,
         # we want to include population risk category
         opts = super().get_data_collector_options()
-        model_reporters = {"population_risk_category": "population_risk_category"}
+        model_reporters = {
+            "population_risk_category": "population_risk_category",
+            "num_agents_risk_changed": "num_agents_risk_changed",
+        }
         for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
             field = f"total_r{risk_level}"
             model_reporters[field] = field
 
         opts["model_reporters"].update(model_reporters)
+        opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
         return opts
 
     def step(self):
@@ -318,6 +322,15 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     @property
     def num_agents_risk_changed(self):
         return len([a for a in self.schedule.agents if a.risk_level_changed])
+
+    @property
+    def converged(self):
+        # check if the simulation is stable and should stop running
+        # based on the number of agents changing their risk level
+        return (
+            self.schedule.steps > max(self.adjust_round_n, 20)
+            and self.num_agents_risk_changed == 0
+        )
 
     @cached_property
     def total_per_risk_level(self):
