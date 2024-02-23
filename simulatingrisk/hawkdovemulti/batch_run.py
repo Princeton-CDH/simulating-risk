@@ -17,16 +17,35 @@ neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
 # combination of parameters we want to run
 params = {
-    "grid_size": [10, 25, 50],  # 100],
-    "risk_adjustment": ["adopt", "average"],
-    "play_neighborhood": neighborhood_sizes,
-    "observed_neighborhood": neighborhood_sizes,
-    "adjust_neighborhood": neighborhood_sizes,
-    "hawk_odds": [0.5, 0.25, 0.75],
-    "adjust_every": [2, 10, 20],
-    "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
-    "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
-    # random?
+    "default": {
+        "grid_size": [10, 25, 50],  # 100],
+        "risk_adjustment": ["adopt", "average"],
+        "play_neighborhood": neighborhood_sizes,
+        "observed_neighborhood": neighborhood_sizes,
+        "adjust_neighborhood": neighborhood_sizes,
+        "hawk_odds": [0.5, 0.25, 0.75],
+        "adjust_every": [2, 10, 20],
+        "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
+        "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
+        # random?
+    },
+    # specific scenarios to allow paired statistical tests
+    "risk_adjust": {
+        # ary risk adjustment
+        "risk_adjustment": ["adopt", "average"],
+        # use model defaults except for grid size
+        "grid_size": 25,
+    },
+    "payoff": {
+        "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
+        # use model defaults except for grid size
+        "grid_size": 25,
+    },
+    "distribution": {
+        "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
+        # use model defaults except for grid size
+        "grid_size": 25,
+    },
 }
 
 
@@ -73,7 +92,10 @@ def batch_run(
     file_prefix,
     max_runs,
 ):
-    param_combinations = _make_model_kwargs(params)
+    # TODO: make this a commandline option
+    run_params = params["distribution"]
+
+    param_combinations = _make_model_kwargs(run_params)
     total_param_combinations = len(param_combinations)
     total_runs = total_param_combinations * iterations
     print(
@@ -169,7 +191,7 @@ def main():
         "--max-steps",
         help="Maximum steps to run simulations if they have not already "
         + "converged (default: %(default)s)",
-        default=125,  # typically converges quickly, around step 60 without randomness
+        default=1000,  # new convergence logic seems to converge around 400
         type=int,
     )
     parser.add_argument(
