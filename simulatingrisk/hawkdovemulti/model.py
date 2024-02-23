@@ -177,7 +177,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     def __init__(
         self,
         grid_size,
-        risk_adjustment=None,
+        risk_adjustment="adopt",
         risk_distribution="normal",
         adjust_every=10,
         adjust_neighborhood=None,
@@ -327,8 +327,15 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     def converged(self):
         # check if the simulation is stable and should stop running
         # based on the number of agents changing their risk level
+
+        # checking whether agents risk level changed only works
+        # when adjustmend is enabled; if it is not, fallback
+        # do base model logic, which is based on rolling avg % hawk
+        if not self.risk_adjustment:
+            return super().converged
+
         return (
-            self.schedule.steps > max(self.adjust_round_n, 20)
+            self.schedule.steps > max(self.adjust_round_n, 50)
             and self.num_agents_risk_changed == 0
         )
 
