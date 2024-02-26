@@ -14,12 +14,12 @@ from simulatingrisk.hawkdovemulti.model import (
 def test_init():
     model = HawkDoveMultipleRiskModel(5)
     # defaults
-    assert model.risk_adjustment is None
+    assert model.risk_adjustment == "adopt"
     assert model.hawk_odds == 0.5
     assert model.play_neighborhood == 8
     assert model.adjust_neighborhood == 8
-    # unused but should be set to default
     assert model.adjust_round_n == 10
+    assert model.risk_distribution == "uniform"
 
     # init with risk adjustment
     model = HawkDoveMultipleRiskModel(
