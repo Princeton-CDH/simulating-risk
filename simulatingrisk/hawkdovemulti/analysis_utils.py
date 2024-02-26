@@ -15,9 +15,9 @@ def groupby_population_risk_category(df):
 
     # group on risk category to get totals for the  number of runs that
     # ended up in each different type
-    poprisk_grouped = df.group_by("population_risk_category").agg(pl.col("RunId").sum())
+    poprisk_grouped = df.group_by("population_risk_category").count()
     poprisk_grouped = poprisk_grouped.rename(
-        {"population_risk_category": "risk_category", "RunId": "count"}
+        {"population_risk_category": "risk_category"}
     )
     poprisk_grouped = poprisk_grouped.sort("risk_category")
 
