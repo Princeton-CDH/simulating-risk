@@ -57,7 +57,14 @@ def run_hawkdovemulti_model(args):
 
     model = HawkDoveMultipleRiskModel(**params)
     while model.running and model.schedule.steps <= max_steps:
-        model.step()
+        try:
+            model.step()
+        # by default, signals propagate to all processes
+        # take advantage of that to exit and save results
+        except KeyboardInterrupt:
+            # if we get a ctrl-c / keyboard interrupt, stop looping
+            # and finish data collection to report on whatever was completed
+            break
 
     # collect data for the last step
     # (scheduler is 1-based index but data collection is 0-based)
