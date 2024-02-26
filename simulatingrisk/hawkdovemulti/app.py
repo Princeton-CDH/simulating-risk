@@ -12,7 +12,6 @@ from simulatingrisk.hawkdove.server import (
     neighborhood_sizes,
 )
 from simulatingrisk.hawkdove.model import divergent_colors_10
-from simulatingrisk.hawkdove.app import plot_hawks
 
 # start with common hawk/dove params, then add params for variable risk
 jupyterviz_params_var = common_jupyterviz_params.copy()
@@ -93,6 +92,7 @@ def plot_agents_by_risk(model):
             # distracting from the main point of this chart, which is quantitative
             # color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
+        .properties(title="Number of agents in each risk level")
     )
     return solara.FigureAltair(bar_chart)
 
@@ -114,19 +114,20 @@ def plot_agents_risklevel_changed(model):
         .encode(
             y=alt.Y(
                 "num_agents_risk_changed",
-                title="# agents who updated risk attitude",
+                title="# agents who updated risk level",
                 # axis=alt.Axis(tickCount=model.max_risk_level + 1),
                 scale=alt.Scale(domain=[0, model.num_agents]),
             ),
             x=alt.X("index"),
         )
+        .properties(title="Number of agents with adjusted risk level")
     )
 
     return solara.FigureAltair(line_chart)
 
 
 def plot_hawks_by_risk(model):
-    """plot rolling mean of percent of agents in each risk attitude
+    """plot rolling mean of percent of agents in each risk level
     who chose hawk over last several rounds"""
 
     # in the first round, mesa returns a dataframe full of NAs; ignore that
@@ -174,8 +175,34 @@ def plot_hawks_by_risk(model):
             ),
             color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
+        .properties(title="Rolling average percent hawk by risk level")
     )
     return solara.FigureAltair(chart)
+
+
+def plot_wealth_by_risklevel(model):
+    """plot wealth distribution for each risk level"""
+    agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
+    if agent_df.empty:
+        return
+
+    last_step = agent_df.Step.max()
+    # plot current status / last round
+    last_round = agent_df[agent_df.Step == last_step]
+
+    wealth_chart = (
+        alt.Chart(last_round)
+        .mark_boxplot(extent="min-max")
+        .encode(
+            alt.X(
+                "risk_level",
+                scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
+            ),
+            alt.Y("points").scale(zero=False),
+        )
+        .properties(title="Cumulative wealth by risk level")
+    )
+    return solara.FigureAltair(wealth_chart)
 
 
 page = JupyterViz(
@@ -184,8 +211,9 @@ page = JupyterViz(
     measures=[
         plot_agents_by_risk,
         plot_hawks_by_risk,
+        plot_wealth_by_risklevel,
         plot_agents_risklevel_changed,
-        plot_hawks,
+        # plot_hawks,
     ],
     name="Hawk/Dove game with multiple risk attitudes",
     agent_portrayal=agent_portrayal,
