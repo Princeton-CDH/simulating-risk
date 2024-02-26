@@ -33,18 +33,19 @@ params = {
     "risk_adjust": {
         # ary risk adjustment
         "risk_adjustment": ["adopt", "average"],
-        # use model defaults except for grid size
-        "grid_size": 25,
+        # use model defaults; grid size must be specified
+        "grid_size": 10,  # 25,
     },
     "payoff": {
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
-        # use model defaults except for grid size
+        # use model defaults; grid size must be specified
         "grid_size": 25,
     },
     "distribution": {
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
-        # use model defaults except for grid size
-        "grid_size": 25,
+        "risk_adjustment": "average",
+        # use model defaults; grid size must be specified
+        "grid_size": 10,
     },
 }
 
@@ -91,9 +92,9 @@ def batch_run(
     collect_agent_data,
     file_prefix,
     max_runs,
+    param_choice,
 ):
-    # TODO: make this a commandline option
-    run_params = params["distribution"]
+    run_params = params.get(param_choice)
 
     param_combinations = _make_model_kwargs(run_params)
     total_param_combinations = len(param_combinations)
@@ -225,7 +226,12 @@ def main():
         type=int,
         default=None,
     )
-    # may want to add an option to configure output dir
+    parser.add_argument(
+        "--params",
+        help="Run a specific set of parameters",
+        choices=params.keys(),
+        default="default",
+    )
 
     args = parser.parse_args()
     batch_run(
@@ -237,6 +243,7 @@ def main():
         args.agent_data,
         args.file_prefix,
         args.max_runs,
+        args.params,
     )
 
 
