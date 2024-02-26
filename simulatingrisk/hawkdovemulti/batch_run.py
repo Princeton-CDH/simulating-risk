@@ -15,6 +15,11 @@ from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 
 neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
+# NOTE: it's better to be explicit about even parameters
+# instead of relying on model defaults, because
+# parameters specified here are included in data exports
+
+
 # combination of parameters we want to run
 params = {
     "default": {
@@ -33,17 +38,20 @@ params = {
     "risk_adjust": {
         # ary risk adjustment
         "risk_adjustment": ["adopt", "average"],
+        "risk_distribution": "uniform",
         # use model defaults; grid size must be specified
         "grid_size": 10,  # 25,
     },
     "payoff": {
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
+        "risk_distribution": "uniform",
         # use model defaults; grid size must be specified
         "grid_size": 25,
     },
     "distribution": {
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
-        "risk_adjustment": "average",
+        # adopt tends to converge faster; LB also says it's more interesting & simpler
+        "risk_adjustment": "adopt",
         # use model defaults; grid size must be specified
         "grid_size": 10,
     },
