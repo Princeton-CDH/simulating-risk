@@ -178,7 +178,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         self,
         grid_size,
         risk_adjustment="adopt",
-        risk_distribution="normal",
+        risk_distribution="uniform",
         adjust_every=10,
         adjust_neighborhood=None,
         adjust_payoff="recent",
