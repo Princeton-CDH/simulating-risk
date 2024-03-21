@@ -17,6 +17,9 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
     #: points since last adjustment round; starts at 0
     recent_points = 0
 
+    #: whether or not risk level changed on the last adjustment round
+    risk_level_changed = False
+
     def set_risk_level(self):
         # get risk attitude from model based on configured distribution
         self.risk_level = self.model.get_risk_attitude()
@@ -72,6 +75,7 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         # either adopt their risk attitude or average theirs with yours
 
         best = self.most_successful_neighbor
+
         # if most successful neighbor has more points and a different
         # risk attitude, adjust
         if (
@@ -88,6 +92,12 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
                 self.risk_level = round(
                     statistics.mean([self.risk_level, best.risk_level])
                 )
+
+            # track that risk attitude has been updated
+            self.risk_level_changed = True
+        else:
+            # track that risk attitude was not changed
+            self.risk_level_changed = False
 
 
 class RiskState(IntEnum):
@@ -167,8 +177,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     def __init__(
         self,
         grid_size,
-        risk_adjustment=None,
-        risk_distribution="normal",
+        risk_adjustment="adopt",
+        risk_distribution="uniform",
         adjust_every=10,
         adjust_neighborhood=None,
         adjust_payoff="recent",
@@ -287,12 +297,16 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # in addition to common hawk/dove data points,
         # we want to include population risk category
         opts = super().get_data_collector_options()
-        model_reporters = {"population_risk_category": "population_risk_category"}
+        model_reporters = {
+            "population_risk_category": "population_risk_category",
+            "num_agents_risk_changed": "num_agents_risk_changed",
+        }
         for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
             field = f"total_r{risk_level}"
             model_reporters[field] = field
 
         opts["model_reporters"].update(model_reporters)
+        opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
         return opts
 
     def step(self):
@@ -304,6 +318,26 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             # property hasn't been set yet on the first round, ok to ignore
             pass
         super().step()
+
+    @property
+    def num_agents_risk_changed(self):
+        return len([a for a in self.schedule.agents if a.risk_level_changed])
+
+    @property
+    def converged(self):
+        # check if the simulation is stable and should stop running
+        # based on the number of agents changing their risk level
+
+        # checking whether agents risk level changed only works
+        # when adjustmend is enabled; if it is not, fallback
+        # do base model logic, which is based on rolling avg % hawk
+        if not self.risk_adjustment:
+            return super().converged
+
+        return (
+            self.schedule.steps > max(self.adjust_round_n, 50)
+            and self.num_agents_risk_changed == 0
+        )
 
     @cached_property
     def total_per_risk_level(self):

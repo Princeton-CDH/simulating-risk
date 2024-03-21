@@ -28,6 +28,9 @@ def agent_portrayal(agent):
         "size": 25,
         # "color": "tab:gray",
     }
+    # specific to multiple risk attitude variant
+    if hasattr(agent, "risk_level_changed"):
+        portrayal["risk_level_changed"] = agent.risk_level_changed
 
     # color based on risk level; risk levels are always 0-9
     colors = divergent_colors_10
@@ -154,18 +157,32 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             .scale(domain=hawkdove_domain, range=["orange", "blue"])
         )
 
-    chart = (
+    # optionally display information from multi-risk attitude variant
+    if "risk_level_changed" in df.columns:
+        outer_color = alt.Color(
+            "risk_level_changed", title="adjusted risk level"
+        ).scale(
+            domain=[False, True],
+            range=["transparent", "black"],
+        )
+    else:
+        outer_color = chart_color
+
+    agent_chart = (
         alt.Chart(df)
-        .mark_point(filled=True)
+        .mark_point()  # filled=True)
         .encode(
             x=alt.X("x", axis=None),  # no x-axis label
             y=alt.Y("y", axis=None),  # no y-axis label
             size=alt.Size("size", title="points rank"),  # relabel size for legend
-            color=chart_color,
+            # when fill and color differ, color acts as an outline
+            fill=chart_color,
+            color=outer_color,
             shape=alt.Shape(  # use shape to indicate choice
                 "choice", scale=alt.Scale(domain=hawkdove_domain, range=shape_range)
             ),
         )
         .configure_view(strokeOpacity=0)  # hide grid/chart lines
     )
-    return solara.FigureAltair(chart)
+
+    return solara.FigureAltair(agent_chart)

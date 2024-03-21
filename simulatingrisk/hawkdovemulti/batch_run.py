@@ -15,18 +15,46 @@ from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 
 neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
+# NOTE: it's better to be explicit about even parameters
+# instead of relying on model defaults, because
+# parameters specified here are included in data exports
+
+
 # combination of parameters we want to run
 params = {
-    "grid_size": [10, 25, 50],  # 100],
-    "risk_adjustment": ["adopt", "average"],
-    "play_neighborhood": neighborhood_sizes,
-    "observed_neighborhood": neighborhood_sizes,
-    "adjust_neighborhood": neighborhood_sizes,
-    "hawk_odds": [0.5, 0.25, 0.75],
-    "adjust_every": [2, 10, 20],
-    "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
-    "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
-    # random?
+    "default": {
+        "grid_size": [10, 25, 50],  # 100],
+        "risk_adjustment": ["adopt", "average"],
+        "play_neighborhood": neighborhood_sizes,
+        "observed_neighborhood": neighborhood_sizes,
+        "adjust_neighborhood": neighborhood_sizes,
+        "hawk_odds": [0.5, 0.25, 0.75],
+        "adjust_every": [2, 10, 20],
+        "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
+        "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
+        # random?
+    },
+    # specific scenarios to allow paired statistical tests
+    "risk_adjust": {
+        # ary risk adjustment
+        "risk_adjustment": ["adopt", "average"],
+        "risk_distribution": "uniform",
+        # use model defaults; grid size must be specified
+        "grid_size": 10,  # 25,
+    },
+    "payoff": {
+        "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
+        "risk_distribution": "uniform",
+        # use model defaults; grid size must be specified
+        "grid_size": 25,
+    },
+    "distribution": {
+        "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
+        # adopt tends to converge faster; LB also says it's more interesting & simpler
+        "risk_adjustment": "adopt",
+        # use model defaults; grid size must be specified
+        "grid_size": 10,
+    },
 }
 
 
@@ -37,7 +65,14 @@ def run_hawkdovemulti_model(args):
 
     model = HawkDoveMultipleRiskModel(**params)
     while model.running and model.schedule.steps <= max_steps:
-        model.step()
+        try:
+            model.step()
+        # by default, signals propagate to all processes
+        # take advantage of that to exit and save results
+        except KeyboardInterrupt:
+            # if we get a ctrl-c / keyboard interrupt, stop looping
+            # and finish data collection to report on whatever was completed
+            break
 
     # collect data for the last step
     # (scheduler is 1-based index but data collection is 0-based)
@@ -72,8 +107,11 @@ def batch_run(
     collect_agent_data,
     file_prefix,
     max_runs,
+    param_choice,
 ):
-    param_combinations = _make_model_kwargs(params)
+    run_params = params.get(param_choice)
+
+    param_combinations = _make_model_kwargs(run_params)
     total_param_combinations = len(param_combinations)
     total_runs = total_param_combinations * iterations
     print(
@@ -169,7 +207,7 @@ def main():
         "--max-steps",
         help="Maximum steps to run simulations if they have not already "
         + "converged (default: %(default)s)",
-        default=125,  # typically converges quickly, around step 60 without randomness
+        default=1000,  # new convergence logic seems to converge around 400
         type=int,
     )
     parser.add_argument(
@@ -203,7 +241,12 @@ def main():
         type=int,
         default=None,
     )
-    # may want to add an option to configure output dir
+    parser.add_argument(
+        "--params",
+        help="Run a specific set of parameters",
+        choices=params.keys(),
+        default="default",
+    )
 
     args = parser.parse_args()
     batch_run(
@@ -215,6 +258,7 @@ def main():
         args.agent_data,
         args.file_prefix,
         args.max_runs,
+        args.params,
     )
 
 
