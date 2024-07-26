@@ -218,6 +218,21 @@ class HawkDoveModel(mesa.Model):
         random_play_odds=0.00,
     ):
         super().__init__()
+        # check parameters for combinations that aren't allowed together
+        if grid_size < 5:
+            if play_neighborhood > 8:
+                raise ValueError(
+                    "Play neighborhood %d is too large for grid size %d",
+                    play_neighborhood,
+                    grid_size,
+                )
+            if observed_neighborhood > 8:
+                raise ValueError(
+                    "Observed neighborhood %d is too large for grid size %d",
+                    observed_neighborhood,
+                    grid_size,
+                )
+
         # assume a fully-populated square grid
         self.num_agents = grid_size * grid_size
         for nsize in [play_neighborhood, observed_neighborhood]:
