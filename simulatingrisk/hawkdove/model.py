@@ -102,10 +102,15 @@ class HawkDoveAgent(mesa.Agent):
 
     @property
     def proportional_num_dove_neighbors(self):
-        """adjust the number of dove neighbors based on ratio between
-        play neighborhood and observed neighborhood, to scale observations
-        to the range of agent risk level."""
-        ratio = self.model.max_risk_level / self.model.observed_neighborhood
+        """adjust the number of dove neighbors to scale observations
+        to a standard range of risk levels."""
+        # for convenience and simplicity, we scale the neighborhood so
+        # that agent risk levels can always be defined as 0-9 no matter
+        # the neighborhood size. (Can also be thought of as always
+        # scaling to a neighborhood size of 8.).
+        # Agent risk levels are 0-9 but scaling is 1-8, since 0 and 9
+        # always play hawk and dove respectively.
+        ratio = 8 / self.model.observed_neighborhood
         # always round to an integer
         return round(ratio * self.num_dove_neighbors)
 
