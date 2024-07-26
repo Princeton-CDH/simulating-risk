@@ -27,6 +27,15 @@ def test_agent_neighbors():
     assert all([len(agent.play_neighbors) == 24 for agent in model.schedule.agents])
 
 
+def test_bad_gridsize():
+    # anything less than 5 should not allow play neighborhood of 24
+    for grid_size in [3, 4]:
+        with pytest.raises(ValueError):
+            HawkDoveSingleRiskModel(3, play_neighborhood=24, agent_risk_level=5)
+        with pytest.raises(ValueError):
+            HawkDoveSingleRiskModel(3, observed_neighborhood=24, agent_risk_level=5)
+
+
 def test_agent_initial_choice():
     grid_size = 100
     model = HawkDoveSingleRiskModel(grid_size, agent_risk_level=5)
@@ -101,7 +110,7 @@ def test_observed_neighborhood_size():
     assert model.observed_neighborhood == 4
     model = HawkDoveSingleRiskModel(3, observed_neighborhood=8, **opts)
     assert model.observed_neighborhood == 8
-    model = HawkDoveSingleRiskModel(3, observed_neighborhood=24, **opts)
+    model = HawkDoveSingleRiskModel(5, observed_neighborhood=24, **opts)
     assert model.observed_neighborhood == 24
     with pytest.raises(ValueError):
         HawkDoveSingleRiskModel(3, observed_neighborhood=23, **opts)
@@ -207,7 +216,7 @@ def test_agent_choose_when_observe_play_differ():
     # confirm that adjusted value is used to determine play
 
     model = HawkDoveSingleRiskModel(
-        4, agent_risk_level=3, observed_neighborhood=24, play_neighborhood=8
+        5, agent_risk_level=3, observed_neighborhood=24, play_neighborhood=8
     )
     agent = HawkDoveSingleRiskAgent(3, model)
     with patch.object(HawkDoveAgent, "num_dove_neighbors", 5):
