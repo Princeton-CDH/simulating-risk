@@ -1,8 +1,14 @@
 # Simulating Risk
 
+[![DH community code review: June 2024](https://img.shields.io/badge/DHCodeReview-June_2024-green)](https://github.com/DHCodeReview/simulating-risk/pull/1)
+
 The code in this repository is associated with the CDH project [Simulating risk, risking simulations](https://cdh.princeton.edu/projects/simulating-risk/).
 
 Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/), using Agent Based Modeling to explore risk attitudes within populations.
+
+The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple risk attitudes** in this codebase was [reviewed](https://github.com/DHCodeReview/simulating-risk/pull/1) in June 2024 by [Scott Foster](https://github.com/sgfost) and [Malte Vogl](https://github.com/maltevogl) via [DHTech Community Code Review](https://dhcodereview.github.io/); review was faciliated by [Cole Crawford](https://github.com/ColeDCrawford).
+
+## Risk attitude definitions
 
 Across simulations, we define agents with risk attitudes tracked via a numeric `r` or `risk_level` 0.0 - 1.0, where `r` is that agent's minimum acceptable risk level for taking the risky bet. When the probability 'p' of the risky bet paying off is greater than an agent's 'r', that agent will take the bet. An agent with `r=1` will always take the safe option (no risk is acceptable); an agent with `r=0` will always take the risky choice (any risk is acceptable). Notice that the agent is never indifferent; allowing indifference would require introducing a tie-breaking rule, which would be a further parameter.
 
