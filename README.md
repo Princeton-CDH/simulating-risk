@@ -38,7 +38,7 @@ always takes safe choice
 
 Initial setup and installation:
 
-- *Recommmended*: create and activate a Python 3.9 virtualenv:
+- *Recommmended*: create and activate a Python 3.12 virtualenv:
 ```sh
 python3 -m venv simrisk
 source simrisk/bin/activate
