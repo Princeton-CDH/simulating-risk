@@ -1,6 +1,6 @@
 # Simulating Risk
 
-[![DH community code review: June 2024](https://img.shields.io/badge/DHCodeReview-June_2024-green)](https://github.com/DHCodeReview/simulating-risk/pull/1)
+[![DH community code review: June 2024](https://img.shields.io/badge/DHCodeReview-June_2024-blue)](https://github.com/DHCodeReview/simulating-risk/pull/1) [![unit tests](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml)
 
 The code in this repository is associated with the CDH project [Simulating risk, risking simulations](https://cdh.princeton.edu/projects/simulating-risk/).
 
