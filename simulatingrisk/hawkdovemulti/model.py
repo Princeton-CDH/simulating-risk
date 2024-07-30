@@ -327,6 +327,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             # else:
             #     self.recent_total_per_risk_level.append(self.total_per_risk_level)
             del self.total_per_risk_level
+            del self.sum_risk_level_changes
         except AttributeError:
             # property hasn't been set yet on the first round, ok to ignore
             pass
@@ -351,8 +352,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # so don't even bother checking until at least 50 rounds
         return (
             self.schedule.steps > max(self.adjust_round_n, 50)
-            and self.num_agents_risk_changed == 0
-            # TODO: and/or self.sum_risk_level_changes == 0 ?
+            # TODO: determine value (% of population?) and/or make configurable
+            and (self.num_agents_risk_changed == 0 or self.sum_risk_level_changes == 6)
         )
 
     @cached_property
@@ -360,7 +361,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # tally the number of agents for each risk level
         return Counter([a.risk_level for a in self.schedule.agents])
 
-    @property
+    @cached_property
     def sum_risk_level_changes(self):
         # calculate the total in absolute changes across all risk levels
         # since most recent adjustment round
@@ -401,9 +402,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         # count the number of agents in three groups:
         risk_counts = self.total_per_risk_level
-        #  Risk-inclined (RI) : r = 0, 1, 2
-        #  Risk-moderate (RM): r = 3, 4, 5
-        #  Risk-avoidant (RA): r = 6, 7, 8
+        # TODO: define these on the class for reuse in analysis?
         total = {
             "risk_inclined": risk_counts[0] + risk_counts[1] + risk_counts[2],
             "risk_moderate": risk_counts[3]
