@@ -23,7 +23,7 @@ neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 # combination of parameters we want to run
 params = {
     "default": {
-        "grid_size": [10, 25, 50],  # 100],
+        "grid_size": [5, 10, 25],  # , 50],  # 100],
         "risk_adjustment": ["adopt", "average"],
         "play_neighborhood": neighborhood_sizes,
         "observed_neighborhood": neighborhood_sizes,
