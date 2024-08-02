@@ -92,7 +92,7 @@ def plot_agents_by_risk(model):
             # distracting from the main point of this chart, which is quantitative
             # color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
-        .properties(title="Number of agents in each risk level")
+        .properties(title="Number of agents with each risk attitude")
     )
     return solara.FigureAltair(bar_chart)
 
@@ -113,7 +113,7 @@ def plot_risklevel_changes(model):
     model_df.rename(
         columns={
             "num_agents_risk_changed": "agents",
-            "sum_risk_level_changes": "risk level totals",
+            "sum_risk_level_changes": "risk attitude totals",
         },
         inplace=True,
     )
@@ -136,7 +136,7 @@ def plot_risklevel_changes(model):
             x=alt.X("index"),
             color="category",
         )
-        .properties(title="Risk level adjustments")
+        .properties(title="Risk attitude adjustments")
     )
 
     return solara.FigureAltair(line_chart)
@@ -189,7 +189,9 @@ def plot_hawks_by_risk(model):
                 title="rolling % hawk",
                 scale=alt.Scale(domain=[0, 1]),
             ),
-            color=alt.Color("risk_level:N").scale(**color_scale_opts),
+            color=alt.Color("risk_level:N", title="risk attitude").scale(
+                **color_scale_opts
+            ),
         )
         .properties(title="Rolling average percent hawk by risk level")
     )
@@ -213,10 +215,11 @@ def plot_wealth_by_risklevel(model):
             alt.X(
                 "risk_level",
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
+                title="risk attitude",
             ),
-            alt.Y("points").scale(zero=False),
+            alt.Y("points", title="wealth").scale(zero=False),
         )
-        .properties(title="Cumulative wealth by risk level")
+        .properties(title="Cumulative wealth by risk attitude")
     )
     return solara.FigureAltair(wealth_chart)
 

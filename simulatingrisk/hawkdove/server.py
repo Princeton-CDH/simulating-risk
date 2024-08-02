@@ -160,7 +160,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # optionally display information from multi-risk attitude variant
     if "risk_level_changed" in df.columns:
         outer_color = alt.Color(
-            "risk_level_changed", title="adjusted risk level"
+            "risk_level_changed", title="adjusted risk attitude"
         ).scale(
             domain=[False, True],
             range=["transparent", "black"],
