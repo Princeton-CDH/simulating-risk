@@ -190,10 +190,6 @@ class HawkDoveModel(mesa.Model):
     :param observed_neighborhood: size of neighborhood each agent looks
         at when choosing what to play; 4, 8, or 24 (default: 8)
     :param hawk_odds: odds for playing hawk on the first round (default: 0.5)
-    :param risk_adjustment: strategy agents should use for adjusting risk;
-        None (default), adopt, or average
-    :param adjust_every: when risk adjustment is enabled, adjust every
-        N rounds (default: 10)
     """
 
     #: whether the simulation is running
