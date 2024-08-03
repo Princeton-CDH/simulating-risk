@@ -1,5 +1,5 @@
 import statistics
-from collections import Counter
+from collections import Counter, deque
 from enum import IntEnum
 from functools import cached_property
 
@@ -227,6 +227,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # store whether to compare cumulative payoff or since last adjustment round
         self.adjust_payoff = adjust_payoff
 
+        self.recent_total_per_risk_level = deque([], maxlen=2)
+
     def _risk_level_in_bounds(self, value):
         # check if a generated risk level is within bounds
         return self.min_risk_level <= value <= self.max_risk_level
@@ -300,6 +302,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         model_reporters = {
             "population_risk_category": "population_risk_category",
             "num_agents_risk_changed": "num_agents_risk_changed",
+            "sum_risk_level_changes": "sum_risk_level_changes",
         }
         for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
             field = f"total_r{risk_level}"
@@ -313,7 +316,18 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # delete cached property before the next round begins,
         # so we recalcate values for current round before collecting data
         try:
+            # store risk level total for previous round
+            if hasattr(self, "total_per_risk_level"):
+                if (
+                    not self.recent_total_per_risk_level
+                    or self.total_per_risk_level != self.recent_total_per_risk_level[-1]
+                ):
+                    # add to recent values if changed or new
+                    self.recent_total_per_risk_level.append(self.total_per_risk_level)
+            # else:
+            #     self.recent_total_per_risk_level.append(self.total_per_risk_level)
             del self.total_per_risk_level
+            del self.sum_risk_level_changes
         except AttributeError:
             # property hasn't been set yet on the first round, ok to ignore
             pass
@@ -334,15 +348,36 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if not self.risk_adjustment:
             return super().converged
 
+        # this simulation typically takes around 1000 rounds to converge,
+        # so don't even bother checking until at least 50 rounds
         return (
             self.schedule.steps > max(self.adjust_round_n, 50)
-            and self.num_agents_risk_changed == 0
+            # TODO: determine value (% of population?) and/or make configurable
+            and (self.num_agents_risk_changed == 0 or self.sum_risk_level_changes == 6)
         )
 
     @cached_property
     def total_per_risk_level(self):
         # tally the number of agents for each risk level
         return Counter([a.risk_level for a in self.schedule.agents])
+
+    @cached_property
+    def sum_risk_level_changes(self):
+        # calculate the total in absolute changes across all risk levels
+        # since most recent adjustment round
+
+        # requires at two sets of totals to compare
+        if len(self.recent_total_per_risk_level) != 2:
+            return
+
+        a = self.recent_total_per_risk_level[0]
+        b = self.recent_total_per_risk_level[1]
+        changes = {}
+        # for each risk level, calculate the absolute difference
+        for rlevel, total in a.items():
+            changes[rlevel] = abs(total - b[rlevel])
+        return sum([val for val in changes.values()])
+        # return sum([abs(a[rlevel] - b[rlevel]) for rlevel in a.keys()])
 
     def __getattr__(self, attr):
         # support dynamic properties for data collection on total by risk level
@@ -367,9 +402,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         # count the number of agents in three groups:
         risk_counts = self.total_per_risk_level
-        #  Risk-inclined (RI) : r = 0, 1, 2
-        #  Risk-moderate (RM): r = 3, 4, 5
-        #  Risk-avoidant (RA): r = 6, 7, 8
+        # TODO: define these on the class for reuse in analysis?
         total = {
             "risk_inclined": risk_counts[0] + risk_counts[1] + risk_counts[2],
             "risk_moderate": risk_counts[3]

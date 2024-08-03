@@ -50,3 +50,31 @@ def graph_population_risk_category(poprisk_grouped):
         )
         .properties(title="Distribution of runs by final population risk category")
     )
+
+
+def grouped_risk_totals(df):
+    """Given a Polars dataframe populated with model data generated
+    by hawk/dove multi model, calculate total number of agents by
+    groups of risk level categories."""
+
+    # NOTE: based on risk level groupings used in
+    # model method for calculating population risk category
+
+    return df.with_columns(
+        # risk inclined: 0, 1, 2
+        pl.col("total_r0")
+        .add(pl.col("total_r1"))
+        .add(pl.col("total_r2"))
+        .alias("risk_inclined"),
+        # risk moderate: 3, 4, 5, 6
+        pl.col("total_r3")
+        .add(pl.col("total_r4"))
+        .add(pl.col("total_r5"))
+        .add(pl.col("total_r6"))
+        .alias("risk_moderate"),
+        # risk avoidant: 7, 8, 9
+        pl.col("total_r7")
+        .add(pl.col("total_r8"))
+        .add(pl.col("total_r9"))
+        .alias("risk_avoidant"),
+    )

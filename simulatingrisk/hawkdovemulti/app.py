@@ -92,35 +92,51 @@ def plot_agents_by_risk(model):
             # distracting from the main point of this chart, which is quantitative
             # color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
-        .properties(title="Number of agents in each risk level")
+        .properties(title="Number of agents with each risk attitude")
     )
     return solara.FigureAltair(bar_chart)
 
 
-def plot_agents_risklevel_changed(model):
+def plot_risklevel_changes(model):
     """plot the number of agents who updated their risk attitude on
     the last adjustment round"""
     model_df = model.datacollector.get_model_vars_dataframe().reset_index()
     if model_df.empty:
         return
-    # model_df = model_df[model_df.index % model.adjust_round_n == 0]
+    # subset dataframe to only the adjustment rounds
     model_df = model_df[:: model.adjust_round_n]
     if model_df.empty:
         return
+    # limit to fields we need
+    model_df = model_df[["index", "num_agents_risk_changed", "sum_risk_level_changes"]]
+    # rename columns before they become variable labels
+    model_df.rename(
+        columns={
+            "num_agents_risk_changed": "agents",
+            "sum_risk_level_changes": "risk attitude totals",
+        },
+        inplace=True,
+    )
+    # "melt" to flatten so we can graph as two variables in altair
+    melted_df = (
+        model_df.melt(id_vars=["index"])
+        .dropna()
+        .rename(columns={"variable": "category"})
+    )
 
     line_chart = (
-        alt.Chart(model_df)
+        alt.Chart(melted_df)
         .mark_line()
         .encode(
             y=alt.Y(
-                "num_agents_risk_changed",
-                title="# agents who updated risk level",
-                # axis=alt.Axis(tickCount=model.max_risk_level + 1),
+                "value",
+                title="# changes",
                 scale=alt.Scale(domain=[0, model.num_agents]),
             ),
             x=alt.X("index"),
+            color="category",
         )
-        .properties(title="Number of agents with adjusted risk level")
+        .properties(title="Risk attitude adjustments")
     )
 
     return solara.FigureAltair(line_chart)
@@ -173,7 +189,9 @@ def plot_hawks_by_risk(model):
                 title="rolling % hawk",
                 scale=alt.Scale(domain=[0, 1]),
             ),
-            color=alt.Color("risk_level:N").scale(**color_scale_opts),
+            color=alt.Color("risk_level:N", title="risk attitude").scale(
+                **color_scale_opts
+            ),
         )
         .properties(title="Rolling average percent hawk by risk level")
     )
@@ -197,10 +215,11 @@ def plot_wealth_by_risklevel(model):
             alt.X(
                 "risk_level",
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
+                title="risk attitude",
             ),
-            alt.Y("points").scale(zero=False),
+            alt.Y("points", title="wealth").scale(zero=False),
         )
-        .properties(title="Cumulative wealth by risk level")
+        .properties(title="Cumulative wealth by risk attitude")
     )
     return solara.FigureAltair(wealth_chart)
 
@@ -212,7 +231,7 @@ page = JupyterViz(
         plot_agents_by_risk,
         plot_hawks_by_risk,
         plot_wealth_by_risklevel,
-        plot_agents_risklevel_changed,
+        plot_risklevel_changes,
         # plot_hawks,
     ],
     name="Hawk/Dove game with multiple risk attitudes",

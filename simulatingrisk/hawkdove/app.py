@@ -21,7 +21,11 @@ def plot_wealth(model):
     risk_wealth = [(agent.risk_level, agent.points) for agent in model.schedule.agents]
     df = pd.DataFrame(risk_wealth, columns=["risk_level", "wealth"])
 
-    chart = alt.Chart(df).mark_bar().encode(y="wealth", x="risk_level")
+    chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(y="wealth", x=alt.X("risk_level", title="risk attitude"))
+    )
     return solara.FigureAltair(chart)
 
 
