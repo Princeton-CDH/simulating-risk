@@ -47,6 +47,7 @@ class RiskyFoodModel(mesa.Model):
     running = True  # required for batch running
 
     def __init__(self, n=110, mode="types"):
+        super().__init__()
         self.num_agents = n
         self.mode = mode
         self.schedule = mesa.time.SimultaneousActivation(self)

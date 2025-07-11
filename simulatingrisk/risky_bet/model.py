@@ -125,6 +125,7 @@ class RiskyBetModel(mesa.Model):
     running = True  # required for batch run
 
     def __init__(self, grid_size, risk_adjustment="adopt"):
+        super().__init__()
         # assume a fully-populated square grid
         self.num_agents = grid_size * grid_size
         self.risk_adjustment = risk_adjustment
