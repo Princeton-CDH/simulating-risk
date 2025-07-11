@@ -6,6 +6,16 @@ The code in this repository is associated with the CDH project [Simulating risk,
 
 Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/), using Agent Based Modeling to explore risk attitudes within populations.
 
+To run the Solara app with tabs for all simulations that are available as Solara apps:
+```sh
+solara run simulatingrisk/app.py
+```
+
+To run a single simulation, run Solara with the model-specific app file:
+```sh
+solara run simulatingrisk/hawkdovemulti/app.py
+```
+
 ## Simulations with agent interaction
 
 - [Hawk/Dove with risk attitudes](simulatingrisk/hawkdove)
