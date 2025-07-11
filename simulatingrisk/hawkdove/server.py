@@ -107,6 +107,7 @@ common_jupyterviz_params = {
 jupyterviz_params = common_jupyterviz_params.copy()
 jupyterviz_params["agent_risk_level"] = {
     "type": "SliderInt",
+    "label": "Agent risk attitude",
     "min": 0,
     "max": 8,
     "step": 1,
