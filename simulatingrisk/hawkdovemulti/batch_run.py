@@ -55,6 +55,18 @@ params = {
         # use model defaults; grid size must be specified
         "grid_size": 10,
     },
+    "no_adjustment": {
+        # no risk adjustment
+        "risk_adjustment": None,
+        # add more?
+        "risk_distribution": "uniform",
+        "play_neighborhood": neighborhood_sizes,
+        "observed_neighborhood": neighborhood_sizes,
+        # adjust payoff doesn't matter since we're not adjusting
+        # TODO: add more grid sizes
+        "grid_size": 10
+        # maybe also hawk odds
+    },
 }
 
 
