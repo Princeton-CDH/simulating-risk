@@ -94,6 +94,8 @@ def run_hawkdovemulti_model(args):
         # when requested, collect data at every adjustment round
         every_n = params.get("adjust_every", 10)
         collect_steps = range(0, max_steps, every_n)
+    elif data_collection_period == "every_round":
+        collect_steps = range(0, max_steps)
 
     # make a dict of run id and params for combination with model data
     run_data = {"RunId": run_id, "iteration": iteration, "Step": "-"}
@@ -308,7 +310,7 @@ def main():
     parser.add_argument(
         "--collect-data",
         help="When and how often to collect model and agent data",
-        choices=["end", "adjustment_round"],
+        choices=["end", "adjustment_round", "every_round"],
         default="end",
     )
     args = parser.parse_args()
