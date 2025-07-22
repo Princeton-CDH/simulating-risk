@@ -343,7 +343,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # based on the number of agents changing their risk level
 
         # checking whether agents risk level changed only works
-        # when adjustmend is enabled; if it is not, fallback
+        # when adjustment is enabled; if it is not, fallback
         # do base model logic, which is based on rolling avg % hawk
         if not self.risk_adjustment:
             return super().converged
