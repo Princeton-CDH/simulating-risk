@@ -64,7 +64,7 @@ params = {
         "observed_neighborhood": neighborhood_sizes,
         # adjust payoff doesn't matter since we're not adjusting
         # TODO: add more grid sizes
-        "grid_size": 10
+        "grid_size": [5, 10, 25]
         # maybe also hawk odds
     },
 }
