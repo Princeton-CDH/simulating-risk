@@ -58,13 +58,11 @@ params = {
     "no_adjustment": {
         # no risk adjustment
         "risk_adjustment": None,
-        # add more?
-        "risk_distribution": "uniform",
+        "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
         "play_neighborhood": neighborhood_sizes,
         "observed_neighborhood": neighborhood_sizes,
         # adjust payoff doesn't matter since we're not adjusting
-        # TODO: add more grid sizes
-        "grid_size": [5, 10, 25]
+        "grid_size": [5, 10, 25],
         # maybe also hawk odds
     },
 }
