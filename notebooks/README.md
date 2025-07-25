@@ -8,6 +8,17 @@ Batch analysis references data files that are too large to include on GitHub;
 download from [Google Drive](https://drive.google.com/drive/folders/1ASQ9_IqeBHhyyFzuqcrWtdebdLiwqQp2)
 and put in the top-level `data/` folder.
 
+## Hawk/Dove - multiple risk attitudes
+
+Refer to [game description](../simulatingrisk/hawkdovemulti) for details.
+
+### Without adjustment
+
+* [preliminary analysis](hawkdovemulti_noadjust/hawkdove_variable_r_analysis.ipynb) - simulation length, % hawk by risk level, points by risk level
+
+### With adjustment
+
+* [population risk category analysis](hawkdovemulti_adjust/hawkdovevar_population_risk_category.ipynb) - analysis based on data from 2023-10
 
 ## Hawk/Dove - single risk attitude 
 
