@@ -4,6 +4,10 @@ This folder includes Jupyter/Colab notebooks associated with the
 Simulating Risk project.  Some notebooks allow running the simulations 
 directly within a notebook; others are for analysis of simulation results.
 
+Batch analysis references data files that are too large to include on GitHub;
+download from [Google Drive](https://drive.google.com/drive/folders/1ASQ9_IqeBHhyyFzuqcrWtdebdLiwqQp2)
+and put in the top-level `data/` folder.
+
 
 ## Hawk/Dove - single risk attitude 
 
