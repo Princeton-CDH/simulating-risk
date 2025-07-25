@@ -22,6 +22,8 @@ Refer to [game description](../simulatingrisk/hawkdovemulti) for details.
 * [analysis of parameter correlation with population risk attitudes](hawkdovemulti_adjust/hawkdovemulti_agentrisktotals.ipynb) - analysis based on data from 2024-02
 * [run-length analysis, with parameter correlation](notebooks/hawkdovemulti_adjust/hawkdovemulti_runlength.ipynb) - data from 2024-02
 * [parameter analysis](hawkdovemulti_adjust/hawkdovemulti_polars.ipynb) - data from 2024-02; using Polars to analyze larger scale of data; similar to earlier parameter correlation analysis
+* [adjustment strategy and recent/total payoff](hawkdovemulti_adjust/hdm_analysis.ipynb) - risk attitudes across runs, population category, and paired statistical parameter testing 
+* [convergence & population distribution](hawkdovemulti_adjust/hdm_c7_riskdistribution.ipynb) - data from 2024-02; includes population category analysis based on initial risk distribution
 
 ## Hawk/Dove - single risk attitude 
 
