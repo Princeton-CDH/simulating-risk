@@ -21,6 +21,7 @@ Refer to [game description](../simulatingrisk/hawkdovemulti) for details.
 * [population risk category analysis](hawkdovemulti_adjust/hawkdovevar_population_risk_category.ipynb) - analysis based on data from 2023-10
 * [analysis of parameter correlation with population risk attitudes](hawkdovemulti_adjust/hawkdovemulti_agentrisktotals.ipynb) - analysis based on data from 2024-02
 * [run-length analysis, with parameter correlation](notebooks/hawkdovemulti_adjust/hawkdovemulti_runlength.ipynb) - data from 2024-02
+* [parameter analysis](hawkdovemulti_adjust/hawkdovemulti_polars.ipynb) - data from 2024-02; using Polars to analyze larger scale of data; similar to earlier parameter correlation analysis
 
 ## Hawk/Dove - single risk attitude 
 
