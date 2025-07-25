@@ -15,5 +15,5 @@ Refer to [game description](../simulatingrisk/risky_bet) for details.
 
 Refer to [game description](../simulatingrisk/risky_food) for details.
 
-* [simulation](riskyfood_simulation.ipynb)
-* [batch analysis analysis](riskyfood_batch_analysis.ipynb)
+* [simulation](riskyfood/riskyfood_simulation.ipynb)
+* [batch analysis analysis](riskyfood/riskyfood_batch_analysis.ipynb) 
