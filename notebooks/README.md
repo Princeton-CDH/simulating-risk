@@ -8,8 +8,8 @@ directly within a notebook; others are for analysis of simulation results.
 
 Refer to [game description](../simulatingrisk/risky_bet) for details.
 
-* [simulation](riskybet_simulation.ipynb)
-* [batch analysis analysis](riskybet_batch_analysis.ipynb)
+* [simulation](riskybet/riskybet_simulation.ipynb)
+* [batch analysis analysis](riskybet/riskybet_batch_analysis.ipynb)
 
 ## Risky Food
 
