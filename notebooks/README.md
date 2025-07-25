@@ -25,6 +25,7 @@ Refer to [game description](../simulatingrisk/hawkdovemulti) for details.
 * [adjustment strategy and recent/total payoff](hawkdovemulti_adjust/hdm_analysis.ipynb) - risk attitudes across runs, population category, and paired statistical parameter testing 
 * [convergence & population distribution](hawkdovemulti_adjust/hdm_c7_riskdistribution.ipynb) - data from 2024-02; includes population category analysis based on initial risk distribution
 * [risk adjustment & run length](hawkdovemulti_adjust/hdm_riskadjust_runlength.ipynb) - Convergence and run length based on population measure of change; data from 2024-07
+* [convergence and population with initial hawk odds](/hawkdovemulti_adjust/hdm_c7_hawkodds.ipynb) - data from 2024-03
 
 ## Hawk/Dove - single risk attitude 
 
