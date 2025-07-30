@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulating Risk - Notebooks Index</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                line-height: 1.6;
+                color: #333;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 40px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #eee;
+            }
+            .breadcrumb {
+                margin-bottom: 20px;
+                font-size: 14px;
+                color: #666;
+            }
+            .breadcrumb a {
+                color: #007bff;
+                text-decoration: none;
+            }
+            .breadcrumb a:hover {
+                text-decoration: underline;
+            }
+            .folder-list {
+                list-style: none;
+                padding: 0;
+            }
+            .folder-item {
+                margin: 15px 0;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                border-left: 4px solid #007bff;
+            }
+            .notebook-item {
+                margin: 10px 0;
+                padding: 12px;
+                background-color: #fff;
+                border-radius: 6px;
+                border-left: 3px solid #28a745;
+                margin-left: 20px;
+            }
+            .folder-link {
+                text-decoration: none;
+                color: #007bff;
+                font-weight: bold;
+                font-size: 18px;
+            }
+            .folder-link:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+            .notebook-link {
+                text-decoration: none;
+                color: #28a745;
+                font-weight: 500;
+                font-size: 16px;
+            }
+            .notebook-link:hover {
+                color: #1e7e34;
+                text-decoration: underline;
+            }
+            .folder-description {
+                color: #666;
+                margin-top: 5px;
+                font-size: 14px;
+            }
+            .notebook-description {
+                color: #666;
+                margin-top: 3px;
+                font-size: 13px;
+            }
+            .section-title {
+                color: #495057;
+                border-bottom: 1px solid #dee2e6;
+                padding-bottom: 10px;
+                margin-top: 30px;
+                margin-bottom: 20px;
+            }
+            .info-box {
+                background-color: #e7f1ff;
+                border: 1px solid #b3d9ff;
+                border-radius: 5px;
+                padding: 15px;
+                margin: 20px 0;
+            }
+            .info-box strong {
+                color: #0066cc;
+            }
+            .game-section {
+                margin-bottom: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="breadcrumb">
+            <a href="../index.html">📚 Main Index</a> /
+            <span>📁 Notebooks Index</span>
+        </div>
+
+        <div class="header">
+            <h1>📚 Notebooks Index</h1>
+            <p>Jupyter notebooks for simulation analysis and exploration</p>
+        </div>
+
+        <div class="game-section">
+            <h2 class="section-title">
+                🦅 Hawk/Dove - Multiple Risk Attitudes
+            </h2>
+
+            <div class="folder-item">
+                <div class="folder-link">
+                    <a href="hawkdovemulti-adjust/"
+                        >📁 With Risk Attitude Adjustment</a
+                    >
+                </div>
+                <div class="folder-description">
+                    Analysis of Hawk/Dove simulation where agents can adjust
+                    their risk attitudes over time
+                </div>
+
+                <div class="notebook-item">
+                    <a
+                        href="hawkdovemulti-adjust/hdm_analysis.html"
+                        class="notebook-link"
+                    >
+                        📊 Risk Attitudes & Payoff Analysis
+                    </a>
+                    <div class="notebook-description">
+                        Risk attitudes across runs, population category, and
+                        paired statistical parameter testing
+                    </div>
+                </div>
+
+                <div class="notebook-item">
+                    <a
+                        href="hawkdovemulti-adjust/parameter_analysis.html"
+                        class="notebook-link"
+                    >
+                        📈 Parameter Correlation Analysis
+                    </a>
+                    <div class="notebook-description">
+                        Analysis of parameter correlation with population risk
+                        attitudes using Polars (2024-02 data)
+                    </div>
+                </div>
+
+                <div class="notebook-item">
+                    <a
+                        href="hawkdovemulti-adjust/hdm_c7_riskdistribution.html"
+                        class="notebook-link"
+                    >
+                        📊 Convergence & Population Distribution
+                    </a>
+                    <div class="notebook-description">
+                        Population category analysis based on initial risk
+                        distribution (2024-02 data)
+                    </div>
+                </div>
+
+                <div class="notebook-item">
+                    <a
+                        href="hawkdovemulti-adjust/hdm_riskadjust_runlength.html"
+                        class="notebook-link"
+                    >
+                        ⏱️ Risk Adjustment & Run Length
+                    </a>
+                    <div class="notebook-description">
+                        Convergence and run length based on population measure
+                        of change (2024-07 data)
+                    </div>
+                </div>
+
+                <div class="notebook-item">
+                    <a
+                        href="hawkdovemulti-adjust/hdm_c7_hawkodds.html"
+                        class="notebook-link"
+                    >
+                        🎯 Convergence & Initial Hawk Odds
+                    </a>
+                    <div class="notebook-description">
+                        Population convergence analysis with initial hawk odds
+                        (2024-03 data)
+                    </div>
+                </div>
+            </div>
+
+            <div class="folder-item">
+                <div class="folder-link">
+                    📁 Without Risk Attitude Adjustment
+                </div>
+                <div class="folder-description">
+                    Analysis of Hawk/Dove simulation with fixed multiple risk
+                    attitudes
+                </div>
+
+                <div class="notebook-item">
+                    <a href="hawkdovemulti-noadjust/" class="notebook-link">
+                        📊 Preliminary Analysis
+                    </a>
+                    <div class="notebook-description">
+                        Simulation length, % hawk by risk level, points by risk
+                        level
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer
+            style="
+                margin-top: 50px;
+                text-align: center;
+                color: #666;
+                font-size: 12px;
+            "
+        >
+            <p>
+                Interactive notebooks for the Simulating Risk project.
+                <br />
+                View
+                <a
+                    href="https://py.cafe/app/rlskoeser/simulatingrisk"
+                    target="_blank"
+                    >simulations online</a
+                >.
+            </p>
+        </footer>
+    </body>
+</html>
