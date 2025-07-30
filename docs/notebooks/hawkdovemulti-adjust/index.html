@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Hawk-Dove Multi-Agent (with Adjustment) - Notebooks</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                line-height: 1.6;
+                color: #333;
+                background-color: #fafafa;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 40px;
+                padding: 30px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header h1 {
+                margin: 0 0 10px 0;
+                font-size: 2.2em;
+            }
+            .header p {
+                margin: 0;
+                opacity: 0.9;
+                font-size: 1.1em;
+            }
+            .breadcrumb {
+                margin-bottom: 30px;
+                padding: 10px 15px;
+                background-color: #e9ecef;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            .breadcrumb a {
+                color: #007bff;
+                text-decoration: none;
+            }
+            .breadcrumb a:hover {
+                text-decoration: underline;
+            }
+            .notebook-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            }
+            .notebook-card {
+                background: white;
+                border-radius: 10px;
+                padding: 25px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                transition:
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+                border-left: 4px solid #28a745;
+            }
+            .notebook-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            }
+            .notebook-title {
+                font-size: 1.3em;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #2c3e50;
+            }
+            .notebook-link {
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: 500;
+                transition: background-color 0.2s ease;
+                margin-top: 15px;
+            }
+            .notebook-link:hover {
+                background-color: #0056b3;
+                text-decoration: none;
+                color: white;
+            }
+            .notebook-description {
+                color: #6c757d;
+                font-size: 0.95em;
+                margin-bottom: 10px;
+                line-height: 1.5;
+            }
+            .icon {
+                font-size: 1.2em;
+                margin-right: 8px;
+            }
+            .section-title {
+                color: #495057;
+                border-bottom: 2px solid #dee2e6;
+                padding-bottom: 10px;
+                margin-bottom: 25px;
+                font-size: 1.4em;
+            }
+            .back-link {
+                display: inline-block;
+                margin-bottom: 20px;
+                color: #6c757d;
+                text-decoration: none;
+                font-size: 14px;
+            }
+            .back-link:hover {
+                color: #495057;
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="breadcrumb">
+            <a href="../../index.html">📚 Documentation</a> /
+            <a href="../">📁 Notebooks</a> /
+            <span>Hawk/Dove with Multiple Risk Attitudes and Adjustment</span>
+        </div>
+
+        <div class="header">
+            <h1>Hawk/Dove with Multiple Risk Attitudes and Adjustment</h1>
+        </div>
+
+        <a href="../" class="back-link">← Back to Notebooks index</a>
+
+        <h2 class="section-title">📊 Available Notebook Snapshots</h2>
+
+        <div class="notebook-grid">
+            <div class="notebook-card">
+                <div class="notebook-title">
+                    <span class="icon">📈</span>HDM Analysis
+                </div>
+                <div class="notebook-description">
+                    Analysis of risk attitudes across runs, population category,
+                    and paired statistical testing for parameter significance.
+                </div>
+                <a href="hdm_analysis.html" class="notebook-link"
+                    >View Notebook</a
+                >
+            </div>
+
+            <div class="notebook-card">
+                <div class="notebook-title">
+                    <span class="icon">🎲</span>Initial Hawk Odds and
+                    convergence
+                </div>
+                <div class="notebook-description">
+                    Analysis of convergence, simulation run length, and final
+                    population category based on initial hawk odds.
+                </div>
+                <a href="hdm_c7_hawkodds.html" class="notebook-link"
+                    >View Notebook</a
+                >
+            </div>
+
+            <div class="notebook-card">
+                <div class="notebook-title">
+                    <span class="icon">📊</span>Initial Risk Attitude
+                    Distributions & Population Outcomes
+                </div>
+                <div class="notebook-description">
+                    Analysis of final population category and simulation run
+                    length based on initial risk attitude distribution.
+                </div>
+                <a href="hdm_c7_riskdistribution.html" class="notebook-link"
+                    >View Notebook</a
+                >
+            </div>
+
+            <div class="notebook-card">
+                <div class="notebook-title">
+                    <span class="icon">⏱️</span>Convergence & run length
+                </div>
+                <div class="notebook-description">
+                    Investigation of simulation run lengths and convergence.
+                </div>
+                <a href="hdm_riskadjust_runlength.html" class="notebook-link"
+                    >View Notebook</a
+                >
+            </div>
+
+            <div class="notebook-card">
+                <div class="notebook-title">
+                    <span class="icon">🔬</span>Parameter Analysis
+                </div>
+                <div class="notebook-description">
+                    Parameter significance analysis exploring which features
+                    strongly impact final population risk attitudes.
+                </div>
+                <a href="parameter_analysis.html" class="notebook-link"
+                    >View Notebook</a
+                >
+            </div>
+        </div>
+
+        <footer
+            style="
+                margin-top: 50px;
+                text-align: center;
+                color: #6c757d;
+                font-size: 12px;
+                padding-top: 30px;
+                border-top: 1px solid #dee2e6;
+            "
+        >
+            <p>
+                Hawk-Dove Multi-Agent Simulation Notebooks | Generated:
+                <span id="date"></span>
+            </p>
+            <script>
+                document.getElementById("date").textContent =
+                    new Date().toLocaleDateString();
+            </script>
+        </footer>
+    </body>
+</html>
