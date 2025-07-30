@@ -31,7 +31,8 @@ include = ["simulatingrisk"]
 
 [project.optional-dependencies]
 dev = ["pre-commit", "pytest", "pytest-cov"]
-analysis = ["jupyterlab", "polars", "hvplot", "pyarrow", "altair", "scipy", "scikit-learn", "seaborn"]
+analysis = ["jupyterlab", "polars", "hvplot", "pyarrow", "altair", "scipy", 
+   "scikit-learn", "seaborn", "vegafusion[embed]>=1.5.0", "vl-convert-python", "great-tables"]
 
 [tool.black]
 line-length = 88
