@@ -15,7 +15,10 @@ Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/),
 
 The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple risk attitudes** in this codebase was [reviewed](https://github.com/DHCodeReview/simulating-risk/pull/1) in June 2024 by [Scott Foster](https://github.com/sgfost) and [Malte Vogl](https://github.com/maltevogl) (Senior Research Fellow, Max Planck Institute of Geoanthropology) via [DHTech Community Code Review](https://dhcodereview.github.io/); review was faciliated by [Cole Crawford](https://github.com/ColeDCrawford) (Senior Software Engineer, Harvard Arts and Humanities Research Computing).
 
+
 View an interactive version of the [Hawk/Dove with multiple risk attitudes](https://py.cafe/rlskoeser/simulatingrisk-hawk-dove-multirisk) simulation online.
+
+The simulation can also be run in a Jupyter notebook: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Princeton-CDH/simulating-risk.git?urlpath=%2Fdoc%2Ftree%2Fsimulatingrisk%2Fhawkdovemulti%2Frun_simulation.ipynb)
 
 ## Simulations with risky choices (environment)
 
