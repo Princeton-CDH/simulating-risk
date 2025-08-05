@@ -18,7 +18,7 @@ The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple ris
 
 View an interactive version of the [Hawk/Dove with multiple risk attitudes](https://py.cafe/rlskoeser/simulatingrisk-hawk-dove-multirisk) simulation online.
 
-The simulation can also be run in a Jupyter notebook: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Princeton-CDH/simulating-risk.git?urlpath=%2Fdoc%2Ftree%2Fsimulatingrisk%2Fhawkdovemulti%2Frun_simulation.ipynb)
+The simulation can also be run in a Jupyter notebook: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Princeton-CDH/simulating-risk.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fsimulatingrisk%2Fhawkdovemulti%2Frun_simulation.ipynb)
 
 ## Simulations with risky choices (environment)
 
