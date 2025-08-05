@@ -2,16 +2,14 @@
 
 import argparse
 import csv
-from datetime import datetime
 import multiprocessing
 import os
+from datetime import datetime
 
+from mesa.batchrunner import _collect_data, _make_model_kwargs
 from tqdm.auto import tqdm
 
-from mesa.batchrunner import _make_model_kwargs, _collect_data
-
 from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
-
 
 neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
@@ -40,7 +38,7 @@ params = {
         "risk_adjustment": ["adopt", "average"],
         "risk_distribution": "uniform",
         # use model defaults; grid size must be specified
-        "grid_size": 10,  # 25,
+        "grid_size": [5, 10, 25],
     },
     "payoff": {
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
