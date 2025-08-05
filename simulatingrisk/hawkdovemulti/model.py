@@ -3,8 +3,7 @@ from collections import Counter, deque
 from enum import IntEnum
 from functools import cached_property
 
-
-from simulatingrisk.hawkdove.model import HawkDoveModel, HawkDoveAgent
+from simulatingrisk.hawkdove.model import HawkDoveAgent, HawkDoveModel
 
 
 class HawkDoveMultipleRiskAgent(HawkDoveAgent):
@@ -193,7 +192,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if risk_distribution not in self.risk_distribution_options:
             raise ValueError(
                 f"Unsupported risk distribution '{risk_distribution}'; "
-                + f"must be one of { ', '.join(self.risk_distribution_options) }"
+                + f"must be one of {', '.join(self.risk_distribution_options)}"
             )
 
         # make sure risk adjustment is valid
@@ -350,10 +349,10 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         # this simulation typically takes around 1000 rounds to converge,
         # so don't even bother checking until at least 50 rounds
-        return (
-            self.schedule.steps > max(self.adjust_round_n, 50)
-            # TODO: determine value (% of population?) and/or make configurable
-            and (self.num_agents_risk_changed == 0 or self.sum_risk_level_changes == 6)
+        return self.schedule.steps > max(self.adjust_round_n, 50) and (
+            self.num_agents_risk_changed == 0
+            # NOTE: could adjust the threshold here
+            or self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
         )
 
     @cached_property
@@ -376,8 +375,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # for each risk level, calculate the absolute difference
         for rlevel, total in a.items():
             changes[rlevel] = abs(total - b[rlevel])
+
         return sum([val for val in changes.values()])
-        # return sum([abs(a[rlevel] - b[rlevel]) for rlevel in a.keys()])
 
     def __getattr__(self, attr):
         # support dynamic properties for data collection on total by risk level
