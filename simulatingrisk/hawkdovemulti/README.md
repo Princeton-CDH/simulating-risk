@@ -23,16 +23,31 @@ instead of choosing based on the rules of the game.
 ## Convergence
 
 The model is configured to stop automatically when it has stabilized.
-Convergence is reached when an adjustment round occurs and zero agents
-adjust their risk attitude.
+
+Model and agent data collection reports on whether agents updated their
+risk level in the last adjustment round, and model data collection
+includes a status of "running" or "converged".
+
+### With Adjustment
+
+When adjustment is enabled (adopt / average), convergence is checked
+after the simulation has run for a minimum of 50 rounds.  The simulation
+is considered stable when individual agents are no longer adjusting risk attitudes,
+or when the number of agents in each risk attitude are relatively stable
+(e.g., agents are swapping risk attitudes but the overall total for each
+category is stable).
+
+Convergence is reached when an adjustment round occurs and _either_:
+
+-  _zero_ agents adjust their risk attitude
+- the total changes of agents per risk attitudes is less than 7% of the population size
+
+### Without Adjustment
 
 If adjustment is not enabled, convergence logic falls back to the
-implementation of the hawk/dove single-risk attitude simulation, which is
-based on a stable rolling % average of agents playing hawk.
+implementation of the hawk/dove single-risk attitude simulation. In this case,
+convergence is based on a stable rolling % average of agents playing hawk.
 
-Model and agent data collection also includes reports on whether agents
-updated their risk level in the last adjustment round, and model data collection
-includes a status of "running" or "converged".
 
 ## Batch running
 
