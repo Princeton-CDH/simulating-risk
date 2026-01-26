@@ -23,7 +23,7 @@ simrisk-hawkdovemulti-batchrun = "simulatingrisk.hawkdovemulti.batch_run:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "simulatingrisk.__version__"}
-readme = {file = ["README.md"]}
+readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [tool.setuptools.packages.find]
 include = ["simulatingrisk"]
