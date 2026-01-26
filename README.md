@@ -1,5 +1,8 @@
 # Simulating Risk
 
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18361156.svg)](https://doi.org/10.5281/zenodo.18361156)
 [![DH community code review: June 2024](https://img.shields.io/badge/DHCodeReview-June_2024-blue)](https://github.com/DHCodeReview/simulating-risk/pull/1) [![unit tests](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml)
 
 The code in this repository is associated with the CDH project [Simulating risk, risking simulations](https://cdh.princeton.edu/projects/simulating-risk/).
@@ -19,7 +22,7 @@ Run an interactive version of the simulation online: [Hawk/Dove with multiple ri
 > [!NOTE]
 Altenately, run the simulation in a Jupyter notebook: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Princeton-CDH/simulating-risk.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fsimulatingrisk%2Fhawkdovemulti%2Frun_simulation.ipynb)
 
-The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple risk attitudes** in this codebase was [reviewed](https://github.com/DHCodeReview/simulating-risk/pull/1) in June 2024 by [Scott Foster](https://github.com/sgfost) and [Malte Vogl](https://github.com/maltevogl) (Senior Research Fellow, Max Planck Institute of Geoanthropology) via [DHTech Community Code Review](https://dhcodereview.github.io/); review was faciliated by [Cole Crawford](https://github.com/ColeDCrawford) (Senior Software Engineer, Harvard Arts and Humanities Research Computing).
+The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple risk attitudes** in this codebase was [reviewed](https://github.com/DHCodeReview/simulating-risk/pull/1) in June 2024 by [Scott Foster](https://github.com/sgfost) and [Malte Vogl](https://github.com/maltevogl) (Senior Research Fellow, Max Planck Institute of Geoanthropology) via [DHTech Community Code Review](https://dhcodereview.github.io/); review was facilitated by [Cole Crawford](https://github.com/ColeDCrawford) (Senior Software Engineer, Harvard Arts and Humanities Research Computing).
 
 ## Simulations with risky choices (environment)
 
