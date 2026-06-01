@@ -24,11 +24,8 @@ def groupby_population_risk_category(df):
 
     # add column with readable group labels for the numeric categories
     poprisk_grouped = poprisk_grouped.with_columns(
-        pl.Series(
-            name="type",
-            values=poprisk_grouped["risk_category"].map_elements(
-                RiskState.category, return_type=pl.datatypes.String
-            ),
+        type=pl.col("risk_category").map_elements(
+            RiskState.category, return_dtype=pl.datatypes.String
         )
     )
     return poprisk_grouped
@@ -44,14 +41,14 @@ def graph_population_risk_category(poprisk_grouped):
         .encode(
             x=alt.X(
                 "risk_category",
-                title="risk category",
+                title="Risk Category",
                 axis=alt.Axis(tickCount=13),  # 13 categories
                 scale=alt.Scale(domain=[1, 13]),
             ),
-            y=alt.Y("count", title="Number of runs"),
-            color=alt.Color("type", title="type"),
+            y=alt.Y("count", title="Number of Runs"),
+            color=alt.Color("type", title="Type"),
         )
-        .properties(title="Distribution of runs by final population risk category")
+        .properties(title="Distribution of Runs by Final Population Risk Category")
     )
 
 
