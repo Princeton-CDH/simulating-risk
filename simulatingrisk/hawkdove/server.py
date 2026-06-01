@@ -3,13 +3,13 @@ Configure visualization elements and instantiate a server
 """
 
 import altair as alt
-import solara
 import pandas as pd
+import solara
 
 from simulatingrisk.hawkdove.model import (
+    HawkDoveModel,
     Play,
     divergent_colors_10,
-    HawkDoveModel,
 )
 
 
@@ -150,10 +150,12 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # use divergent color scheme to indicate risk level
     if model.risk_attitudes == "variable":
         colors = list(set(a["color"] for a in all_agent_data))
-        chart_color = alt.Color("color").legend(None).scale(domain=colors, range=colors)
+        chart_color = (
+            alt.Color("color").legend(orient="left").scale(domain=colors, range=colors)
+        )
     elif model.risk_attitudes == "single":
         chart_color = (
-            alt.Color("choice")
+            alt.Color("choice", title="Choice")
             # .legend(None)
             .scale(domain=hawkdove_domain, range=["orange", "blue"])
         )
@@ -161,7 +163,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # optionally display information from multi-risk attitude variant
     if "risk_level_changed" in df.columns:
         outer_color = alt.Color(
-            "risk_level_changed", title="adjusted risk attitude"
+            "risk_level_changed", title="Adjusted Risk Attitude"
         ).scale(
             domain=[False, True],
             range=["transparent", "black"],
@@ -175,7 +177,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         .encode(
             x=alt.X("x", axis=None),  # no x-axis label
             y=alt.Y("y", axis=None),  # no y-axis label
-            size=alt.Size("size", title="points rank"),  # relabel size for legend
+            size=alt.Size("size", title="Payoff Rank"),  # relabel size for legend
             # when fill and color differ, color acts as an outline
             fill=chart_color,
             color=outer_color,

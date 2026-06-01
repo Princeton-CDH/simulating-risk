@@ -1,15 +1,14 @@
 # solara/jupyterviz app
-from mesa.experimental import JupyterViz
-import pandas as pd
 import altair as alt
+import pandas as pd
 import solara
-
+from mesa.experimental import JupyterViz
 
 from simulatingrisk.hawkdove.model import HawkDoveSingleRiskModel
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
-    jupyterviz_params,
     draw_hawkdove_agent_space,
+    jupyterviz_params,
 )
 
 
@@ -24,7 +23,10 @@ def plot_wealth(model):
     chart = (
         alt.Chart(df)
         .mark_bar()
-        .encode(y="wealth", x=alt.X("risk_level", title="risk attitude"))
+        .encode(
+            y=alt.Y("wealth", title="Payoffs"),
+            x=alt.X("risk_level", title="Risk Attitude"),
+        )
     )
     return solara.FigureAltair(chart)
 
@@ -66,7 +68,7 @@ def plot_hawks(model):
                 x=alt.X("index", title="Step"),
                 y=alt.Y(
                     "rolling_percent_hawk",
-                    title="% hawk (rolling average)",
+                    title="Percent Hawk (Rolling Average)",
                     scale=alt.Scale(domain=[0, 1]),
                 ),
             )

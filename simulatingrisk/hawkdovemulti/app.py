@@ -1,17 +1,16 @@
 # solara/jupyterviz app
 import altair as alt
-from mesa.experimental import JupyterViz
 import solara
+from mesa.experimental import JupyterViz
 
-
-from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
+from simulatingrisk.hawkdove.model import divergent_colors_10
 from simulatingrisk.hawkdove.server import (
     agent_portrayal,
     common_jupyterviz_params,
     draw_hawkdove_agent_space,
     neighborhood_sizes,
 )
-from simulatingrisk.hawkdove.model import divergent_colors_10
+from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 
 # start with common hawk/dove params, then add params for variable risk
 jupyterviz_params_var = common_jupyterviz_params.copy()
@@ -83,16 +82,16 @@ def plot_agents_by_risk(model):
         .encode(
             x=alt.X(
                 "risk_level",
-                title="risk attitude",
+                title="Risk Attitude",
                 axis=alt.Axis(tickCount=model.max_risk_level + 1),
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
             ),
-            y=alt.Y("total", title="Number of agents"),
+            y=alt.Y("total", title="Number of Agents"),
             # NOTE: could apply divergent color scheme here, but it's actually
             # distracting from the main point of this chart, which is quantitative
             # color=alt.Color("risk_level:N").scale(**color_scale_opts),
         )
-        .properties(title="Number of agents with each risk attitude")
+        .properties(title="Number of Agents by Risk Attitude")
     )
     return solara.FigureAltair(bar_chart)
 
@@ -130,13 +129,13 @@ def plot_risklevel_changes(model):
         .encode(
             y=alt.Y(
                 "value",
-                title="# changes",
+                title="Number of Changes",
                 scale=alt.Scale(domain=[0, model.num_agents]),
             ),
             x=alt.X("index"),
-            color="category",
+            color=alt.Color("category", title="Category"),
         )
-        .properties(title="Risk attitude adjustments")
+        .properties(title="Risk Attitude Adjustments")
     )
 
     return solara.FigureAltair(line_chart)
@@ -186,14 +185,14 @@ def plot_hawks_by_risk(model):
             x=alt.X("Step", scale=alt.Scale(domain=[min_step, max_step])),
             y=alt.Y(
                 "rolling_pct_hawk",
-                title="rolling % hawk",
+                title="Percent Hawk (Rolling Average)",
                 scale=alt.Scale(domain=[0, 1]),
             ),
-            color=alt.Color("risk_level:N", title="risk attitude").scale(
+            color=alt.Color("risk_level:N", title="Risk Attitude").scale(
                 **color_scale_opts
             ),
         )
-        .properties(title="Rolling average percent hawk by risk level")
+        .properties(title="Rolling Average Percent Hawk by Risk Level")
     )
     return solara.FigureAltair(chart)
 
@@ -215,11 +214,11 @@ def plot_wealth_by_risklevel(model):
             alt.X(
                 "risk_level",
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
-                title="risk attitude",
+                title="Risk Attitude",
             ),
-            alt.Y("points", title="wealth").scale(zero=False),
+            alt.Y("points", title="Payoffs").scale(zero=False),
         )
-        .properties(title="Cumulative wealth by risk attitude")
+        .properties(title="Cumulative Payoff Distribution by Risk Attitude")
     )
     return solara.FigureAltair(wealth_chart)
 
