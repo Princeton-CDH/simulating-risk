@@ -1,7 +1,6 @@
 # Simulating Risk
 
 
-
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18361156.svg)](https://doi.org/10.5281/zenodo.18361156)
 [![DH community code review: June 2024](https://img.shields.io/badge/DHCodeReview-June_2024-blue)](https://github.com/DHCodeReview/simulating-risk/pull/1) [![unit tests](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/Princeton-CDH/simulating-risk/actions/workflows/unit_tests.yml)
 
@@ -83,7 +82,7 @@ An interactive version of the [Solara app with tabs for all simulations](https:/
 is available online.
 
 
-### Running the simulations  (non-solara versions)
+### Running the simulations (non-solara versions)
 
 - Simulations can be run interactively with mesa runserver by specifying
   the path to the model, e.g. `mesa runserver simulatingrisk/risky_bet/`
