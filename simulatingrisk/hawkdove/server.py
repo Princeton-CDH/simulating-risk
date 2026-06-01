@@ -18,38 +18,28 @@ def agent_portrayal(agent):
     portrayal = {
         # styles for mesa runserver
         "Shape": "circle",
-        # "Color": "gray",
-        # "Filled": "true",
         "Layer": 0,
         "r": 0.2,
         "risk_level": agent.risk_level,
         "choice": str(agent.choice),
         # styles for solara / jupyterviz
         "size": 25,
-        # "color": "tab:gray",
     }
     # specific to multiple risk attitude variant
     if hasattr(agent, "risk_level_changed"):
         portrayal["risk_level_changed"] = agent.risk_level_changed
 
     # color based on risk level; risk levels are always 0-9
-    colors = divergent_colors_10
 
-    portrayal["Color"] = colors[agent.risk_level]
-    # copy to lowercase color for solara
-    portrayal["color"] = portrayal["Color"]
-
-    # filled for hawks, hollow for doves
     # (shapes would be better...)
-    portrayal["Filled"] = agent.choice == Play.HAWK
     portrayal["choice"] = "hawk" if agent.choice == Play.HAWK else "dove"
 
     # size based on points within current distribution after first round
     if agent.points > 0:
-        # # set radius based on relative points, but don't go smaller than 1 radius
-        # # or too large to fit in the grid
+        # set radius based on relative points, but don't go smaller than 1 radius
+        # or too large to fit in the grid
         portrayal["r"] = (agent.points_rank / 15) + 0.2
-        # # size for solara / jupyterviz
+        # size for solara / jupyterviz
         portrayal["size"] = (agent.points_rank / 15) * 50
 
     return portrayal
@@ -149,9 +139,16 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # when risk attitude is variable,
     # use divergent color scheme to indicate risk level
     if model.risk_attitudes == "variable":
-        colors = list(set(a["color"] for a in all_agent_data))
+        risk_attitude_domain = list(
+            range(model.min_risk_level, model.max_risk_level + 1)
+        )
         chart_color = (
-            alt.Color("color").legend(orient="left").scale(domain=colors, range=colors)
+            # set to nominal to show all values
+            alt.Color("risk_level", title=["Risk", "Attitude"], type="nominal")
+            # display discrete symbols rather than gradient
+            .legend(orient="left", type="symbol").scale(
+                domain=risk_attitude_domain, range=divergent_colors_10
+            )
         )
     elif model.risk_attitudes == "single":
         chart_color = (
@@ -163,7 +160,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # optionally display information from multi-risk attitude variant
     if "risk_level_changed" in df.columns:
         outer_color = alt.Color(
-            "risk_level_changed", title="Adjusted Risk Attitude"
+            "risk_level_changed", title=["Adjusted", "Risk Attitude"]
         ).scale(
             domain=[False, True],
             range=["transparent", "black"],
