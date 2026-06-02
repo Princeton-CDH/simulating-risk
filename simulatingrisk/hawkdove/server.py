@@ -152,7 +152,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         )
     elif model.risk_attitudes == "single":
         chart_color = (
-            alt.Color("choice", title="Choice")
+            alt.Color("choice", title="Play Choice")
             # .legend(None)
             .scale(domain=hawkdove_domain, range=["orange", "blue"])
         )
@@ -179,7 +179,9 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             fill=chart_color,
             color=outer_color,
             shape=alt.Shape(  # use shape to indicate choice
-                "choice", scale=alt.Scale(domain=hawkdove_domain, range=shape_range)
+                "choice",
+                title="Play Choice",
+                scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
             ),
         )
         .configure_view(strokeOpacity=0)  # hide grid/chart lines
