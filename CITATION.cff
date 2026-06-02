@@ -1,0 +1,35 @@
+# This CITATION.cff file was generated doi2cff, updated with cffinit.
+cff-version: 1.2.0
+title: simulating-risk v1.0
+message: >-
+  If you use this software, please cite it using these
+  metadata.
+type: software
+authors:
+  - given-names: Rebecca Sutton
+    family-names: Koeser
+    affiliation: Princeton University
+    orcid: 'https://orcid.org/0000-0002-8762-8057'
+  - given-names: Lara
+    family-names: Buchak
+    affiliation: Princeton University
+    orcid: 'https://orcid.org/0000-0002-0232-4274'
+repository-code: 'https://github.com/Princeton-CDH/simulating-risk'
+url: 'https://cdh.princeton.edu/projects/simulating-risk/'
+abstract: >-
+  Code associated with the "Simulating risk, risking
+  simulations" led by Lara Buchak, supported by the Center
+  for Digital Humanities at Princeton University
+  Simulations are implemented in the Mesa Framework, using
+  Agent Based Modeling to explore risk attitudes within
+  populations.
+keywords:
+  - Computer Simulation
+  - Decision Theory
+  - Game Theory
+  - Risk Attitudes
+  - Risk-Weighted Expected Utility
+license: Apache-2.0
+version: '1.0'
+date-released: '2026-01-24'
+doi: 10.5281/zenodo.18361157
