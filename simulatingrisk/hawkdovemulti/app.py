@@ -20,7 +20,7 @@ jupyterviz_params_var.update(
             "type": "Select",
             "value": "adopt",
             "values": ["none", "adopt", "average"],
-            "description": "If and how agents update their risk level",
+            "description": "If and how agents update their risk attitude",
         },
         "risk_distribution": {
             "type": "Select",
@@ -142,7 +142,7 @@ def plot_risklevel_changes(model):
 
 
 def plot_hawks_by_risk(model):
-    """plot rolling mean of percent of agents in each risk level
+    """plot rolling mean of percent of agents in each risk attitude
     who chose hawk over last several rounds"""
 
     # in the first round, mesa returns a dataframe full of NAs; ignore that
@@ -160,7 +160,7 @@ def plot_hawks_by_risk(model):
     last_n_rounds["hawk"] = last_n_rounds.choice.apply(
         lambda x: 1 if x == "hawk" else 0
     )
-    # for each step and risk level, get number of agents and number of hawks
+    # for each step and risk attitude, get number of agents and number of hawks
     grouped = (
         last_n_rounds.groupby(["Step", "risk_level"], as_index=False)
         .agg(hawk=("hawk", "sum"), agents=("AgentID", "count"))
@@ -192,13 +192,13 @@ def plot_hawks_by_risk(model):
                 **color_scale_opts
             ),
         )
-        .properties(title="Rolling Average Percent Hawk by Risk Level")
+        .properties(title="Rolling Average Percent Hawk by Risk Attitude")
     )
     return solara.FigureAltair(chart)
 
 
 def plot_wealth_by_risklevel(model):
-    """plot wealth distribution for each risk level"""
+    """plot wealth distribution for each risk attitude"""
     agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
     if agent_df.empty:
         return
