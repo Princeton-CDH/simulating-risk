@@ -129,12 +129,12 @@ class RiskState(IntEnum):
         if isinstance(val, RiskState):
             val = val.value
         if val in {1, 2, 3, 4}:
-            return "majority risk inclined"
+            return "Majority Risk-Seeking"
         if val in {5, 6, 7, 8}:
-            return "majority risk moderate"
+            return "Majority Risk-Moderate"
         if val in {9, 10, 11, 12}:
-            return "majority risk avoidant"
-        return "no majority"
+            return "Majority Risk-Averse"
+        return "No Majority"
 
     def __str__(self):
         # override string method to return just the numeric value,

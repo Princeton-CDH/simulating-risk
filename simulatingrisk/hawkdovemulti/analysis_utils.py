@@ -41,14 +41,14 @@ def graph_population_risk_category(poprisk_grouped):
         .encode(
             x=alt.X(
                 "risk_category",
-                title="Risk Category",
+                title="Convergence State Category",
                 axis=alt.Axis(tickCount=13),  # 13 categories
                 scale=alt.Scale(domain=[1, 13]),
             ),
             y=alt.Y("count", title="Number of Runs"),
             color=alt.Color("type", title="Type"),
         )
-        .properties(title="Distribution of Runs by Final Population Risk Category")
+        .properties(title="Distribution of Convergence States across Simulation Runs")
     )
 
 
