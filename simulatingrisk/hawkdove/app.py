@@ -24,7 +24,7 @@ def plot_wealth(model):
         alt.Chart(df)
         .mark_bar()
         .encode(
-            y=alt.Y("wealth", title="Payoffs"),
+            y=alt.Y("wealth", title="Cumulative Payoff"),
             x=alt.X("risk_level", title="Risk Attitude"),
         )
     )

@@ -216,7 +216,7 @@ def plot_wealth_by_risklevel(model):
                 scale=alt.Scale(domain=[model.min_risk_level, model.max_risk_level]),
                 title="Risk Attitude",
             ),
-            alt.Y("points", title="Payoffs").scale(zero=False),
+            alt.Y("points", title="Cumulative Payoff").scale(zero=False),
         )
         .properties(title="Cumulative Payoff Distribution by Risk Attitude")
     )
