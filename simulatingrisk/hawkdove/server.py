@@ -127,9 +127,8 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             all_agent_data.append(agent_data)
 
     df = pd.DataFrame(all_agent_data)
-    # print(all_agent_data)
 
-    # use grid x,y coordinates to plot, but supress axis labels
+    # use grid x,y coordinates to plot, but suppress axis labels
 
     # currently passing in actual colors, not a variable to use for color
     # use domain/range to use color for display
@@ -159,11 +158,18 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
 
     # optionally display information from multi-risk attitude variant
     if "risk_level_changed" in df.columns:
+        # map true/false to readable labels for display in the chart
+        df["risk_attitude_adjustment"] = df["risk_level_changed"].map(
+            {True: "adjusted", False: "didn't adjust"}
+        )
+
         outer_color = alt.Color(
-            "risk_level_changed", title=["Adjusted", "Risk Attitude"]
+            # use list to split legend title across two lines, for brevity
+            "risk_attitude_adjustment",
+            title=["Adjusted", "Risk Attitude"],
         ).scale(
-            domain=[False, True],
-            range=["transparent", "black"],
+            domain=["adjusted", "didn't adjust"],
+            range=["black", "transparent"],
         )
     else:
         outer_color = chart_color
