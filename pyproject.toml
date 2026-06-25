@@ -14,7 +14,7 @@ dependencies = [
     "mesa==2.1.5",
     # "mesa @ git+https://github.com/projectmesa/mesa.git@main",
     "matplotlib",  # required by mesa
-    "altair>5.0.1"
+    "altair<6.0,>=5.5.0"  # 6.1 not compatible with mesa/solara version
 ]
 dynamic = ["version", "readme"]
 
@@ -31,8 +31,8 @@ include = ["simulatingrisk"]
 
 [project.optional-dependencies]
 dev = ["pre-commit", "pytest", "pytest-cov"]
-analysis = ["jupyterlab", "polars", "hvplot", "pyarrow", "altair", "scipy", 
-   "scikit-learn", "seaborn", "vegafusion[embed]>=1.5.0", "vl-convert-python", "great-tables"]
+analysis = ["jupyterlab", "polars>1.41.2", "hvplot", "pyarrow", "scipy", 
+   "scikit-learn", "seaborn", "vegafusion[embed]>=2.0.3", "vl-convert-python>=1.9.0", "great-tables"]
 
 [tool.black]
 line-length = 88

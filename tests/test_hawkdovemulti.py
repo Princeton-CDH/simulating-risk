@@ -172,13 +172,13 @@ def test_population_risk_category():
 
 def test_riskstate_label():
     # enum value or integer value
-    assert RiskState.category(RiskState.c1) == "majority risk inclined"
-    assert RiskState.category(2) == "majority risk inclined"
-    assert RiskState.category(RiskState.c5) == "majority risk moderate"
-    assert RiskState.category(6) == "majority risk moderate"
-    assert RiskState.category(RiskState.c11) == "majority risk avoidant"
-    assert RiskState.category(RiskState.c13) == "no majority"
-    assert RiskState.category(13) == "no majority"
+    assert RiskState.category(RiskState.c1) == "Majority Risk-Seeking"
+    assert RiskState.category(2) == "Majority Risk-Seeking"
+    assert RiskState.category(RiskState.c5) == "Majority Risk-Moderate"
+    assert RiskState.category(6) == "Majority Risk-Moderate"
+    assert RiskState.category(RiskState.c11) == "Majority Risk-Averse"
+    assert RiskState.category(RiskState.c13) == "No Majority"
+    assert RiskState.category(13) == "No Majority"
 
 
 def test_riskstate_str():

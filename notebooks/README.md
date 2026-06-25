@@ -61,6 +61,8 @@ HTML notebooks should be put under top-level `docs/` folder.
 jupyter-nbconvert --to html notebooks/hawkdovemulti_adjust/hawkdovemulti_agentrisktotals.ipynb --output-dir=docs/notebooks/hawkdovemulti-adjust/ --output=parameter_analysis
 jupyter-nbconvert --to html notebooks/hawkdovemulti_adjust/hdm_analysis.ipynb --output-dir=docs/notebooks/hawkdovemulti-adjust/
 jupyter-nbconvert --to html --output-dir=docs/notebooks/hawkdovemulti-adjust/ notebooks/hawkdovemulti_adjust/hdm_c7_riskdistribution.ipynb
+jupyter-nbconvert --to html --output-dir=docs/notebooks/hawkdovemulti-adjust/ notebooks/hawkdovemulti_adjust/hdm_c7_hawkodds.ipynb
+jupyter-nbconvert --to html notebooks/hawkdovemulti_noadjust/analyze_batchrun_data.ipynb --output-dir=docs/notebooks/hawkdovemulti-noadjust/ --output=index
 ```
 
 
