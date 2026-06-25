@@ -36,6 +36,13 @@ def test_init():
     assert model.hawk_odds == 0.2
     assert model.play_neighborhood == 4
     assert model.adjust_neighborhood == 24
+    assert model.min_risk_level == 0
+    assert model.max_risk_level == 9
+
+    # initialize with risk attitude endpoints not included
+    model = HawkDoveMultipleRiskModel(grid_size=5, include_endpoints=False)
+    assert model.min_risk_level == 1
+    assert model.max_risk_level == 8
 
     # handle string none for solara app parameters
     model = HawkDoveMultipleRiskModel(5, risk_adjustment="none")
@@ -453,6 +460,18 @@ def test_get_risk_attitude_generator():
     next(risk_gen)
     model.random.gauss.assert_any_call(0, 1.5)
     model.random.gauss.assert_any_call(9, 1.5)
+
+    # confirm that bimodal risk attitude generator honors min/max risk attitudes
+    model = HawkDoveMultipleRiskModel(
+        3, include_endpoints=False, risk_distribution="bimodal"
+    )
+    model.random = Mock()
+    model.random.gauss.return_value = 3.2
+    risk_gen = model.get_risk_attitude_generator()
+    next(risk_gen)
+    next(risk_gen)
+    model.random.gauss.assert_any_call(1, 1.5)
+    model.random.gauss.assert_any_call(8, 1.5)
 
 
 def test_get_risk_attitude():

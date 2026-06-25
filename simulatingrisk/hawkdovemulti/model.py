@@ -193,6 +193,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         adjust_every=10,
         adjust_neighborhood=None,
         adjust_payoff="recent",
+        include_endpoints=True,
         *args,
         **kwargs,
     ):
@@ -222,6 +223,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 f"Unsupported adjust payoff option '{adjust_payoff}'; "
                 + f"must be one of {adjust_payoffs_opts}"
             )
+
+        # if endpoints are not included, shift min/max risk attitude from 0-9 to 1-8
+        if not include_endpoints:
+            self.min_risk_level = 1
+            self.max_risk_level = 8
 
         # initialize a risk attitude generator based on configured distrbution
         # must be set before calling super for agent init
@@ -272,8 +278,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             # values from two different normal distributions centered
             # around the beginning and end of our risk attitude range
             while True:
-                yield round(self.random.gauss(0, 1.5))
-                yield round(self.random.gauss(9, 1.5))
+                yield round(self.random.gauss(self.min_risk_level, 1.5))
+                yield round(self.random.gauss(self.max_risk_level, 1.5))
                 # NOTE: on smaller grids, using 0/9 makes it extremely
                 # unlikely to get mid-range risk values (4/5)
 
