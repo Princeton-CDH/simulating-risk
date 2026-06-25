@@ -1,12 +1,12 @@
 import statistics
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
 from simulatingrisk.hawkdove.model import Play
 from simulatingrisk.hawkdovemulti.model import (
-    HawkDoveMultipleRiskModel,
     HawkDoveMultipleRiskAgent,
+    HawkDoveMultipleRiskModel,
     RiskState,
 )
 
@@ -213,6 +213,31 @@ def test_most_successful_neighbor():
         assert agent_total.most_successful_neighbor.points == 31
         # comparing by recent points
         assert agent_recent.most_successful_neighbor.recent_points == 13
+
+    # choose randomly when there is a tie
+    mock_neighbors = [
+        Mock(points=22, recent_points=1, id=1),
+        Mock(points=14, recent_points=9, id=2),
+        Mock(points=22, recent_points=8, id=3),
+        Mock(points=13, recent_points=9, id=4),
+    ]
+
+    with patch.object(HawkDoveMultipleRiskAgent, "adjust_neighbors", mock_neighbors):
+        # comparing by total points
+        assert agent_total.most_successful_neighbor.points == 22
+
+        # make a set to track best neighbors and run multiple times
+        # to ensure we get them both
+        best_neighbor = set()
+        recent_best = set()
+        for _ in range(10):
+            best_neighbor.add(agent_total.most_successful_neighbor.id)
+            recent_best.add(agent_recent.most_successful_neighbor.id)
+
+        # neighbors 1 and 3 both have 22 points - should see both if we check ten times
+        assert best_neighbor == {1, 3}
+        # neighbors 2 and 4 both have best recent points - should see both
+        assert recent_best == {2, 4}
 
 
 def test_compare_payoff():

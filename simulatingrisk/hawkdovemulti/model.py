@@ -1,5 +1,6 @@
+import random
 import statistics
-from collections import Counter, deque
+from collections import Counter, defaultdict, deque
 from enum import IntEnum
 from functools import cached_property
 
@@ -62,11 +63,22 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         # sort neighbors by points, highest points first
         # adapted from risky bet wealthiest neighbor
 
-        return sorted(
-            self.adjust_neighbors,
-            key=lambda x: getattr(x, self.compare_payoff_field),
-            reverse=True,
-        )[0]
+        # organize neighbors by score; use dict of list,
+        # since it's possible to have ties
+        neighbors_by_score = defaultdict(list)
+        best_payoff = 0
+        for neighbor in self.adjust_neighbors:
+            points = getattr(neighbor, self.compare_payoff_field)
+            best_payoff = max(best_payoff, points)
+            neighbors_by_score[points].append(neighbor)
+
+        # get the list of all neighbors with the best payoff
+        most_successful = neighbors_by_score[best_payoff]
+        # if there is only one, return it
+        if len(most_successful) == 1:
+            return most_successful[0]
+        # if one or more tied, choose randomly
+        return random.choice(most_successful)
 
     def adjust_risk(self):
         # look at neighbors
