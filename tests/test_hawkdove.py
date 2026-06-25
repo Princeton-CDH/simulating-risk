@@ -95,8 +95,7 @@ def test_model_single_risk_level():
 
 
 def test_model_converged():
-    risk_level = 3
-    model = HawkDoveSingleRiskModel(5, agent_risk_level=risk_level)
+    model = HawkDoveSingleRiskModel(5, agent_risk_level=4)
 
     # before minimum number of steps, will always be false
     model.schedule.steps = model.min_steps_converge - 1
@@ -105,6 +104,7 @@ def test_model_converged():
     model.schedule.steps = model.min_steps_converge + 1
     # set min window smaller for testing purposes
     model.min_window = 3
+    # convergence is based on rolling average percent hawk
     model.recent_rolling_percent_hawk = [0.49, 0.48, 0.50, 0.47]
     assert not model.converged
 

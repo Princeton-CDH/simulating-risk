@@ -1,4 +1,5 @@
 import statistics
+from collections import Counter
 from unittest.mock import Mock, patch
 
 import pytest
@@ -62,6 +63,15 @@ def test_init_variable_risk_level():
     # when risk level is variable/random, agents should have different risk levels
     risk_levels = set([agent.risk_level for agent in model.schedule.agents])
     assert len(risk_levels) > 1
+
+
+def test_init_min_run_length():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment=None)
+    assert model.min_steps_converge == HawkDoveMultipleRiskModel.min_steps_converge
+
+    # higher minimum when adjustment is enabled
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    assert model.min_steps_converge == HawkDoveMultipleRiskModel.min_steps_adjusting
 
 
 adjustment_testdata = [
@@ -175,6 +185,82 @@ def test_population_risk_category():
     model.schedule.agents = [Mock(risk_level=7), Mock(risk_level=8), Mock(risk_level=9)]
     del model.total_per_risk_level  #  reset cached property
     assert model.population_risk_category == RiskState.c12
+
+
+def test_model_converged():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment=None)
+
+    # non-adjusting case is the same logic as the base class
+
+    # before minimum number of steps, will always be false
+    model.schedule.steps = model.min_steps_converge - 1
+    assert not model.converged
+
+    model.schedule.steps = model.min_steps_converge + 1
+    # set min window smaller for testing purposes
+    model.min_window = 3
+    # convergence is based on rolling average percent hawk
+    model.recent_rolling_percent_hawk = [0.49, 0.48, 0.50, 0.47]
+    assert not model.converged
+
+    # adjustment converge logic is different
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    # simulate no adjustments on last round
+    with patch.multiple(HawkDoveMultipleRiskModel, num_agents_risk_changed=0):
+        model.schedule.steps = model.min_steps_converge - 1
+        assert not model.converged
+
+        model.schedule.steps = model.min_steps_converge + 1
+        assert model.converged
+
+    # test convergence based on sum of risk level changes
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=5, sum_risk_level_changes=10
+    ):
+        assert not model.converged
+    # 5x5 grid = 25 agents; 7% = 1.75, so threshold is 1
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=5, sum_risk_level_changes=1
+    ):
+        assert model.converged
+
+        # convergence logic honors min steps
+        model.schedule.steps = model.min_steps_converge - 1
+        assert not model.converged
+
+
+def test_sum_risk_level_changes():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    # populate recent risk numbers from a sample run
+    model.recent_total_per_risk_level = [
+        Counter({0: 21, 2: 7, 3: 13, 4: 23, 7: 20, 8: 5, 9: 11}),
+        Counter({0: 22, 2: 7, 3: 13, 4: 20, 7: 21, 8: 5, 9: 12}),
+        #    1     0      0      3      1     0      1
+    ]
+    assert model.sum_risk_level_changes == 6
+
+    # handle case when there is not yet enough data
+    del model.sum_risk_level_changes  # clear cached property
+    del model.recent_total_per_risk_level[1]  # reduce to list of 1
+    assert model.sum_risk_level_changes is None
+
+    del model.sum_risk_level_changes  # clear cached property
+    model.recent_total_per_risk_level = []  # empty list
+    assert model.sum_risk_level_changes is None
+
+    # count when there is a mismatch in risk levels with counts
+    del model.sum_risk_level_changes  # clear cached property
+    # 4 is in a but not b
+    model.recent_total_per_risk_level = [
+        Counter({2: 7, 3: 13, 4: 2, 5: 20}),
+        Counter({2: 7, 3: 12, 5: 21}),
+        #   0      1     2      1
+    ]
+    assert model.sum_risk_level_changes == 4
+    del model.sum_risk_level_changes  # clear cached property
+    # not order dependent
+    reversed(model.recent_total_per_risk_level)
+    assert model.sum_risk_level_changes == 4
 
 
 def test_riskstate_label():

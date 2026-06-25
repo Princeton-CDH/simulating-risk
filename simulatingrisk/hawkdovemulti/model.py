@@ -405,11 +405,14 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         a = self.recent_total_per_risk_level[0]
         b = self.recent_total_per_risk_level[1]
         changes = {}
-        # for each risk level, calculate the absolute difference
-        for rlevel, total in a.items():
-            changes[rlevel] = abs(total - b[rlevel])
-
-        return sum([val for val in changes.values()])
+        # for each risk level, calculate the absolute difference.
+        # check all risk levels, since when adjustment results in no
+        # agents in with particular risk attitude the counts may not match
+        for rlevel in range(self.min_risk_level, self.max_risk_level + 1):
+            # Counter returns zero for any missing items
+            changes[rlevel] = abs(a[rlevel] - b[rlevel])
+        # return the sum of changes across all risk levels
+        return sum(changes.values())
 
     def __getattr__(self, attr):
         # support dynamic properties for data collection on total by risk level
