@@ -1,7 +1,7 @@
-from enum import Enum
-from collections import deque
 import math
 import statistics
+from collections import deque
+from enum import Enum
 
 import mesa
 
@@ -216,7 +216,7 @@ class HawkDoveModel(mesa.Model):
         play_neighborhood=8,
         observed_neighborhood=8,
         hawk_odds=0.5,
-        random_play_odds=0.00,
+        random_play_odds=0.01,
     ):
         super().__init__()
         # check parameters for combinations that aren't allowed together
