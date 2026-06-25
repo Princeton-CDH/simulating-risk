@@ -175,6 +175,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     risk_attitudes = "variable"
     agent_class = HawkDoveMultipleRiskAgent
 
+    #: minimum steps before model can converge
+    min_steps_converge = 50
+    #: higher minimum when risk adjustment is enabled
+    min_steps_adjusting = 300
+
     supported_risk_adjustments = (None, "adopt", "average")
     supported_adjust_payoffs = ("recent", "total")
     risk_distribution_options = (
@@ -217,6 +222,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 f"Unsupported risk adjustment '{risk_adjustment}'; "
                 + f"must be one of {risk_adjust_opts}"
             )
+
+        # update the minimum rounds for convergence when adjustment is enabled
+        if risk_adjustment is not None:
+            self.min_steps_converge = self.min_steps_adjusting
+
         if adjust_payoff not in self.supported_adjust_payoffs:
             adjust_payoffs_opts = ", ".join(self.supported_adjust_payoffs)
             raise ValueError(
@@ -365,9 +375,14 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if not self.risk_adjustment:
             return super().converged
 
+        # don't check for convergence until after the configured min step
+        # (duplicates base class logic since we otherwise override)
+        if self.schedule.steps < self.min_steps_converge:
+            return False
+
         # this simulation typically takes around 1000 rounds to converge,
         # so don't even bother checking until at least 50 rounds
-        return self.schedule.steps > max(self.adjust_round_n, 50) and (
+        return (
             self.num_agents_risk_changed == 0
             # NOTE: could adjust the threshold here
             or self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07

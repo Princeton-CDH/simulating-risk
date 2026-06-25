@@ -201,6 +201,8 @@ class HawkDoveModel(mesa.Model):
     rolling_window = 30
     #: minimum size before calculating rolling average
     min_window = 15
+    #: minimum steps before model can converge
+    min_steps_converge = 30
     #: class to use when initializing agents
     agent_class = HawkDoveAgent
     #: supported neighborhood sizes
@@ -320,6 +322,9 @@ class HawkDoveModel(mesa.Model):
 
     @property
     def rolling_percent_hawk(self):
+        # rolling average of percent hawk, included in data collection
+        # only generated after a defined minimum window
+
         # make sure we have enough values to check
         if len(self.recent_percent_hawk) > self.min_window:
             rolling_phawk = statistics.mean(self.recent_percent_hawk)
@@ -334,6 +339,10 @@ class HawkDoveModel(mesa.Model):
         # within our rolling window, return true
         # - currently checking for single value;
         #  could allow for a small amount variation if necessary
+
+        # don't check before a minimum number of steps
+        if self.schedule.steps < self.min_steps_converge:
+            return False
 
         # in variable risk with risk adjustment, numbers are not strictly equal
         # but do get close and fairly stable; round to two digits before comparing
