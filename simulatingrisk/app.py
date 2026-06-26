@@ -51,55 +51,61 @@ def _():
     import marimo as mo
     import altair as alt
     from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
+    from simulatingrisk.hawkdovemulti.app import (
+        jupyterviz_params_var,
+        plot_agents_by_risk,
+        plot_hawks_by_risk,
+        plot_wealth_by_risklevel,
+        plot_risklevel_changes,
+    )
+
     from simulatingrisk.hawkdove.server import (
         agent_portrayal,
         draw_hawkdove_agent_space,
     )
-    from simulatingrisk.hawkdove.model import divergent_colors_10
 
     return (
         HawkDoveMultipleRiskModel,
         agent_portrayal,
         alt,
-        divergent_colors_10,
         draw_hawkdove_agent_space,
+        jupyterviz_params_var,
         mo,
+        plot_agents_by_risk,
+        plot_hawks_by_risk,
+        plot_risklevel_changes,
+        plot_wealth_by_risklevel,
     )
 
 
 @app.cell
-def _(HawkDoveMultipleRiskModel, mo):
-    params = mo.ui.dictionary(
-        {
-            "grid_size": mo.ui.slider(
-                5, 40, value=10, step=1, label="Grid Size", show_value=True
-            ),
-            "risk_adjustment": mo.ui.dropdown(
-                ["none", "adopt", "average"],
-                value="adopt",
-                label="Risk Adjustment",
-            ),
-            "risk_distribution": mo.ui.dropdown(
-                list(HawkDoveMultipleRiskModel.risk_distribution_options),
-                value="uniform",
-                label="Risk Distribution",
-            ),
-            "adjust_every": mo.ui.slider(
-                1, 30, value=10, step=1, label="Adjust Every N Rounds", show_value=True
-            ),
-            "hawk_odds": mo.ui.slider(
-                0.0, 1.0, value=0.5, step=0.1, label="Hawk Odds", show_value=True
-            ),
-            "random_play_odds": mo.ui.slider(
-                0.0,
-                0.2,
-                value=0.01,
-                step=0.01,
-                label="Random Play Odds",
-                show_value=True,
-            ),
-        }
-    )
+def _(jupyterviz_params_var, mo):
+    def config_params():
+        ui_params = {}
+
+        for param, opts in jupyterviz_params_var.items():
+            # doesn't curently use description
+            control = None
+            if opts["type"] in ["SliderInt", "SliderFloat"]:
+                control = mo.ui.slider(
+                    start=opts["min"],
+                    stop=opts["max"],
+                    step=opts["step"],
+                    value=opts["value"],
+                    label=opts["label"],
+                    show_value=True,
+                )
+            elif opts["type"] == "Select":
+                control = mo.ui.dropdown(
+                    options=opts["values"], label=opts.get("label"), value=opts["value"]
+                )
+
+            if control is not None:
+                ui_params[param] = control
+
+        return mo.ui.dictionary(ui_params)
+
+    params = config_params()
     return (params,)
 
 
@@ -129,7 +135,6 @@ def _(
         widths=[1, 4],
         align="start",
     )
-
     return
 
 
@@ -167,7 +172,6 @@ def _(mo):
     refresh = mo.ui.refresh(
         default_interval="0.5s", options=["0.1s", "0.2s", "0.5s", "1s", "2s"]
     )
-
     return (refresh,)
 
 
@@ -245,10 +249,13 @@ def _(is_running, mo, model_state, step_count):
 def _(
     agent_portrayal,
     alt,
-    divergent_colors_10,
     draw_hawkdove_agent_space,
     mo,
     model_state,
+    plot_agents_by_risk,
+    plot_hawks_by_risk,
+    plot_risklevel_changes,
+    plot_wealth_by_risklevel,
     step_count,
 ):
     # Charts — depends on step_count so this cell re-runs on every model step.
@@ -260,6 +267,14 @@ def _(
             "_Click **▶ Run** or **⏭ Step** to start the simulation._"
         )
     else:
+        # measures=[
+        #        plot_agents_by_risk,
+        #        plot_hawks_by_risk,
+        #        plot_wealth_by_risklevel,
+        #        plot_risklevel_changes,
+        #        # plot_hawks,
+        #    ],
+
         _grid = draw_hawkdove_agent_space(_model, agent_portrayal)
 
         _agent_df = (
@@ -270,29 +285,35 @@ def _(
         _charts = [_grid]
 
         if not _agent_df.empty:
-            _last_step = _agent_df.Step.max()
-            _last_round = _agent_df[_agent_df.Step == _last_step]
-            _by_risk = _last_round.groupby("risk_level", as_index=False).agg(
-                total=("AgentID", "count")
-            )
-            _bar = (
-                alt.Chart(_by_risk)
-                .mark_bar(width=14)
-                .encode(
-                    x=alt.X(
-                        "risk_level",
-                        title="Risk Attitude",
-                        axis=alt.Axis(tickCount=10),
-                        scale=alt.Scale(domain=[0, 9]),
-                    ),
-                    y=alt.Y("total", title="Agents"),
-                    color=alt.Color("risk_level:N", legend=None).scale(
-                        domain=list(range(10)), range=divergent_colors_10
-                    ),
-                )
-                .properties(title="Agents by Risk Attitude", width=280, height=180)
-            )
-            _charts.append(_bar)
+            # TODO: add color by risk attitude
+            _charts.append(plot_agents_by_risk(_model))
+            _charts.append(plot_hawks_by_risk(_model))
+            _charts.append(plot_wealth_by_risklevel(_model))
+            _charts.append(plot_risklevel_changes(_model))
+
+            # _last_step = _agent_df.Step.max()
+            # _last_round = _agent_df[_agent_df.Step == _last_step]
+            # _by_risk = _last_round.groupby("risk_level", as_index=False).agg(
+            #     total=("AgentID", "count")
+            # )
+            # _bar = (
+            #     alt.Chart(_by_risk)
+            #     .mark_bar(width=14)
+            #     .encode(
+            #         x=alt.X(
+            #             "risk_level",
+            #             title="Risk Attitude",
+            #             axis=alt.Axis(tickCount=10),
+            #             scale=alt.Scale(domain=[0, 9]),
+            #         ),
+            #         y=alt.Y("total", title="Agents"),
+            #         color=alt.Color("risk_level:N", legend=None).scale(
+            #             domain=list(range(10)), range=divergent_colors_10
+            #         ),
+            #     )
+            #     .properties(title="Agents by Risk Attitude", width=280, height=180)
+            # )
+            # _charts.append(_bar)
 
         if not _model_df.empty:
             _hawk_df = _model_df.dropna(subset=["percent_hawk"])
@@ -320,8 +341,7 @@ def _(
                     )
                 _charts.append(_line)
 
-        simulation_display = mo.hstack(_charts, gap=2)
-
+        simulation_display = mo.hstack(_charts, gap=0, wrap=True)
     return (simulation_display,)
 
 
