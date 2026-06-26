@@ -4,6 +4,7 @@
 #   "altair>=5.5.0,<6.0",
 #   "pandas",
 #   "marimo>=0.23.11",
+#   "simulatingrisk==1.0.0.post1",
 # ]
 # ///
 # mesa and simulatingrisk are installed in the init cell below because mesa's
@@ -12,7 +13,7 @@
 
 import marimo
 
-__generated_with = "0.14.13"
+__generated_with = "0.23.11"
 app = marimo.App(width="full")
 
 
@@ -49,94 +50,21 @@ async def _():
 def _():
     import marimo as mo
     import altair as alt
-    import pandas as pd
     from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
-    from simulatingrisk.hawkdove.model import divergent_colors_10, Play
+    from simulatingrisk.hawkdove.server import (
+        agent_portrayal,
+        draw_hawkdove_agent_space,
+    )
+    from simulatingrisk.hawkdove.model import divergent_colors_10
 
-    return HawkDoveMultipleRiskModel, Play, alt, divergent_colors_10, mo, pd
-
-
-@app.cell
-def _(Play, alt, divergent_colors_10, pd):
-    # Inlined from hawkdove/server.py to avoid its top-level `import solara`
-    # (Solara is a server framework and won't load in Pyodide/WASM).
-
-    def agent_portrayal(agent):
-        portrayal = {
-            "size": 25,
-            "risk_level": agent.risk_level,
-            "choice": "hawk" if agent.choice == Play.HAWK else "dove",
-        }
-        if hasattr(agent, "risk_level_changed"):
-            portrayal["risk_level_changed"] = agent.risk_level_changed
-        if agent.points > 0:
-            portrayal["size"] = (agent.points_rank / 15) * 50
-        return portrayal
-
-    def draw_hawkdove_agent_space(model, portrayal_fn):
-        all_agent_data = []
-        for i in range(model.grid.width):
-            for j in range(model.grid.height):
-                content = model.grid._grid[i][j]
-                if not content:
-                    continue
-                if not hasattr(content, "__iter__"):
-                    content = [content]
-                for agent in content:
-                    data = portrayal_fn(agent)
-                    data["x"] = i
-                    data["y"] = j
-                    all_agent_data.append(data)
-
-        df = pd.DataFrame(all_agent_data)
-
-        hawkdove_domain = ("hawk", "dove")
-        shape_range = ("triangle-up", "circle")
-
-        if model.risk_attitudes == "variable":
-            risk_domain = list(range(model.min_risk_level, model.max_risk_level + 1))
-            chart_color = (
-                alt.Color("risk_level", title=["Risk", "Attitude"], type="nominal")
-                .legend(orient="left", type="symbol")
-                .scale(domain=risk_domain, range=divergent_colors_10)
-            )
-        else:
-            chart_color = alt.Color("choice", title="Play Choice").scale(
-                domain=hawkdove_domain, range=["orange", "blue"]
-            )
-
-        if "risk_level_changed" in df.columns:
-            df["risk_attitude_adjustment"] = df["risk_level_changed"].map(
-                {True: "adjusted", False: "didn't adjust"}
-            )
-            outer_color = alt.Color(
-                "risk_attitude_adjustment", title=["Adjusted", "Risk Attitude"]
-            ).scale(
-                domain=["adjusted", "didn't adjust"],
-                range=["black", "transparent"],
-            )
-        else:
-            outer_color = chart_color
-
-        return (
-            alt.Chart(df)
-            .mark_point()
-            .encode(
-                x=alt.X("x", axis=None),
-                y=alt.Y("y", axis=None),
-                size=alt.Size("size", title="Payoff Rank"),
-                fill=chart_color,
-                color=outer_color,
-                shape=alt.Shape(
-                    "choice",
-                    title="Play Choice",
-                    scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
-                ),
-            )
-            .configure_view(strokeOpacity=0)
-        )
-
-    return agent_portrayal, draw_hawkdove_agent_space
+    return (
+        HawkDoveMultipleRiskModel,
+        agent_portrayal,
+        alt,
+        divergent_colors_10,
+        draw_hawkdove_agent_space,
+        mo,
+    )
 
 
 @app.cell
@@ -172,8 +100,37 @@ def _(HawkDoveMultipleRiskModel, mo):
             ),
         }
     )
-    params
     return (params,)
+
+
+@app.cell
+def _(
+    control_buttons,
+    mo,
+    params,
+    refresh,
+    simulation_display,
+    simulation_status,
+):
+    mo.hstack(
+        [
+            mo.vstack(
+                [
+                    *params.values(),  # model parameters
+                    mo.hstack(
+                        control_buttons, gap=1, align="start"
+                    ),  # simulation run/step/stop controls,
+                    refresh,
+                    simulation_status,
+                ]
+            ),
+            simulation_display,
+        ],
+        widths=[1, 4],
+        align="start",
+    )
+
+    return
 
 
 @app.cell
@@ -200,8 +157,8 @@ def _(mo):
     step_btn = mo.ui.run_button(label="⏭ Step")
     reset_btn = mo.ui.run_button(label="⏹ Reset")
 
-    mo.hstack([run_btn, pause_btn, step_btn, reset_btn], gap=1)
-    return pause_btn, reset_btn, run_btn, step_btn
+    control_buttons = [run_btn, pause_btn, step_btn, reset_btn]
+    return control_buttons, pause_btn, reset_btn, run_btn, step_btn
 
 
 @app.cell
@@ -210,7 +167,7 @@ def _(mo):
     refresh = mo.ui.refresh(
         default_interval="0.5s", options=["0.1s", "0.2s", "0.5s", "1s", "2s"]
     )
-    refresh
+
     return (refresh,)
 
 
@@ -278,11 +235,10 @@ def _(is_running, mo, model_state, step_count):
     _step = step_count()
     _run_label = "▶ Running" if is_running() else "⏸ Paused"
     _sim_status = _model.status if _model else "not started"
-    _out = mo.md(
+    simulation_status = mo.md(
         f"**Step:** {_step} | **Simulation:** {_run_label} | **Status:** {_sim_status}"
     )
-    _out
-    return
+    return (simulation_status,)
 
 
 @app.cell
@@ -300,7 +256,9 @@ def _(
     _model = model_state()
 
     if _model is None:
-        _out = mo.md("_Click **▶ Run** or **⏭ Step** to start the simulation._")
+        simulation_display = mo.md(
+            "_Click **▶ Run** or **⏭ Step** to start the simulation._"
+        )
     else:
         _grid = draw_hawkdove_agent_space(_model, agent_portrayal)
 
@@ -362,9 +320,9 @@ def _(
                     )
                 _charts.append(_line)
 
-        _out = mo.hstack(_charts, gap=2)
-    _out
-    return
+        simulation_display = mo.hstack(_charts, gap=2)
+
+    return (simulation_display,)
 
 
 if __name__ == "__main__":
