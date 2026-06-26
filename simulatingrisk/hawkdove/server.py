@@ -4,7 +4,6 @@ Configure visualization elements and instantiate a server
 
 import altair as alt
 import pandas as pd
-import solara
 
 from simulatingrisk.hawkdove.model import (
     HawkDoveModel,
@@ -193,4 +192,5 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         .configure_view(strokeOpacity=0)  # hide grid/chart lines
     )
 
-    return solara.FigureAltair(agent_chart)
+    return agent_chart
+    # return solara.FigureAltair(agent_chart)

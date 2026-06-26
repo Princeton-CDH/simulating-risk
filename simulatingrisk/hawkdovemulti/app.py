@@ -1,13 +1,9 @@
 # solara/jupyterviz app
 import altair as alt
-import solara
-from mesa.experimental import JupyterViz
 
 from simulatingrisk.hawkdove.model import divergent_colors_10
 from simulatingrisk.hawkdove.server import (
-    agent_portrayal,
     common_jupyterviz_params,
-    draw_hawkdove_agent_space,
     neighborhood_sizes,
 )
 from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
@@ -99,7 +95,7 @@ def plot_agents_by_risk(model):
         )
         .properties(title="Number of Agents by Risk Attitude")
     )
-    return solara.FigureAltair(bar_chart)
+    return bar_chart
 
 
 def plot_risklevel_changes(model):
@@ -144,7 +140,7 @@ def plot_risklevel_changes(model):
         .properties(title="Risk Attitude Adjustments")
     )
 
-    return solara.FigureAltair(line_chart)
+    return line_chart
 
 
 def plot_hawks_by_risk(model):
@@ -200,7 +196,7 @@ def plot_hawks_by_risk(model):
         )
         .properties(title="Rolling Average Percent Hawk by Risk Attitude")
     )
-    return solara.FigureAltair(chart)
+    return chart
 
 
 def plot_wealth_by_risklevel(model):
@@ -226,22 +222,4 @@ def plot_wealth_by_risklevel(model):
         )
         .properties(title="Cumulative Payoff Distribution by Risk Attitude")
     )
-    return solara.FigureAltair(wealth_chart)
-
-
-page = JupyterViz(
-    HawkDoveMultipleRiskModel,
-    jupyterviz_params_var,
-    measures=[
-        plot_agents_by_risk,
-        plot_hawks_by_risk,
-        plot_wealth_by_risklevel,
-        plot_risklevel_changes,
-        # plot_hawks,
-    ],
-    name="Hawk/Dove game with multiple risk attitudes",
-    agent_portrayal=agent_portrayal,
-    space_drawer=draw_hawkdove_agent_space,
-)
-# required to render the visualization with Jupyter/Solara
-page
+    return wealth_chart
