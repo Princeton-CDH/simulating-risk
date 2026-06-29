@@ -1,5 +1,6 @@
+import random
 import statistics
-from collections import Counter, deque
+from collections import Counter, defaultdict, deque
 from enum import IntEnum
 from functools import cached_property
 
@@ -62,11 +63,22 @@ class HawkDoveMultipleRiskAgent(HawkDoveAgent):
         # sort neighbors by points, highest points first
         # adapted from risky bet wealthiest neighbor
 
-        return sorted(
-            self.adjust_neighbors,
-            key=lambda x: getattr(x, self.compare_payoff_field),
-            reverse=True,
-        )[0]
+        # organize neighbors by score; use dict of list,
+        # since it's possible to have ties
+        neighbors_by_score = defaultdict(list)
+        best_payoff = 0
+        for neighbor in self.adjust_neighbors:
+            points = getattr(neighbor, self.compare_payoff_field)
+            best_payoff = max(best_payoff, points)
+            neighbors_by_score[points].append(neighbor)
+
+        # get the list of all neighbors with the best payoff
+        most_successful = neighbors_by_score[best_payoff]
+        # if there is only one, return it
+        if len(most_successful) == 1:
+            return most_successful[0]
+        # if one or more tied, choose randomly
+        return random.choice(most_successful)
 
     def adjust_risk(self):
         # look at neighbors
@@ -163,6 +175,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
     risk_attitudes = "variable"
     agent_class = HawkDoveMultipleRiskAgent
 
+    #: minimum steps before model can converge
+    min_steps_converge = 50
+    #: higher minimum when risk adjustment is enabled
+    min_steps_adjusting = 300
+
     supported_risk_adjustments = (None, "adopt", "average")
     supported_adjust_payoffs = ("recent", "total")
     risk_distribution_options = (
@@ -181,6 +198,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         adjust_every=10,
         adjust_neighborhood=None,
         adjust_payoff="recent",
+        include_endpoints=True,
         *args,
         **kwargs,
     ):
@@ -204,12 +222,22 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 f"Unsupported risk adjustment '{risk_adjustment}'; "
                 + f"must be one of {risk_adjust_opts}"
             )
+
+        # update the minimum rounds for convergence when adjustment is enabled
+        if risk_adjustment is not None:
+            self.min_steps_converge = self.min_steps_adjusting
+
         if adjust_payoff not in self.supported_adjust_payoffs:
             adjust_payoffs_opts = ", ".join(self.supported_adjust_payoffs)
             raise ValueError(
                 f"Unsupported adjust payoff option '{adjust_payoff}'; "
                 + f"must be one of {adjust_payoffs_opts}"
             )
+
+        # if endpoints are not included, shift min/max risk attitude from 0-9 to 1-8
+        if not include_endpoints:
+            self.min_risk_level = 1
+            self.max_risk_level = 8
 
         # initialize a risk attitude generator based on configured distrbution
         # must be set before calling super for agent init
@@ -260,8 +288,8 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             # values from two different normal distributions centered
             # around the beginning and end of our risk attitude range
             while True:
-                yield round(self.random.gauss(0, 1.5))
-                yield round(self.random.gauss(9, 1.5))
+                yield round(self.random.gauss(self.min_risk_level, 1.5))
+                yield round(self.random.gauss(self.max_risk_level, 1.5))
                 # NOTE: on smaller grids, using 0/9 makes it extremely
                 # unlikely to get mid-range risk values (4/5)
 
@@ -347,9 +375,14 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if not self.risk_adjustment:
             return super().converged
 
+        # don't check for convergence until after the configured min step
+        # (duplicates base class logic since we otherwise override)
+        if self.schedule.steps < self.min_steps_converge:
+            return False
+
         # this simulation typically takes around 1000 rounds to converge,
         # so don't even bother checking until at least 50 rounds
-        return self.schedule.steps > max(self.adjust_round_n, 50) and (
+        return (
             self.num_agents_risk_changed == 0
             # NOTE: could adjust the threshold here
             or self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
@@ -372,11 +405,14 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         a = self.recent_total_per_risk_level[0]
         b = self.recent_total_per_risk_level[1]
         changes = {}
-        # for each risk level, calculate the absolute difference
-        for rlevel, total in a.items():
-            changes[rlevel] = abs(total - b[rlevel])
-
-        return sum([val for val in changes.values()])
+        # for each risk level, calculate the absolute difference.
+        # check all risk levels, since when adjustment results in no
+        # agents in with particular risk attitude the counts may not match
+        for rlevel in range(self.min_risk_level, self.max_risk_level + 1):
+            # Counter returns zero for any missing items
+            changes[rlevel] = abs(a[rlevel] - b[rlevel])
+        # return the sum of changes across all risk levels
+        return sum(changes.values())
 
     def __getattr__(self, attr):
         # support dynamic properties for data collection on total by risk level

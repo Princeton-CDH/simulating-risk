@@ -1,12 +1,13 @@
 import statistics
-from unittest.mock import patch, Mock
+from collections import Counter
+from unittest.mock import Mock, patch
 
 import pytest
 
 from simulatingrisk.hawkdove.model import Play
 from simulatingrisk.hawkdovemulti.model import (
-    HawkDoveMultipleRiskModel,
     HawkDoveMultipleRiskAgent,
+    HawkDoveMultipleRiskModel,
     RiskState,
 )
 
@@ -36,6 +37,13 @@ def test_init():
     assert model.hawk_odds == 0.2
     assert model.play_neighborhood == 4
     assert model.adjust_neighborhood == 24
+    assert model.min_risk_level == 0
+    assert model.max_risk_level == 9
+
+    # initialize with risk attitude endpoints not included
+    model = HawkDoveMultipleRiskModel(grid_size=5, include_endpoints=False)
+    assert model.min_risk_level == 1
+    assert model.max_risk_level == 8
 
     # handle string none for solara app parameters
     model = HawkDoveMultipleRiskModel(5, risk_adjustment="none")
@@ -55,6 +63,15 @@ def test_init_variable_risk_level():
     # when risk level is variable/random, agents should have different risk levels
     risk_levels = set([agent.risk_level for agent in model.schedule.agents])
     assert len(risk_levels) > 1
+
+
+def test_init_min_run_length():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment=None)
+    assert model.min_steps_converge == HawkDoveMultipleRiskModel.min_steps_converge
+
+    # higher minimum when adjustment is enabled
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    assert model.min_steps_converge == HawkDoveMultipleRiskModel.min_steps_adjusting
 
 
 adjustment_testdata = [
@@ -170,6 +187,82 @@ def test_population_risk_category():
     assert model.population_risk_category == RiskState.c12
 
 
+def test_model_converged():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment=None)
+
+    # non-adjusting case is the same logic as the base class
+
+    # before minimum number of steps, will always be false
+    model.schedule.steps = model.min_steps_converge - 1
+    assert not model.converged
+
+    model.schedule.steps = model.min_steps_converge + 1
+    # set min window smaller for testing purposes
+    model.min_window = 3
+    # convergence is based on rolling average percent hawk
+    model.recent_rolling_percent_hawk = [0.49, 0.48, 0.50, 0.47]
+    assert not model.converged
+
+    # adjustment converge logic is different
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    # simulate no adjustments on last round
+    with patch.multiple(HawkDoveMultipleRiskModel, num_agents_risk_changed=0):
+        model.schedule.steps = model.min_steps_converge - 1
+        assert not model.converged
+
+        model.schedule.steps = model.min_steps_converge + 1
+        assert model.converged
+
+    # test convergence based on sum of risk level changes
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=5, sum_risk_level_changes=10
+    ):
+        assert not model.converged
+    # 5x5 grid = 25 agents; 7% = 1.75, so threshold is 1
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=5, sum_risk_level_changes=1
+    ):
+        assert model.converged
+
+        # convergence logic honors min steps
+        model.schedule.steps = model.min_steps_converge - 1
+        assert not model.converged
+
+
+def test_sum_risk_level_changes():
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    # populate recent risk numbers from a sample run
+    model.recent_total_per_risk_level = [
+        Counter({0: 21, 2: 7, 3: 13, 4: 23, 7: 20, 8: 5, 9: 11}),
+        Counter({0: 22, 2: 7, 3: 13, 4: 20, 7: 21, 8: 5, 9: 12}),
+        #    1     0      0      3      1     0      1
+    ]
+    assert model.sum_risk_level_changes == 6
+
+    # handle case when there is not yet enough data
+    del model.sum_risk_level_changes  # clear cached property
+    del model.recent_total_per_risk_level[1]  # reduce to list of 1
+    assert model.sum_risk_level_changes is None
+
+    del model.sum_risk_level_changes  # clear cached property
+    model.recent_total_per_risk_level = []  # empty list
+    assert model.sum_risk_level_changes is None
+
+    # count when there is a mismatch in risk levels with counts
+    del model.sum_risk_level_changes  # clear cached property
+    # 4 is in a but not b
+    model.recent_total_per_risk_level = [
+        Counter({2: 7, 3: 13, 4: 2, 5: 20}),
+        Counter({2: 7, 3: 12, 5: 21}),
+        #   0      1     2      1
+    ]
+    assert model.sum_risk_level_changes == 4
+    del model.sum_risk_level_changes  # clear cached property
+    # not order dependent
+    reversed(model.recent_total_per_risk_level)
+    assert model.sum_risk_level_changes == 4
+
+
 def test_riskstate_label():
     # enum value or integer value
     assert RiskState.category(RiskState.c1) == "Majority Risk-Seeking"
@@ -213,6 +306,31 @@ def test_most_successful_neighbor():
         assert agent_total.most_successful_neighbor.points == 31
         # comparing by recent points
         assert agent_recent.most_successful_neighbor.recent_points == 13
+
+    # choose randomly when there is a tie
+    mock_neighbors = [
+        Mock(points=22, recent_points=1, id=1),
+        Mock(points=14, recent_points=9, id=2),
+        Mock(points=22, recent_points=8, id=3),
+        Mock(points=13, recent_points=9, id=4),
+    ]
+
+    with patch.object(HawkDoveMultipleRiskAgent, "adjust_neighbors", mock_neighbors):
+        # comparing by total points
+        assert agent_total.most_successful_neighbor.points == 22
+
+        # make a set to track best neighbors and run multiple times
+        # to ensure we get them both
+        best_neighbor = set()
+        recent_best = set()
+        for _ in range(10):
+            best_neighbor.add(agent_total.most_successful_neighbor.id)
+            recent_best.add(agent_recent.most_successful_neighbor.id)
+
+        # neighbors 1 and 3 both have 22 points - should see both if we check ten times
+        assert best_neighbor == {1, 3}
+        # neighbors 2 and 4 both have best recent points - should see both
+        assert recent_best == {2, 4}
 
 
 def test_compare_payoff():
@@ -428,6 +546,18 @@ def test_get_risk_attitude_generator():
     next(risk_gen)
     model.random.gauss.assert_any_call(0, 1.5)
     model.random.gauss.assert_any_call(9, 1.5)
+
+    # confirm that bimodal risk attitude generator honors min/max risk attitudes
+    model = HawkDoveMultipleRiskModel(
+        3, include_endpoints=False, risk_distribution="bimodal"
+    )
+    model.random = Mock()
+    model.random.gauss.return_value = 3.2
+    risk_gen = model.get_risk_attitude_generator()
+    next(risk_gen)
+    next(risk_gen)
+    model.random.gauss.assert_any_call(1, 1.5)
+    model.random.gauss.assert_any_call(8, 1.5)
 
 
 def test_get_risk_attitude():

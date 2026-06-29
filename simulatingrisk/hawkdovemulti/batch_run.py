@@ -30,7 +30,7 @@ params = {
         "adjust_every": [2, 10, 20],
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
-        # random?
+        "random_play_odds": [0, 0.01, 0.1],
     },
     # specific scenarios to allow paired statistical tests
     "risk_adjust": {

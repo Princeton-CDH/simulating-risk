@@ -94,6 +94,29 @@ def test_model_single_risk_level():
         assert agent.risk_level == risk_level
 
 
+def test_model_converged():
+    model = HawkDoveSingleRiskModel(5, agent_risk_level=4)
+
+    # before minimum number of steps, will always be false
+    model.schedule.steps = model.min_steps_converge - 1
+    assert not model.converged
+
+    model.schedule.steps = model.min_steps_converge + 1
+    # set min window smaller for testing purposes
+    model.min_window = 3
+    # convergence is based on rolling average percent hawk
+    model.recent_rolling_percent_hawk = [0.49, 0.48, 0.50, 0.47]
+    assert not model.converged
+
+    # slight variation but all round to 0.48
+    model.recent_rolling_percent_hawk = [0.481, 0.482, 0.483, 0.480]
+    assert model.converged
+
+    # low rolling average but not past min steps
+    model.schedule.steps = model.min_steps_converge - 1
+    assert not model.converged
+
+
 def test_bad_neighborhood_size():
     with pytest.raises(ValueError):
         HawkDoveSingleRiskModel(3, play_neighborhood=3, agent_risk_level=6)

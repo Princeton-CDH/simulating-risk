@@ -28,6 +28,12 @@ jupyterviz_params_var.update(
             "values": HawkDoveMultipleRiskModel.risk_distribution_options,
             "description": "Distribution for initial risk attitudes",
         },
+        "include_endpoints": {
+            "label": "Include risk attitudes 0 and 9",
+            "type": "Checkbox",
+            "value": True,
+            "description": "Include 0/9 risk attitudes",
+        },
         "adjust_every": {
             "label": "Adjustment frequency (# rounds)",
             "type": "SliderInt",
