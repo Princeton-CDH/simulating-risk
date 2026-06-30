@@ -1,26 +1,18 @@
-# solara/jupyterviz app
 import altair as alt
 import pandas as pd
-import solara
-from mesa.experimental import JupyterViz
 
-from simulatingrisk.hawkdove.model import HawkDoveSingleRiskModel
-from simulatingrisk.hawkdove.server import (
-    agent_portrayal,
-    draw_hawkdove_agent_space,
-    jupyterviz_params,
-)
+from simulatingrisk.hawkdove.model import HawkDoveModel
 
 
-def plot_wealth(model):
-    """histogram plot of agent wealth levels across risk levels;
-    for use with jupyterviz/solara"""
+def plot_wealth(model: HawkDoveModel) -> alt.Chart:
+    """Histogram plot of agent wealth levels across risk levels;
+    for display in interactive simulation."""
 
     # generate a histogram of points across risk levels
     risk_wealth = [(agent.risk_level, agent.points) for agent in model.schedule.agents]
     df = pd.DataFrame(risk_wealth, columns=["risk_level", "wealth"])
 
-    chart = (
+    return (
         alt.Chart(df)
         .mark_bar()
         .encode(
@@ -28,12 +20,11 @@ def plot_wealth(model):
             x=alt.X("risk_level", title="Risk Attitude"),
         )
     )
-    return solara.FigureAltair(chart)
 
 
-def plot_hawks(model):
-    """plot percent of agents who chose hawk over last several rounds;
-    for use with jupyterviz/solara"""
+def plot_hawks(model: HawkDoveModel) -> alt.Chart | alt.LayerChart:
+    """Plot percent of agents who chose hawk over last several rounds;
+    for display in interactive simulation."""
 
     model_df = model.datacollector.get_model_vars_dataframe().reset_index()
 
@@ -76,17 +67,4 @@ def plot_hawks(model):
         # add the rolling average line on top of the bar chart
         bar_chart += line
 
-    return solara.FigureAltair(bar_chart)
-
-
-page = JupyterViz(
-    HawkDoveSingleRiskModel,
-    jupyterviz_params,
-    measures=[plot_hawks],
-    name="Hawk/Dove game with risk attitudes; all agents have the same risk attitude",
-    agent_portrayal=agent_portrayal,
-    space_drawer=draw_hawkdove_agent_space,
-)
-
-# required to render the visualization with Jupyter/Solara
-page
+    return bar_chart

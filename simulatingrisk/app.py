@@ -4,12 +4,12 @@
 #   "altair>=5.5.0,<6.0",
 #   "pandas",
 #   "marimo>=0.23.11",
-#   "simulatingrisk==1.0.0.post1",
 # ]
 # ///
 # mesa and simulatingrisk are installed in the init cell below because mesa's
 # dependency on tornado (a C-extension package) must be loaded from Pyodide's
 # built-ins before micropip attempts to resolve it from PyPI.
+
 
 import marimo
 
@@ -48,20 +48,20 @@ async def _():
 
 @app.cell
 def _():
-    import marimo as mo
     import altair as alt
-    from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
-    from simulatingrisk.hawkdovemulti.app import (
-        jupyterviz_params_var,
-        plot_agents_by_risk,
-        plot_hawks_by_risk,
-        plot_wealth_by_risklevel,
-        plot_risklevel_changes,
-    )
+    import marimo as mo
 
     from simulatingrisk.hawkdove.server import (
         agent_portrayal,
         draw_hawkdove_agent_space,
+    )
+    from simulatingrisk.hawkdovemulti.app import jupyterviz_params_var
+    from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
+    from simulatingrisk.hawkdovemulti.viz import (
+        plot_agents_by_risk,
+        plot_hawks_by_risk,
+        plot_risklevel_changes,
+        plot_wealth_by_risklevel,
     )
 
     return (
