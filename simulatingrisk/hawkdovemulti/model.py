@@ -341,21 +341,22 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
     def step(self):
         # delete cached property before the next round begins,
-        # so we recalculate values for current round before collecting data
+        # to force recalculating values before collecting data
 
         try:
-            # store risk level totals from the previous adjusment round so we can
+            # store risk level totals from the previous adjustment round to
             # compare across adjustment rounds to detect convergence;
-            # only record on adjustment rounds so sum_risk_level_changes
-            # reflects change between adjustments (not consecutive rounds)
-            if hasattr(self, "total_per_risk_level"):
-                if self.adjustment_round:
-                    self.recent_total_per_risk_level.append(self.total_per_risk_level)
+            # _only_ records on adjustment rounds so that sum_risk_level_changes
+            # reflects change _between_ adjustments
+            if hasattr(self, "total_per_risk_level") and self.adjustment_round:
+                self.recent_total_per_risk_level.append(self.total_per_risk_level)
+
             del self.total_per_risk_level
             del self.sum_risk_level_changes
         except AttributeError:
             # property hasn't been set yet on the first round, ok to ignore
             pass
+
         super().step()
 
     @property
@@ -373,22 +374,22 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if not self.risk_adjustment:
             return super().converged
 
-        # don't check for convergence until after the configured min step
-        # (duplicates base class logic since we otherwise override)
-        if self.schedule.steps < self.min_steps_converge:
+        # This simulation typically takes around 1000 rounds to converge;
+        # bail out if we have not hit the configured minimum steps.
+        # If sum of risk level changes is not yet set, we have not yet
+        # had two adjustment rounds, so convergence check is not possible.
+        if (
+            self.schedule.steps < self.min_steps_converge
+            or self.sum_risk_level_changes is None
+        ):
             return False
 
-        # this simulation typically takes around 1000 rounds to converge,
-        # so don't even bother checking until at least 50 rounds
         return (
             self.num_agents_risk_changed == 0
             # NOTE: could adjust the threshold here.
             # sum_risk_level_changes is None until two adjustment rounds
             # of totals have been recorded; treat that as "not converged"
-            or (
-                self.sum_risk_level_changes is not None
-                and self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
-            )
+            or (self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07)
         )
 
     @cached_property

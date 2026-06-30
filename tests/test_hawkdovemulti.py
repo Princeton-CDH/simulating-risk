@@ -102,6 +102,7 @@ def test_adjustment_round(params, expect_adjust_step):
 def test_total_per_risk_level():
     model = HawkDoveMultipleRiskModel(3)
     model.schedule = Mock()
+    model.schedule.steps = 13  # must be an integer
     # add a few agents with different risk levels
     mock_agents = [
         Mock(risk_level=0),
@@ -206,7 +207,9 @@ def test_model_converged():
     # adjustment converge logic is different
     model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
     # simulate no adjustments on last round
-    with patch.multiple(HawkDoveMultipleRiskModel, num_agents_risk_changed=0):
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=0, sum_risk_level_changes=0
+    ):
         model.schedule.steps = model.min_steps_converge - 1
         assert not model.converged
 
