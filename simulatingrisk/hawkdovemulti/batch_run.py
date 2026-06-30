@@ -13,7 +13,7 @@ from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
 
 neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
-# NOTE: it's better to be explicit about even parameters
+# NOTE: it's better to be explicit about parameters
 # instead of relying on model defaults, because
 # parameters specified here are included in data exports
 
@@ -31,6 +31,7 @@ params = {
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
         "random_play_odds": [0, 0.01, 0.1],
+        "include_endpoints": [True, False],
     },
     # specific scenarios to allow paired statistical tests
     "risk_adjust": {
@@ -60,8 +61,10 @@ params = {
         "play_neighborhood": neighborhood_sizes,
         "observed_neighborhood": neighborhood_sizes,
         # adjust payoff doesn't matter since we're not adjusting
-        "grid_size": [5, 10, 25],
-        # maybe also hawk odds
+        "grid_size": [5, 10, 25, 50],
+        "hawk_odds": [0.5, 0.25, 0.75],
+        "random_play_odds": [0, 0.01, 0.1],
+        "include_endpoints": [True, False],
     },
 }
 
