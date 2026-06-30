@@ -8,15 +8,14 @@ don't depend on any particular model.
 
 import marimo as mo
 
-
 #: Available auto-refresh intervals for the speed selector.
 REFRESH_INTERVAL_OPTIONS = ["0.1s", "0.2s", "0.5s", "1s", "2s"]
 
 
-def make_control_buttons():
+def init_control_buttons() -> tuple[mo.ui.run_button, ...]:
     """Build the run / pause / step / reset control buttons.
 
-    :return: tuple ``(run_btn, pause_btn, step_btn, reset_btn)``.
+    :return: tuple of buttons ``(run_btn, pause_btn, step_btn, reset_btn)``.
     """
     run_btn = mo.ui.run_button(label="▶ Run")
     pause_btn = mo.ui.run_button(label="⏸ Pause")
@@ -25,7 +24,7 @@ def make_control_buttons():
     return run_btn, pause_btn, step_btn, reset_btn
 
 
-def make_refresh(is_running, refresh_interval, set_refresh_interval):
+def init_refresh(is_running, refresh_interval, set_refresh_interval):
     """Build the auto-refresh speed selector.
 
     The widget is reconstructed whenever ``is_running`` toggles:
@@ -41,6 +40,7 @@ def make_refresh(is_running, refresh_interval, set_refresh_interval):
     :param set_refresh_interval: setter to persist the user's chosen interval.
     """
 
+    # keep track of previously selected value
     def _remember_interval(value):
         # value is like "0.5s (3)" — strip the tick counter to get the interval.
         if value:

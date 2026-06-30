@@ -61,14 +61,13 @@ def _():
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
     )
-    from simulatingrisk.ui_common import make_control_buttons, make_refresh
+    from simulatingrisk.ui_common import init_refresh
 
     return (
         HawkDoveMultipleRiskModel,
         agent_portrayal,
         draw_hawkdove_agent_space,
-        make_control_buttons,
-        make_refresh,
+        init_refresh,
         mo,
         plot_agents_by_risk,
         plot_hawks_by_risk,
@@ -130,15 +129,17 @@ def _(mo):
 
 
 @app.cell
-def _(make_control_buttons):
-    run_btn, pause_btn, step_btn, reset_btn = make_control_buttons()
-    control_buttons = [run_btn, pause_btn, step_btn, reset_btn]
+def _(init_control_buttons):
+    # assign separately so we can watch the values of each button
+    run_btn, pause_btn, step_btn, reset_btn = init_control_buttons()
+    # combine for display in the UI
+    control_buttons = run_btn, pause_btn, step_btn, reset_btn
     return control_buttons, pause_btn, reset_btn, run_btn, step_btn
 
 
 @app.cell
-def _(is_running, make_refresh, refresh_interval, set_refresh_interval):
-    refresh = make_refresh(
+def _(init_refresh, is_running, refresh_interval, set_refresh_interval):
+    refresh = init_refresh(
         is_running=is_running(),
         refresh_interval=refresh_interval(),
         set_refresh_interval=set_refresh_interval,
