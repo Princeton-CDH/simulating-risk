@@ -60,6 +60,16 @@ Initial setup and installation:
 uv sync
 ```
 
+### Install pre-commit hooks
+
+Install pre-commit hooks (currently [black](https://github.com/psf/black) and [ruff](https://beta.ruff.rs/docs/)):
+
+```sh
+pre-commit install
+```
+
+### Interactive interface to the simulations
+
 We use a marimo notebook as the interface for running the Hawk/Dove simulation interactively. To run locally for development, using
 the local development environment, run with sandbox disabled:
 
@@ -67,10 +77,16 @@ the local development environment, run with sandbox disabled:
 uv run marimo edit simulatingrisk/app.py --no-sandbox
 ```
 
-### Install pre-commit hooks
+For publication via static site, this notebook should be saved as html + web assembly. This requires a version of the `simulatingrisk` package that can be installed in pyodide, either by a published version on pypi or a local wheel for testing.
 
-Install pre-commit hooks (currently [black](https://github.com/psf/black) and [ruff](https://beta.ruff.rs/docs/)):
+To export in edit mode, to debug any wasm-specific problems:
 
 ```sh
-pre-commit install
+uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode edit
+```
+
+To export in run mode, for publication:
+
+```sh
+uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode run
 ```
