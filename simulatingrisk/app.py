@@ -47,7 +47,6 @@ async def _():
 
 @app.cell
 def _():
-    import altair as alt
     import marimo as mo
 
     from simulatingrisk.hawkdove.ui import (
@@ -66,7 +65,6 @@ def _():
     return (
         HawkDoveMultipleRiskModel,
         agent_portrayal,
-        alt,
         draw_hawkdove_agent_space,
         mo,
         plot_agents_by_risk,
@@ -147,13 +145,13 @@ def _(mo):
 def _(
     HawkDoveMultipleRiskModel,
     mo,
-    params,
     pause_btn,
     reset_btn,
     run_btn,
     set_is_running,
     set_model_state,
     set_step_count,
+    ui_controls,
 ):
     # Handle run / pause / reset button clicks.
     mo.stop(not any([run_btn.value, pause_btn.value, reset_btn.value]))
@@ -163,7 +161,7 @@ def _(
     elif pause_btn.value:
         set_is_running(False)
     elif reset_btn.value:
-        _m = HawkDoveMultipleRiskModel(**{k: v.value for k, v in params.items()})
+        _m = HawkDoveMultipleRiskModel(**{k: v.value for k, v in ui_controls.items()})
         set_model_state(_m)
         set_step_count(0)
         set_is_running(False)
@@ -176,12 +174,12 @@ def _(
     is_running,
     mo,
     model_state,
-    params,
     refresh,
     set_is_running,
     set_model_state,
     set_step_count,
     step_btn,
+    ui_controls,
 ):
     # Advance the simulation. Triggered on every refresh tick and on step_btn click.
     # mo.stop exits when paused and the step button wasn't just pressed.
@@ -190,7 +188,9 @@ def _(
 
     _model = model_state()
     if _model is None:
-        _model = HawkDoveMultipleRiskModel(**{k: v.value for k, v in params.items()})
+        _model = HawkDoveMultipleRiskModel(
+            **{k: v.value for k, v in ui_controls.items()}
+        )
         set_model_state(_model)
 
     if _model.running:
@@ -216,7 +216,6 @@ def _(is_running, mo, model_state, step_count):
 @app.cell
 def _(
     agent_portrayal,
-    alt,
     draw_hawkdove_agent_space,
     mo,
     model_state,
@@ -253,61 +252,10 @@ def _(
         _charts = [_grid]
 
         if not _agent_df.empty:
-            # TODO: add color by risk attitude ?
             _charts.append(plot_agents_by_risk(_model))
             _charts.append(plot_hawks_by_risk(_model))
             _charts.append(plot_wealth_by_risklevel(_model))
             _charts.append(plot_risklevel_changes(_model))
-
-            # _last_step = _agent_df.Step.max()
-            # _last_round = _agent_df[_agent_df.Step == _last_step]
-            # _by_risk = _last_round.groupby("risk_level", as_index=False).agg(
-            #     total=("AgentID", "count")
-            # )
-            # _bar = (
-            #     alt.Chart(_by_risk)
-            #     .mark_bar(width=14)
-            #     .encode(
-            #         x=alt.X(
-            #             "risk_level",
-            #             title="Risk Attitude",
-            #             axis=alt.Axis(tickCount=10),
-            #             scale=alt.Scale(domain=[0, 9]),
-            #         ),
-            #         y=alt.Y("total", title="Agents"),
-            #         color=alt.Color("risk_level:N", legend=None).scale(
-            #             domain=list(range(10)), range=divergent_colors_10
-            #         ),
-            #     )
-            #     .properties(title="Agents by Risk Attitude", width=280, height=180)
-            # )
-            # _charts.append(_bar)
-
-        if not _model_df.empty:
-            _hawk_df = _model_df.dropna(subset=["percent_hawk"])
-            if not _hawk_df.empty:
-                _line = (
-                    alt.Chart(_hawk_df)
-                    .mark_line()
-                    .encode(
-                        x=alt.X("index", title="Step"),
-                        y=alt.Y(
-                            "percent_hawk",
-                            title="% Hawk",
-                            scale=alt.Scale(domain=[0, 1]),
-                        ),
-                    )
-                    .properties(title="Percent Hawk", width=280, height=180)
-                )
-                _rolling = _model_df.dropna(subset=["rolling_percent_hawk"])
-                if not _rolling.empty:
-                    _line = _line + alt.Chart(_rolling).mark_line(
-                        strokeDash=[4, 2], color="gray"
-                    ).encode(
-                        x=alt.X("index"),
-                        y=alt.Y("rolling_percent_hawk"),
-                    )
-                _charts.append(_line)
 
         simulation_display = mo.hstack(_charts, gap=0, wrap=True)
     return (simulation_display,)
