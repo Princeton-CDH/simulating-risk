@@ -256,7 +256,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         self.recent_total_per_risk_level = deque([], maxlen=2)
 
-    def _risk_level_in_bounds(self, value):
+    def _risk_level_in_bounds(self, value) -> bool:
         # check if a generated risk level is within bounds
         return self.min_risk_level <= value <= self.max_risk_level
 
@@ -293,7 +293,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 # NOTE: on smaller grids, using 0/9 makes it extremely
                 # unlikely to get mid-range risk values (4/5)
 
-    def get_risk_attitude(self):
+    def get_risk_attitude(self) -> int:
         """return the next value from risk attitude generator, based on
         configured distribution."""
         val = next(self.risk_attitude_generator)
@@ -316,13 +316,13 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # check if the current step is an adjustment round
         # when risk adjustment is enabled, agents should adjust their risk
         # strategy every N rounds;
-        return (
+        return bool(
             self.risk_adjustment
             and self.schedule.steps > 0
             and self.schedule.steps % self.adjust_round_n == 0
         )
 
-    def get_data_collector_options(self):
+    def get_data_collector_options(self) -> dict:
         # in addition to common hawk/dove data points,
         # we want to include population risk category
         opts = super().get_data_collector_options()
@@ -365,7 +365,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         return len([a for a in self.schedule.agents if a.risk_level_changed])
 
     @property
-    def converged(self):
+    def converged(self) -> bool:
         # check if the simulation is stable and should stop running
         # based on the number of agents changing their risk level
 
@@ -389,12 +389,12 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         )
 
     @cached_property
-    def total_per_risk_level(self):
+    def total_per_risk_level(self) -> Counter:
         # tally the number of agents for each risk level
         return Counter([a.risk_level for a in self.schedule.agents])
 
     @cached_property
-    def sum_risk_level_changes(self):
+    def sum_risk_level_changes(self) -> int:
         # calculate the total in absolute changes across all risk levels
         # since most recent adjustment round
 
