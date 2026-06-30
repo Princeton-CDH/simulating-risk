@@ -254,20 +254,11 @@ def _(
             "_Click **▶ Run** or **⏭ Step** to start the simulation._"
         )
     else:
-        # measures=[
-        #        plot_agents_by_risk,
-        #        plot_hawks_by_risk,
-        #        plot_wealth_by_risklevel,
-        #        plot_risklevel_changes,
-        #        # plot_hawks,
-        #    ],
-
         _grid = draw_hawkdove_agent_space(_model, agent_portrayal)
 
         _agent_df = (
             _model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
         )
-        _model_df = _model.datacollector.get_model_vars_dataframe().reset_index()
 
         _charts = [_grid]
 
