@@ -341,18 +341,16 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
     def step(self):
         # delete cached property before the next round begins,
-        # so we recalcate values for current round before collecting data
+        # so we recalculate values for current round before collecting data
+
         try:
-            # store risk level total for previous round
+            # store risk level totals from the previous adjusment round so we can
+            # compare across adjustment rounds to detect convergence;
+            # only record on adjustment rounds so sum_risk_level_changes
+            # reflects change between adjustments (not consecutive rounds)
             if hasattr(self, "total_per_risk_level"):
-                if (
-                    not self.recent_total_per_risk_level
-                    or self.total_per_risk_level != self.recent_total_per_risk_level[-1]
-                ):
-                    # add to recent values if changed or new
+                if self.adjustment_round:
                     self.recent_total_per_risk_level.append(self.total_per_risk_level)
-            # else:
-            #     self.recent_total_per_risk_level.append(self.total_per_risk_level)
             del self.total_per_risk_level
             del self.sum_risk_level_changes
         except AttributeError:
@@ -384,8 +382,13 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # so don't even bother checking until at least 50 rounds
         return (
             self.num_agents_risk_changed == 0
-            # NOTE: could adjust the threshold here
-            or self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
+            # NOTE: could adjust the threshold here.
+            # sum_risk_level_changes is None until two adjustment rounds
+            # of totals have been recorded; treat that as "not converged"
+            or (
+                self.sum_risk_level_changes is not None
+                and self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
+            )
         )
 
     @cached_property
