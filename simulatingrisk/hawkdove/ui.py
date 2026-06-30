@@ -2,8 +2,11 @@
 Configure visualization elements and instantiate a server
 """
 
+from collections import namedtuple
+
 import altair as alt
 import pandas as pd
+import marimo as mo
 
 from simulatingrisk.hawkdove.model import (
     HawkDoveModel,
@@ -44,64 +47,74 @@ def agent_portrayal(agent):
     return portrayal
 
 
-grid_size = 10
+MinMaxDefault = namedtuple("MinMaxDefault", ["min", "max", "default", "step"])
 
-model_params = {
-    "grid_size": grid_size,
-}
+#: ui options for grid size
+grid_size_opts = MinMaxDefault(min=10, max=100, default=10, step=1)
 
+#: supported neighborhood sizes
 neighborhood_sizes = sorted(list(HawkDoveModel.neighborhood_sizes))
+#: default neighborhood size
+default_neighborhood_size = 8
 
-# parameters common to both hawk/dove variants
-common_jupyterviz_params = {
-    "grid_size": {
-        "type": "SliderInt",
-        "value": grid_size,
-        "label": "Grid Size",
-        "min": 10,
-        "max": 100,
-        "step": 1,
-    },
-    "play_neighborhood": {
-        "type": "Select",
-        "value": 8,
-        "values": neighborhood_sizes,
-        "label": "Play neighborhood size",
-    },
-    "observed_neighborhood": {
-        "type": "Select",
-        "value": 8,
-        "values": neighborhood_sizes,
-        "label": "Observed neighborhood (determines choice of play)",
-    },
-    "hawk_odds": {
-        "type": "SliderFloat",
-        "value": 0.5,
-        "label": "Hawk Odds (first choice)",
-        "min": 0.0,
-        "max": 1.0,
-        "step": 0.1,
-    },
-    "random_play_odds": {
-        "type": "SliderFloat",
-        "value": 0.01,
-        "label": "Random play odds",
-        "min": 0.0,
-        "max": 1.0,
-        "step": 0.01,
-    },
+#: ui options for hawk odds
+hawk_odds_opts = MinMaxDefault(min=0.0, max=1.0, default=0.5, step=0.1)
+
+#: ui options for random play odds
+random_play_opts = MinMaxDefault(min=0.0, max=1.0, default=0.01, step=0.1)
+
+
+#: ui controls for parameters common to both hawk/dove simulations
+ui_controls = {
+    # key = model parameter; value = marimo ui element
+    # int slider with selected value visible
+    "grid_size": mo.ui.slider(
+        start=grid_size_opts.min,
+        stop=grid_size_opts.max,
+        step=grid_size_opts.step,
+        value=grid_size_opts.default,
+        label="Grid Size",
+        show_value=True,
+    ),
+    # drop-down to select from choices
+    "play_neighborhood": mo.ui.dropdown(
+        options=neighborhood_sizes,
+        label="Play neighborhood size",
+        value=default_neighborhood_size,
+    ),
+    "observed_neighborhood": mo.ui.dropdown(
+        options=neighborhood_sizes,
+        label="Observed neighborhood (determines choice of play)",
+        value=default_neighborhood_size,
+    ),
+    "hawk_odds": mo.ui.slider(
+        start=hawk_odds_opts.min,
+        stop=hawk_odds_opts.max,
+        step=hawk_odds_opts.step,
+        value=hawk_odds_opts.default,
+        label="Hawk Odds (first choice)",
+        show_value=True,
+    ),
+    "random_play_odds": mo.ui.slider(
+        start=random_play_opts.min,
+        stop=random_play_opts.max,
+        step=random_play_opts.step,
+        value=random_play_opts.default,
+        label="Random play odds",
+        show_value=True,
+    ),
 }
 
 # in single-risk variant, risk level is set for all agents at init time
-jupyterviz_params = common_jupyterviz_params.copy()
-jupyterviz_params["agent_risk_level"] = {
-    "type": "SliderInt",
-    "label": "Agent risk attitude",
-    "min": 0,
-    "max": 8,
-    "step": 1,
-    "value": 2,
-}
+singlerisk_controls = ui_controls.copy()
+singlerisk_controls["agent_risk_level"] = mo.ui.slider(
+    start=0,
+    stop=8,
+    step=1,
+    value=2,
+    label="Agent risk attitude",
+    show_value=True,
+)
 
 
 def draw_hawkdove_agent_space(model, agent_portrayal):
@@ -193,4 +206,3 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     )
 
     return agent_chart
-    # return solara.FigureAltair(agent_chart)

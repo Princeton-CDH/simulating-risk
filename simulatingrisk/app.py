@@ -10,7 +10,6 @@
 # dependency on tornado (a C-extension package) must be loaded from Pyodide's
 # built-ins before micropip attempts to resolve it from PyPI.
 
-
 import marimo
 
 __generated_with = "0.23.11"
@@ -51,11 +50,11 @@ def _():
     import altair as alt
     import marimo as mo
 
-    from simulatingrisk.hawkdove.server import (
+    from simulatingrisk.hawkdove.ui import (
         agent_portrayal,
         draw_hawkdove_agent_space,
     )
-    from simulatingrisk.hawkdovemulti.app import jupyterviz_params_var
+    from simulatingrisk.hawkdovemulti.ui import ui_controls
     from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
     from simulatingrisk.hawkdovemulti.viz import (
         plot_agents_by_risk,
@@ -69,60 +68,29 @@ def _():
         agent_portrayal,
         alt,
         draw_hawkdove_agent_space,
-        jupyterviz_params_var,
         mo,
         plot_agents_by_risk,
         plot_hawks_by_risk,
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
+        ui_controls,
     )
-
-
-@app.cell
-def _(jupyterviz_params_var, mo):
-    def config_params():
-        ui_params = {}
-
-        for param, opts in jupyterviz_params_var.items():
-            # doesn't curently use description
-            control = None
-            if opts["type"] in ["SliderInt", "SliderFloat"]:
-                control = mo.ui.slider(
-                    start=opts["min"],
-                    stop=opts["max"],
-                    step=opts["step"],
-                    value=opts["value"],
-                    label=opts["label"],
-                    show_value=True,
-                )
-            elif opts["type"] == "Select":
-                control = mo.ui.dropdown(
-                    options=opts["values"], label=opts.get("label"), value=opts["value"]
-                )
-
-            if control is not None:
-                ui_params[param] = control
-
-        return mo.ui.dictionary(ui_params)
-
-    params = config_params()
-    return (params,)
 
 
 @app.cell
 def _(
     control_buttons,
     mo,
-    params,
     refresh,
     simulation_display,
     simulation_status,
+    ui_controls,
 ):
     mo.hstack(
         [
             mo.vstack(
                 [
-                    *params.values(),  # model parameters
+                    *ui_controls.values(),  # model parameters
                     mo.hstack(
                         control_buttons, gap=1, align="start"
                     ),  # simulation run/step/stop controls,
@@ -285,7 +253,7 @@ def _(
         _charts = [_grid]
 
         if not _agent_df.empty:
-            # TODO: add color by risk attitude
+            # TODO: add color by risk attitude ?
             _charts.append(plot_agents_by_risk(_model))
             _charts.append(plot_hawks_by_risk(_model))
             _charts.append(plot_wealth_by_risklevel(_model))
