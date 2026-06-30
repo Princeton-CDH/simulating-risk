@@ -1,5 +1,5 @@
 import statistics
-from collections import Counter
+from collections import Counter, deque
 from unittest.mock import Mock, patch
 
 import pytest
@@ -264,6 +264,37 @@ def test_sum_risk_level_changes():
     # not order dependent
     reversed(model.recent_total_per_risk_level)
     assert model.sum_risk_level_changes == 4
+
+
+def test_step_records_totals_only_on_adjustment_round():
+    # totals should be recorded for comparison only on adjustment rounds,
+    # so sum_risk_level_changes reflects change between adjustments
+    model = HawkDoveMultipleRiskModel(3, risk_adjustment="adopt", adjust_every=3)
+
+    # walk through several steps and track when totals get appended
+    deque_sizes = []
+    for _ in range(model.adjust_round_n * 3):
+        model.step()
+        deque_sizes.append(len(model.recent_total_per_risk_level))
+
+    # step() appends the *previous* round's totals at the top of step,
+    # only when the previous round was an adjustment round. With
+    # adjust_every=3, steps 3, 6, 9 are adjustments, so the deque grows
+    # at the start of steps 4, 7, 10 (capped at maxlen=2)
+    assert deque_sizes == [0, 0, 0, 1, 1, 1, 2, 2, 2]
+
+
+def test_converged_handles_missing_sum_risk_level_changes():
+    # when sum_risk_level_changes is None (not enough adjustment-round
+    # snapshots yet), converged should return False rather than raise
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    model.schedule.steps = model.min_steps_converge + 1
+    # ensure the cached property has not been populated and the deque is empty
+    model.recent_total_per_risk_level = deque([], maxlen=2)
+    assert model.sum_risk_level_changes is None
+    # should not raise TypeError even with agents still adjusting
+    with patch.object(HawkDoveMultipleRiskModel, "num_agents_risk_changed", new=5):
+        assert not model.converged
 
 
 def test_riskstate_label():
