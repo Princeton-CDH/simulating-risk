@@ -111,11 +111,16 @@ def _(mo):
     model_state, set_model_state = mo.state(None)
     step_count, set_step_count = mo.state(0)
     is_running, set_is_running = mo.state(False)
+    # Remember the user's selected auto-refresh interval across pause/resume so
+    # we can re-arm the refresh widget at the same speed when play is clicked.
+    refresh_interval, set_refresh_interval = mo.state("0.5s")
     return (
         is_running,
         model_state,
+        refresh_interval,
         set_is_running,
         set_model_state,
+        set_refresh_interval,
         set_step_count,
         step_count,
     )
@@ -133,10 +138,25 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
-    # Speed selector for auto-run interval
+def _(is_running, mo, refresh_interval, set_refresh_interval):
+    # Speed selector for auto-run interval.
+    # The refresh widget is reconstructed whenever is_running toggles:
+    #   - running  -> default_interval = saved interval (timer ticks)
+    #   - paused   -> default_interval = None           (shows "Off", no ticks)
+    # The user's chosen speed is preserved across pause/resume via state.
+    _options = ["0.1s", "0.2s", "0.5s", "1s", "2s"]
+
+    def _remember_interval(value):
+        # value is like "0.5s (3)" — strip the tick counter to get the interval.
+        if value:
+            interval = value.split(" ")[0]
+            if interval in _options:
+                set_refresh_interval(interval)
+
     refresh = mo.ui.refresh(
-        default_interval="0.5s", options=["0.1s", "0.2s", "0.5s", "1s", "2s"]
+        default_interval=refresh_interval() if is_running() else None,
+        options=_options,
+        on_change=_remember_interval,
     )
     return (refresh,)
 
