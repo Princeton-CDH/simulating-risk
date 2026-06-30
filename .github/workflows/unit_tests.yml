@@ -33,8 +33,8 @@ jobs:
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v.8.2.0
         # pull version from .python-version file, currently 3.12
 
-      - name: Install package dependencies and test dependencies
-        run: uv sync --extra test
+      - name: Install package dependencies, including test dependencies
+        run: uv sync --group test
 
       - name: Run pytest
         run: uv run pytest --cov=./ --cov-report=xml
