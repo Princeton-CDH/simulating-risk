@@ -5,16 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "simulatingrisk"
 description = "Agent-based modeling for simulations related to risk and rationality"
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 license = {text = "Apache-2"}
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
     "mesa==2.1.5",
-    # "mesa @ git+https://github.com/projectmesa/mesa.git@main",
-    "matplotlib",  # required by mesa
-    "altair<6.0,>=5.5.0"  # 6.1 not compatible with mesa/solara version
+    "altair>6.0",
+    "marimo>=0.23.11",
 ]
 dynamic = ["version", "readme"]
 
@@ -29,13 +28,17 @@ readme = {file = ["README.md"], content-type = "text/markdown"}
 include = ["simulatingrisk"]
 # exclude tests and notebooks
 
-[project.optional-dependencies]
-dev = ["pre-commit", "pytest", "pytest-cov"]
-analysis = ["jupyterlab", "polars>1.41.2", "hvplot", "pyarrow", "scipy", 
+[dependency-groups]
+test = ["pre-commit", "pytest", "pytest-cov"]
+analysis = ["jupyterlab", "polars>1.41.2", "hvplot", "pyarrow", "scipy",
    "scikit-learn", "seaborn", "vegafusion[embed]>=2.0.3", "vl-convert-python>=1.9.0", "great-tables"]
+dev = ["pre-commit", {include-group = "test"}, {include-group = "analysis"}]
 
 [tool.black]
 line-length = 88
 target-version = ['py38']
 # include = ''
 # extend-exclude = ''
+
+[tool.marimo.runtime]
+pythonpath = ["."]
