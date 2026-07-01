@@ -61,12 +61,13 @@ def _():
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
     )
-    from simulatingrisk.ui_common import init_refresh
+    from simulatingrisk.ui_common import init_refresh, init_control_buttons
 
     return (
         HawkDoveMultipleRiskModel,
         agent_portrayal,
         draw_hawkdove_agent_space,
+        init_control_buttons,
         init_refresh,
         mo,
         plot_agents_by_risk,
