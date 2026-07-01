@@ -1,71 +1,14 @@
-# solara/jupyterviz app
 import altair as alt
-import solara
-from mesa.experimental import JupyterViz
 
-from simulatingrisk.hawkdove.model import divergent_colors_10
-from simulatingrisk.hawkdove.server import (
-    agent_portrayal,
-    common_jupyterviz_params,
-    draw_hawkdove_agent_space,
-    neighborhood_sizes,
-)
+from simulatingrisk.hawkdove.model import HawkDoveModel, divergent_colors_10
 from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
-
-# start with common hawk/dove params, then add params for variable risk
-jupyterviz_params_var = common_jupyterviz_params.copy()
-jupyterviz_params_var.update(
-    {
-        "risk_adjustment": {
-            "type": "Select",
-            "value": "adopt",
-            "values": ["none", "adopt", "average"],
-            "description": "If and how agents update their risk attitude",
-        },
-        "risk_distribution": {
-            "type": "Select",
-            "value": "uniform",
-            "values": HawkDoveMultipleRiskModel.risk_distribution_options,
-            "description": "Distribution for initial risk attitudes",
-        },
-        "include_endpoints": {
-            "label": "Include risk attitudes 0 and 9",
-            "type": "Checkbox",
-            "value": True,
-            "description": "Include 0/9 risk attitudes",
-        },
-        "adjust_every": {
-            "label": "Adjustment frequency (# rounds)",
-            "type": "SliderInt",
-            "min": 1,
-            "max": 30,
-            "step": 1,
-            "value": 10,
-            "description": "How many rounds between risk adjustment",
-        },
-        "adjust_neighborhood": {
-            "type": "Select",
-            "value": 8,
-            "values": neighborhood_sizes,
-            "label": "Adjustment neighborhood size",
-        },
-        "adjust_payoff": {
-            "type": "Select",
-            "label": "Adjustment comparison period",
-            "value": "recent",
-            "values": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
-            "description": "Compare recent payoff (since last adjustment "
-            + "round) or total (cumulative from start) when adjusting risk attitudes",
-        },
-    }
-)
 
 # use same divergent color scale across charts
 color_scale_opts = {"domain": list(range(10)), "range": divergent_colors_10}
 
 
-def plot_agents_by_risk(model):
-    """plot total number of agents for each risk attitude"""
+def plot_agents_by_risk(model: HawkDoveModel) -> alt.Chart | None:
+    """Plot total number of agents for each risk attitude"""
     agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
     if agent_df.empty:
         return
@@ -99,12 +42,12 @@ def plot_agents_by_risk(model):
         )
         .properties(title="Number of Agents by Risk Attitude")
     )
-    return solara.FigureAltair(bar_chart)
+    return bar_chart
 
 
-def plot_risklevel_changes(model):
-    """plot the number of agents who updated their risk attitude on
-    the last adjustment round"""
+def plot_risklevel_changes(model: HawkDoveMultipleRiskModel) -> alt.Chart | None:
+    """Plot the number of agents who updated their risk attitude on
+    the last adjustment round."""
     model_df = model.datacollector.get_model_vars_dataframe().reset_index()
     if model_df.empty:
         return
@@ -144,12 +87,12 @@ def plot_risklevel_changes(model):
         .properties(title="Risk Attitude Adjustments")
     )
 
-    return solara.FigureAltair(line_chart)
+    return line_chart
 
 
-def plot_hawks_by_risk(model):
-    """plot rolling mean of percent of agents in each risk attitude
-    who chose hawk over last several rounds"""
+def plot_hawks_by_risk(model: HawkDoveMultipleRiskModel) -> alt.Chart | None:
+    """Plot rolling mean of percent of agents in each risk attitude
+    who chose hawk over last several rounds."""
 
     # in the first round, mesa returns a dataframe full of NAs; ignore that
     agent_df = (
@@ -200,11 +143,11 @@ def plot_hawks_by_risk(model):
         )
         .properties(title="Rolling Average Percent Hawk by Risk Attitude")
     )
-    return solara.FigureAltair(chart)
+    return chart
 
 
-def plot_wealth_by_risklevel(model):
-    """plot wealth distribution for each risk attitude"""
+def plot_wealth_by_risklevel(model: HawkDoveMultipleRiskModel) -> alt.Chart | None:
+    """Plot wealth distribution for each risk attitude."""
     agent_df = model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
     if agent_df.empty:
         return
@@ -226,22 +169,4 @@ def plot_wealth_by_risklevel(model):
         )
         .properties(title="Cumulative Payoff Distribution by Risk Attitude")
     )
-    return solara.FigureAltair(wealth_chart)
-
-
-page = JupyterViz(
-    HawkDoveMultipleRiskModel,
-    jupyterviz_params_var,
-    measures=[
-        plot_agents_by_risk,
-        plot_hawks_by_risk,
-        plot_wealth_by_risklevel,
-        plot_risklevel_changes,
-        # plot_hawks,
-    ],
-    name="Hawk/Dove game with multiple risk attitudes",
-    agent_portrayal=agent_portrayal,
-    space_drawer=draw_hawkdove_agent_space,
-)
-# required to render the visualization with Jupyter/Solara
-page
+    return wealth_chart

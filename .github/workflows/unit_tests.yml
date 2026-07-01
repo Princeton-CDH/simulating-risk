@@ -4,6 +4,20 @@ on:
   push: # run on every push or PR to any branch
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  # Cancel existing job(s) for workflow when a new one is queued
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Prevent uv from including develop dependencies by default
+  UV_NO_DEV: 1
+  # Prevent uv run from syncing by default
+  UV_NO_SYNC: 1
+
 jobs:
   python-unit:
     name: Python unit tests
@@ -11,33 +25,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          python-version: 3.12
+          persist-credentials: false
 
-      # base the python cache on the hash of all pyproject.toml,
-      # which includes python requirements.
-      # if any change, the cache is invalidated.
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            pip-${{ hashFiles('pyproject.toml') }}
-            pip-
+      - name: Install uv and Python version
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v.8.2.0
+        # pull version from .python-version file, currently 3.12
 
-      - name: Install dependencies
-        run: pip install ".[dev]"
+      - name: Install package dependencies, including test dependencies
+        run: uv sync --group test
 
       - name: Run pytest
-        run: pytest --cov=./ --cov-report=xml
+        run: uv run pytest --cov=./ --cov-report=xml
 
       - name: Upload test coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
       # Set the color of the slack message used in the next step based on the
       # status of the build: "danger" for failure, "good" for success,
@@ -61,4 +64,4 @@ jobs:
           SLACK_TITLE: "Workflow `${{ github.workflow }}`: ${{ job.status }}"
           SLACK_MESSAGE: "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> on <https://github.com/${{ github.repository }}/|${{ github.repository }}@${{ github.ref }}>"
           SLACK_FOOTER: "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|View commit>"
-          MSG_MINIMAL: true  # use compact slack message format
+          MSG_MINIMAL: true # use compact slack message format
