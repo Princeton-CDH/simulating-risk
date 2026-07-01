@@ -212,6 +212,11 @@ class HawkDoveModel(mesa.Model):
     #: maximum risk level allowed
     max_risk_level = 9
 
+    #: minium supported risk level (may not match actual min risk level in a given simulation)
+    min_allowed_risk_level = 0
+    #: maximum supported risk level (may not match actual max risk level in a given simulation)
+    max_allowed_risk_level = 9
+
     def __init__(
         self,
         grid_size,

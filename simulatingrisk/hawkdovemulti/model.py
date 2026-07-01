@@ -331,7 +331,12 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             "num_agents_risk_changed": "num_agents_risk_changed",
             "sum_risk_level_changes": "sum_risk_level_changes",
         }
-        for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
+
+        # always report on full range of allowed risk levels, even if a particular
+        # simulation has customized max/min, so that reporting data is consistent across runs
+        for risk_level in range(
+            self.min_allowed_risk_level, self.max_allowed_risk_level + 1
+        ):
             field = f"total_r{risk_level}"
             model_reporters[field] = field
 
