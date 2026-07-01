@@ -61,11 +61,14 @@ def _():
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
     )
+    from simulatingrisk.ui_common import init_refresh, init_control_buttons
 
     return (
         HawkDoveMultipleRiskModel,
         agent_portrayal,
         draw_hawkdove_agent_space,
+        init_control_buttons,
+        init_refresh,
         mo,
         plot_agents_by_risk,
         plot_hawks_by_risk,
@@ -127,36 +130,20 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
-    run_btn = mo.ui.run_button(label="▶ Run")
-    pause_btn = mo.ui.run_button(label="⏸ Pause")
-    step_btn = mo.ui.run_button(label="⏭ Step")
-    reset_btn = mo.ui.run_button(label="⏹ Reset")
-
-    control_buttons = [run_btn, pause_btn, step_btn, reset_btn]
+def _(init_control_buttons):
+    # assign separately so we can watch the values of each button
+    run_btn, pause_btn, step_btn, reset_btn = init_control_buttons()
+    # combine for display in the UI
+    control_buttons = run_btn, pause_btn, step_btn, reset_btn
     return control_buttons, pause_btn, reset_btn, run_btn, step_btn
 
 
 @app.cell
-def _(is_running, mo, refresh_interval, set_refresh_interval):
-    # Speed selector for auto-run interval.
-    # The refresh widget is reconstructed whenever is_running toggles:
-    #   - running  -> default_interval = saved interval (timer ticks)
-    #   - paused   -> default_interval = None           (shows "Off", no ticks)
-    # The user's chosen speed is preserved across pause/resume via state.
-    _options = ["0.1s", "0.2s", "0.5s", "1s", "2s"]
-
-    def _remember_interval(value):
-        # value is like "0.5s (3)" — strip the tick counter to get the interval.
-        if value:
-            interval = value.split(" ")[0]
-            if interval in _options:
-                set_refresh_interval(interval)
-
-    refresh = mo.ui.refresh(
-        default_interval=refresh_interval() if is_running() else None,
-        options=_options,
-        on_change=_remember_interval,
+def _(init_refresh, is_running, refresh_interval, set_refresh_interval):
+    refresh = init_refresh(
+        is_running=is_running(),
+        refresh_interval=refresh_interval(),
+        set_refresh_interval=set_refresh_interval,
     )
     return (refresh,)
 
