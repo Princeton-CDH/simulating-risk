@@ -5,6 +5,7 @@ import csv
 import multiprocessing
 import os
 from datetime import datetime
+from pathlib import Path
 
 from mesa.batchrunner import _collect_data, _make_model_kwargs
 from tqdm.auto import tqdm
@@ -47,7 +48,7 @@ params = {
         # use model defaults; grid size must be specified
         "grid_size": 25,
     },
-    "distribution": {
+    "risk_distribution": {
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
         # adopt tends to converge faster; LB also says it's more interesting & simpler
         "risk_adjustment": "adopt",
@@ -191,9 +192,10 @@ def batch_run(
     if max_runs:
         runs_list = runs_list[:max_runs]
 
-    # collect data in a directory for this model
-    data_dir = os.path.join("data", "hawkdovemulti")
-    os.makedirs(data_dir, exist_ok=True)
+    # collect data in a subdirectory based on parameter
+    # (no model subdir since we're only focusing on hawk/dove multiple risk model)
+    data_dir = Path("data") / param_choice
+    data_dir.mkdir(parents=True, exist_ok=True)
     datestr = datetime.today().isoformat().replace(".", "_").replace(":", "")
     model_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_model.csv")
     if collect_agent_data:
@@ -222,7 +224,8 @@ def batch_run(
                 ):
                     # initialize dictwriter and start csv after the first batch
                     if model_dict_writer is None:
-                        # get field names from first entry
+                        # get field names from first entry (assumes rows are consistent;
+                        # must be enforced in model data collection)
                         model_dict_writer = csv.DictWriter(
                             model_output_file, model_data[0].keys()
                         )
@@ -273,8 +276,8 @@ def main():
         "-p",
         "--processes",
         type=int,
-        help="Number of processes to use (default: all available CPUs)",
-        default=None,
+        help="Number of processes (default: all available CPUs, %(default)d)",
+        default=os.cpu_count(),  # process_cpu_count in newer python versions
     )
     parser.add_argument(
         "--progress",
