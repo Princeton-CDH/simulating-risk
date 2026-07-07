@@ -198,19 +198,21 @@ def batch_run(
     data_dir.mkdir(parents=True, exist_ok=True)
     datestr = datetime.today().isoformat().replace(".", "_").replace(":", "")
     model_output_filename = os.path.join(data_dir, f"{file_prefix}{datestr}_model.csv")
+    message = f"Saving data collection results to:\n  {model_output_filename}"
+
+    # optionally collect agent data
+    agent_output_filename = None
+    agent_output_file = None
     if collect_agent_data:
         agent_output_filename = os.path.join(
             data_dir, f"{file_prefix}{datestr}_agent.csv"
         )
-
-    message = f"Saving data collection results to:\n  {model_output_filename}"
-    if collect_agent_data:
         message += f"\n  {agent_output_filename}"
     print(message)
 
     # open output files so data can be written as it is generated
     with open(model_output_filename, "w", newline="") as model_output_file:
-        if collect_agent_data:
+        if agent_output_filename:
             agent_output_file = open(agent_output_filename, "w", newline="")
 
         model_dict_writer = None
@@ -246,7 +248,7 @@ def batch_run(
 
                     model_dict_writer.writerows(model_data)
 
-                    if collect_agent_data:
+                    if agent_output_file:
                         if agent_dict_writer is None:
                             # get field names from first entry
                             agent_dict_writer = csv.DictWriter(
@@ -258,7 +260,7 @@ def batch_run(
 
                     pbar.update()
 
-        if collect_agent_data:
+        if agent_output_file:
             agent_output_file.close()
 
 
