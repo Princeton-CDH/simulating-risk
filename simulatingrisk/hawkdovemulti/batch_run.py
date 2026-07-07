@@ -88,15 +88,12 @@ def run_hawkdovemulti_model(args) -> tuple[list[dict], list[dict] | None]:
     # returns a tuple of model data, agent data (or None if not collecting agent data)
     # data for each is returned as a list of dicts
 
-    # add data collection options to model parameters
-    params.update(
-        {
-            "data_collection_schedule": data_collection_schedule,
-            "collect_agent_data": collect_agent_data,
-        }
+    # initialize model with run parameters and data collection options
+    model = HawkDoveMultipleRiskModel(
+        **params,
+        data_collection_schedule=data_collection_schedule,
+        collect_agent_data=collect_agent_data,
     )
-
-    model = HawkDoveMultipleRiskModel(**params)
     while model.running and model.schedule.steps <= max_steps:
         try:
             model.step()
@@ -119,18 +116,42 @@ def run_hawkdovemulti_model(args) -> tuple[list[dict], list[dict] | None]:
         model.collect_data()
 
     # convert all collected model data into a dataframe
-    # (equivalent to get_model_vars_dataframe() but polars instead of pandas)
-    # add run id and iteration to the model data
-    model_data_df = pl.DataFrame(model.datacollector.model_vars).with_columns(
-        RunId=pl.lit(run_id), iteration=pl.lit(iteration)
+    # (equivalent to datacollector.get_model_vars_dataframe() but polars instead of pandas)
+    # tag every row with run id, iteration, step number (tracked by the model)
+    # and model parameters for this run.
+    model_data_df = pl.DataFrame(model.datacollector.model_vars)
+    # specify additional values as a dict so we can use for key order
+    id_columns = {
+        "RunId": pl.lit(run_id),
+        "iteration": pl.lit(iteration),
+        "Step": pl.Series("Step", list(model.collected_steps), dtype=pl.Int64),
+        **{k: pl.lit(v) for k, v in params.items()},
+    }
+    # add the values and order the columns
+    model_data_df = model_data_df.with_columns(**id_columns).select(
+        list(id_columns.keys()) + model_data_df.columns
     )
+
     # optionally get all agent data
     agent_data = None
     if collect_agent_data:
-        # datacollector returns a multi-indexed dataframe
+        # datacollector returns a multi-indexed dataframe (Step, AgentID);
+        # reset_index() pulls those into columns. Step from mesa is
+        # schedule.steps at collect time (1-based); shift to 0-based to
+        # match the model data output.
         agent_data_df = model.datacollector.get_agent_vars_dataframe()
-        # reset index and convert to polars, for consistency with above
-        agent_data_df = pl.DataFrame(agent_data_df.reset_index())
+        agent_data_df = pl.DataFrame(agent_data_df.reset_index()).with_columns(
+            Step=pl.col("Step") - 1
+        )
+        # tag every agent row with run id and iteration, for joining with model data
+        agent_id_columns = {
+            "RunId": pl.lit(run_id),
+            "iteration": pl.lit(iteration),
+        }
+        # order columns so RunId and iteration are first
+        agent_data_df = agent_data_df.with_columns(**agent_id_columns).select(
+            list(agent_id_columns.keys()) + agent_data_df.columns
+        )
         agent_data = agent_data_df.to_dicts()
 
     # return list of dicts for model, agent data

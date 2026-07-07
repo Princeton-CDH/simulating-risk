@@ -274,6 +274,10 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if collect_agent_data is not None:
             self.collect_agent_data = collect_agent_data
 
+        # track step indices for rows collected by non-ALL schedules,
+        # so batch runners can reconstruct the Step column
+        self._collected_steps = []
+
         super().__init__(grid_size, *args, **kwargs)
 
         # if adjust neighborhood is not specified, then use the same size
@@ -411,6 +415,22 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         if collect_data:
             super().collect_data()
+            # record the step index (0-based) that this row corresponds to,
+            # so callers can reconstruct the Step column for output. skipped
+            # for ALL mode since collected_steps == range(len(model_vars)).
+            if self.data_collection_schedule is not DataCollectionSchedule.ALL:
+                self._collected_steps.append(self.schedule.steps - 1)
+
+    @property
+    def collected_steps(self):
+        """0-based step indices for each row in the datacollector, in
+        collection order. Returned as a range for ALL mode (where every
+        step is collected) or a list for other schedules."""
+        if self.data_collection_schedule is DataCollectionSchedule.ALL:
+            # length of any model_vars list == number of collected rows
+            n = self.schedule.steps
+            return range(n)
+        return self._collected_steps
 
     @property
     def num_agents_risk_changed(self):
