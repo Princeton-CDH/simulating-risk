@@ -304,8 +304,8 @@ def main():
     parser = argparse.ArgumentParser(
         prog="hawk/dove batch_run",
         description="Batch run for hawk/dove multiple risk attitude simulation.",
-        epilog="""Data files will be created in data/hawkdovemulti/
-        relative to current path.""",
+        epilog="""Data files will be created in data/<params>/
+        relative to current path, where <params> matches the --params option.""",
     )
     parser.add_argument(
         "-i",
