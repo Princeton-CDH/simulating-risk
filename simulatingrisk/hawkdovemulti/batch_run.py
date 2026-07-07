@@ -109,8 +109,12 @@ def run_hawkdovemulti_model(args) -> tuple[list[dict], list[dict] | None]:
 
     # data collection schedule is now handled in the model, so we don't
     # collect model/agent data we don't need.
-    # ensure we collect last-round data (always needed in any mode)
-    if model.running or not model.converged:
+    #
+    # For END mode, the model only collects when it stops running (converges);
+    # if we stopped without converging, force a final collect for last round data.
+    # (ADJUST mode should also include last round, whether or not it was an adjustment
+    # round.)
+    if data_collection_schedule is not DataCollectionSchedule.ALL and model.running:
         model.running = False
         model.collect_data()
 

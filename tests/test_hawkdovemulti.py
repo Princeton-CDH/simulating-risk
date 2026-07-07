@@ -99,6 +99,46 @@ def test_init_data_collection_schedule():
     assert model.datacollector.agent_reporters == {}
 
 
+def test_collect_data_schedule():
+    # ALL: collect_data collects on every step
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.ALL
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    n_steps = 5
+    for _ in range(n_steps):
+        model.step()
+    # one row per step
+    assert len(first_reporter) == n_steps
+
+    # END: only collects when the model stops running
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.END
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    for _ in range(5):
+        model.step()
+    # nothing collected while still running
+    assert len(first_reporter) == 0
+    # stop the model and collect the final row
+    model.running = False
+    model.collect_data()
+    assert len(first_reporter) == 1
+
+    # ADJUST: only collects on adjustment rounds
+    model = HawkDoveMultipleRiskModel(
+        3,
+        risk_adjustment="adopt",
+        adjust_every=3,
+        data_collection_schedule=DataCollectionSchedule.ADJUST,
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    # step 9 rounds -> adjustment rounds at 3, 6, 9 -> expect 3 collections
+    for _ in range(9):
+        model.step()
+    assert len(first_reporter) == 3
+
+
 def test_init_variable_risk_level():
     model = HawkDoveMultipleRiskModel(5)
     # when risk level is variable/random, agents should have different risk levels
