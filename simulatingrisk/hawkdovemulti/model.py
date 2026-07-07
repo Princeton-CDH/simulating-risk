@@ -254,6 +254,11 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         self.risk_distribution = risk_distribution
         self.risk_attitude_generator = self.get_risk_attitude_generator()
 
+        self.risk_adjustment = risk_adjustment
+        self.adjust_round_n = adjust_every
+        # store whether to compare cumulative payoff or since last adjustment round
+        self.adjust_payoff = adjust_payoff
+
         # configure data collection schedule if specified
         # - configure before datacollector is initialized in super init method
         if data_collection_schedule is not None:
@@ -271,13 +276,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
 
         super().__init__(grid_size, *args, **kwargs)
 
-        self.risk_adjustment = risk_adjustment
-        self.adjust_round_n = adjust_every
         # if adjust neighborhood is not specified, then use the same size
         # as play neighborhood
         self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
-        # store whether to compare cumulative payoff or since last adjustment round
-        self.adjust_payoff = adjust_payoff
 
         self.recent_total_per_risk_level = deque([], maxlen=2)
 

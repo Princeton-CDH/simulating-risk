@@ -6,6 +6,7 @@ import pytest
 
 from simulatingrisk.hawkdove.model import Play
 from simulatingrisk.hawkdovemulti.model import (
+    DataCollectionSchedule,
     HawkDoveMultipleRiskAgent,
     HawkDoveMultipleRiskModel,
     RiskState,
@@ -56,6 +57,46 @@ def test_init():
     # complain about invalid adjust payoff
     with pytest.raises(ValueError, match="Unsupported adjust payoff option 'bogus'"):
         HawkDoveMultipleRiskModel(3, adjust_payoff="bogus")
+
+
+def test_init_data_collection_schedule():
+    # default: collect on every step
+    model = HawkDoveMultipleRiskModel(3)
+    assert model.data_collection_schedule == DataCollectionSchedule.ALL
+    assert model.collect_agent_data is True
+
+    # explicit schedule stored
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.END
+    )
+    assert model.data_collection_schedule == DataCollectionSchedule.END
+
+    # ADJUST schedule is fine when risk adjustment is enabled
+    model = HawkDoveMultipleRiskModel(
+        3,
+        risk_adjustment="adopt",
+        data_collection_schedule=DataCollectionSchedule.ADJUST,
+    )
+    assert model.data_collection_schedule == DataCollectionSchedule.ADJUST
+
+    # ADJUST schedule with no risk adjustment should error, not silently succeed
+    # (regression: previously referenced self.risk_adjustment before it was set,
+    # raising AttributeError from __getattr__ instead of the intended ValueError)
+    with pytest.raises(
+        ValueError,
+        match="Can't collect data on adjustment rounds when adjustment is disabled",
+    ):
+        HawkDoveMultipleRiskModel(
+            3,
+            risk_adjustment=None,
+            data_collection_schedule=DataCollectionSchedule.ADJUST,
+        )
+
+    # collect_agent_data can be disabled
+    model = HawkDoveMultipleRiskModel(3, collect_agent_data=False)
+    assert model.collect_agent_data is False
+    # and the datacollector should have no agent reporters configured
+    assert model.datacollector.agent_reporters == {}
 
 
 def test_init_variable_risk_level():
