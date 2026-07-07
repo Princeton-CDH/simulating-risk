@@ -309,6 +309,10 @@ class HawkDoveModel(mesa.Model):
 
         # collect data after status is updated, so data collected
         # for last round will reflect converged status
+        self.collect_data()
+
+    def collect_data(self):
+        # extend this method to customize when or how data collection happens
         self.datacollector.collect(self)
 
     @property

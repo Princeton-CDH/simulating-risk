@@ -1,7 +1,7 @@
 import random
 import statistics
 from collections import Counter, defaultdict, deque
-from enum import IntEnum
+from enum import Enum, IntEnum
 from functools import cached_property
 
 from simulatingrisk.hawkdove.model import HawkDoveAgent, HawkDoveModel
@@ -154,6 +154,10 @@ class RiskState(IntEnum):
         return str(self.value)
 
 
+#: customized data collection schedule options
+DataCollectionSchedule = Enum("DataCollectionSchedule", ["ALL", "END", "ADJUST"])
+
+
 class HawkDoveMultipleRiskModel(HawkDoveModel):
     """
     Model for hawk/dove game with variable risk attitudes.  Supports
@@ -190,6 +194,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         "bimodal",
     )
 
+    collect_agent_data = True
+    data_collection_schedule = DataCollectionSchedule.ALL
+
     def __init__(
         self,
         grid_size,
@@ -199,6 +206,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         adjust_neighborhood=None,
         adjust_payoff="recent",
         include_endpoints=True,
+        # options to customize data collection schedule, for efficient batch running
+        data_collection_schedule: DataCollectionSchedule | None = None,
+        collect_agent_data: bool | None = None,
         *args,
         **kwargs,
     ):
@@ -243,6 +253,21 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # must be set before calling super for agent init
         self.risk_distribution = risk_distribution
         self.risk_attitude_generator = self.get_risk_attitude_generator()
+
+        # configure data collection schedule if specified
+        # - configure before datacollector is initialized in super init method
+        if data_collection_schedule is not None:
+            if (
+                data_collection_schedule is DataCollectionSchedule.ADJUST
+                and self.risk_adjustment is None
+            ):
+                raise ValueError(
+                    "Can't collect data on adjustment rounds when adjustment is disabled"
+                )
+            self.data_collection_schedule = data_collection_schedule
+
+        if collect_agent_data is not None:
+            self.collect_agent_data = collect_agent_data
 
         super().__init__(grid_size, *args, **kwargs)
 
@@ -341,7 +366,12 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             model_reporters[field] = field
 
         opts["model_reporters"].update(model_reporters)
-        opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
+        if self.collect_agent_data:
+            opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
+        else:
+            # delete agent reporters when not collecting agent data
+            del opts["agent_reporters"]
+
         return opts
 
     def step(self):
@@ -363,6 +393,23 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             pass
 
         super().step()
+
+    def collect_data(self):
+        # collect data based on configured schedule
+        collect_data = False
+        match self.data_collection_schedule:
+            case DataCollectionSchedule.ALL:
+                collect_data = True
+            case DataCollectionSchedule.ADJUST:
+                collect_data = self.adjustment_round
+            case DataCollectionSchedule.END:
+                # collect when not running;
+                # NOTE: if stopped before converged, set running to False
+                # and call model.collect_data()
+                collect_data = not self.running
+
+        if collect_data:
+            super().collect_data()
 
     @property
     def num_agents_risk_changed(self):
