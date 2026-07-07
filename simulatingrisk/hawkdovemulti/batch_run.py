@@ -218,7 +218,9 @@ def batch_run(
 
         # adapted from mesa batch run code
         with tqdm(total=total_runs, disable=not progressbar) as pbar:
-            with multiprocessing.Pool(number_processes) as pool:
+            # use maxtasksperchild to recycle worker processes
+            # to release accumulated memory and reduce risk of out of memory problems
+            with multiprocessing.Pool(number_processes, maxtasksperchild=10) as pool:
                 for model_data, agent_data in pool.imap_unordered(
                     run_hawkdovemulti_model, runs_list
                 ):
