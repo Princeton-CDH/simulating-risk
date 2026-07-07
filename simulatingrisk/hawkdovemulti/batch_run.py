@@ -192,7 +192,7 @@ def batch_run(
     if max_runs:
         runs_list = runs_list[:max_runs]
 
-    # collect data in a subdirectory based on parameter
+    # collect data in a subdirectory based on parameter`
     # (no model subdir since we're only focusing on hawk/dove multiple risk model)
     data_dir = Path("data") / param_choice
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -221,9 +221,20 @@ def batch_run(
             # use maxtasksperchild to recycle worker processes
             # to release accumulated memory and reduce risk of out of memory problems
             with multiprocessing.Pool(number_processes, maxtasksperchild=10) as pool:
-                for model_data, agent_data in pool.imap_unordered(
-                    run_hawkdovemulti_model, runs_list
-                ):
+                # iterate over results in a loop so we can specify a timeout
+                results_iter = pool.imap_unordered(run_hawkdovemulti_model, runs_list)
+                for i in range(len(runs_list) + 1):
+                    try:
+                        model_data, agent_data = results_iter.next(timeout=3600)
+                    except multiprocessing.TimeoutError:
+                        print(
+                            "\nTimeout error waiting for a simulation run to complete; "
+                            + "possible crash or OOM. Quitting."
+                        )
+                        break
+                    except StopIteration:
+                        break
+
                     # initialize dictwriter and start csv after the first batch
                     if model_dict_writer is None:
                         # get field names from first entry (assumes rows are consistent;
