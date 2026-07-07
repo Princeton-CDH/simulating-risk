@@ -405,16 +405,16 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # model is no longer running) regardless of schedule, so callers
         # always get a final-state row. NOTE: if stopped before converged,
         # set running to False and call model.collect_data() explicitly.
-        collect_data = False
+        should_collect = False
         match self.data_collection_schedule:
             case DataCollectionSchedule.ALL:
-                collect_data = True
+                should_collect = True
             case DataCollectionSchedule.ADJUST:
-                collect_data = self.adjustment_round or not self.running
+                should_collect = self.adjustment_round or not self.running
             case DataCollectionSchedule.END:
-                collect_data = not self.running
+                should_collect = not self.running
 
-        if collect_data:
+        if should_collect:
             super().collect_data()
             # record the step index (0-based) that this row corresponds to,
             # so callers can reconstruct the Step column for output. skipped

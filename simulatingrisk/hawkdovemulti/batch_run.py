@@ -7,7 +7,6 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-import polars as pl
 from mesa.batchrunner import _make_model_kwargs
 from tqdm.auto import tqdm
 
@@ -115,47 +114,46 @@ def run_hawkdovemulti_model(args) -> tuple[list[dict], list[dict] | None]:
         model.running = False
         model.collect_data()
 
-    # convert all collected model data into a dataframe
-    # (equivalent to datacollector.get_model_vars_dataframe() but polars instead of pandas)
-    # tag every row with run id, iteration, step number (tracked by the model)
-    # and model parameters for this run.
-    model_data_df = pl.DataFrame(model.datacollector.model_vars)
-    # specify additional values as a dict so we can use for key order
-    id_columns = {
-        "RunId": pl.lit(run_id),
-        "iteration": pl.lit(iteration),
-        "Step": pl.Series("Step", list(model.collected_steps), dtype=pl.Int64),
-        **{k: pl.lit(v) for k, v in params.items()},
-    }
-    # add the values and order the columns
-    model_data_df = model_data_df.with_columns(**id_columns).select(
-        list(id_columns.keys()) + model_data_df.columns
-    )
+    # convert all collected model data into a list of dicts (one per collected
+    # step), tagging each row with run id, iteration, step number (tracked
+    # by the model), and the model parameter values that produced it, so
+    # rows are self-describing in the exported CSV.
+    model_vars = model.datacollector.model_vars
+    collected_steps = list(model.collected_steps)
+    reporter_names = list(model_vars)
+    model_data = [
+        {
+            "RunId": run_id,
+            "iteration": iteration,
+            "Step": collected_steps[i],
+            **params,
+            **{name: model_vars[name][i] for name in reporter_names},
+        }
+        for i in range(len(collected_steps))
+    ]
 
     # optionally get all agent data
     agent_data = None
     if collect_agent_data:
-        # datacollector returns a multi-indexed dataframe (Step, AgentID);
-        # reset_index() pulls those into columns. Step from mesa is
-        # schedule.steps at collect time (1-based); shift to 0-based to
-        # match the model data output.
-        agent_data_df = model.datacollector.get_agent_vars_dataframe()
-        agent_data_df = pl.DataFrame(agent_data_df.reset_index()).with_columns(
-            Step=pl.col("Step") - 1
-        )
-        # tag every agent row with run id and iteration, for joining with model data
-        agent_id_columns = {
-            "RunId": pl.lit(run_id),
-            "iteration": pl.lit(iteration),
-        }
-        # order columns so RunId and iteration are first
-        agent_data_df = agent_data_df.with_columns(**agent_id_columns).select(
-            list(agent_id_columns.keys()) + agent_data_df.columns
-        )
-        agent_data = agent_data_df.to_dicts()
+        # _agent_records is a dict keyed by schedule.steps at collect time;
+        # each value is a list of (step, agent_id, *reporter_values) tuples.
+        # convert to a flat list of dicts. Step from mesa is 1-based
+        # (schedule.steps at collect time); shift to 0-based to match
+        # the model data output.
+        agent_reporters = list(model.datacollector.agent_reporters)
+        agent_data = [
+            {
+                "RunId": run_id,
+                "iteration": iteration,
+                "Step": step_key - 1,
+                "AgentID": record[1],
+                **dict(zip(agent_reporters, record[2:])),
+            }
+            for step_key, records in model.datacollector._agent_records.items()
+            for record in records
+        ]
 
-    # return list of dicts for model, agent data
-    return model_data_df.to_dicts(), agent_data
+    return model_data, agent_data
 
 
 def batch_run(
@@ -163,7 +161,7 @@ def batch_run(
     iterations: int,
     number_processes: int,
     max_steps: int,
-    progressbar: tqdm,
+    progressbar: bool,
     file_prefix: str,
     max_runs: int,
     param_choice: str,
@@ -201,7 +199,7 @@ def batch_run(
     if max_runs:
         runs_list = runs_list[:max_runs]
 
-    # collect data in a subdirectory based on parameter`
+    # collect data in a subdirectory based on parameter
     # (no model subdir since we're only focusing on hawk/dove multiple risk model)
     data_dir = Path("data") / param_choice
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -228,49 +226,70 @@ def batch_run(
         agent_dict_writer = None
 
         # adapted from mesa batch run code
+        # use maxtasksperchild to recycle worker processes
+        # to release accumulated memory and reduce risk of out of memory problems
+        interrupted = False
         with tqdm(total=total_runs, disable=not progressbar) as pbar:
-            # use maxtasksperchild to recycle worker processes
-            # to release accumulated memory and reduce risk of out of memory problems
             with multiprocessing.Pool(number_processes, maxtasksperchild=10) as pool:
                 # iterate over results in a loop so we can specify a timeout
+                # and handle keyboard interrupts cleanly.
                 results_iter = pool.imap_unordered(run_hawkdovemulti_model, runs_list)
-                for i in range(len(runs_list) + 1):
-                    try:
-                        model_data, agent_data = results_iter.next(timeout=3600)
-                    except multiprocessing.TimeoutError:
-                        print(
-                            "\nTimeout error waiting for a simulation run to complete; "
-                            + "possible crash or OOM. Quitting."
-                        )
-                        break
-                    except StopIteration:
-                        break
-
-                    # initialize dictwriter and start csv after the first batch
-                    if model_dict_writer is None:
-                        # get field names from first entry (assumes rows are consistent;
-                        # must be enforced in model data collection)
-                        model_dict_writer = csv.DictWriter(
-                            model_output_file, model_data[0].keys()
-                        )
-                        model_dict_writer.writeheader()
-
-                    model_dict_writer.writerows(model_data)
-
-                    if agent_output_file:
-                        if agent_dict_writer is None:
-                            # get field names from first entry
-                            agent_dict_writer = csv.DictWriter(
-                                agent_output_file, agent_data[0].keys()
+                try:
+                    while True:
+                        try:
+                            model_data, agent_data = results_iter.next(timeout=3600)
+                        except multiprocessing.TimeoutError:
+                            print(
+                                "\nTimeout error waiting for a simulation run to "
+                                "complete; possible crash or OOM. Quitting."
                             )
-                            agent_dict_writer.writeheader()
+                            break
+                        except StopIteration:
+                            break
 
-                        agent_dict_writer.writerows(agent_data)
+                        # initialize dictwriter and start csv after the first batch
+                        if model_dict_writer is None:
+                            # get field names from first entry (assumes rows are consistent;
+                            # must be enforced in model data collection)
+                            model_dict_writer = csv.DictWriter(
+                                model_output_file, model_data[0].keys()
+                            )
+                            model_dict_writer.writeheader()
 
-                    pbar.update()
+                        model_dict_writer.writerows(model_data)
+                        # flush after every batch so partial results survive
+                        # an abrupt exit
+                        model_output_file.flush()
+
+                        if agent_output_file:
+                            if agent_dict_writer is None:
+                                # get field names from first entry
+                                agent_dict_writer = csv.DictWriter(
+                                    agent_output_file, agent_data[0].keys()
+                                )
+                                agent_dict_writer.writeheader()
+
+                            agent_dict_writer.writerows(agent_data)
+                            agent_output_file.flush()
+
+                        pbar.update()
+                except KeyboardInterrupt:
+                    # on ctrl-c, terminate workers so we don't wait for
+                    # in-flight tasks; partial results already written to
+                    # disk (thanks to the flushes above) are preserved.
+                    interrupted = True
+                    print(
+                        "\nKeyboard interrupt received; terminating worker pool "
+                        "and finalizing output files."
+                    )
+                    pool.terminate()
+                    pool.join()
 
         if agent_output_file:
             agent_output_file.close()
+
+        if interrupted:
+            print("Batch run interrupted; partial results saved.")
 
 
 # map cli data collection options to data collection schedule enum
