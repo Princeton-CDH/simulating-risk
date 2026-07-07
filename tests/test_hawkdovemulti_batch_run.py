@@ -59,8 +59,10 @@ def test_run_hawkdovemulti_model_step_column_all():
 
 
 def test_run_hawkdovemulti_model_step_column_adjust():
-    # in ADJUST mode, rows are collected on adjustment rounds only;
-    # Step for row i should be (i+1)*adjust_every - 1.
+    # in ADJUST mode, rows are collected on adjustment rounds; when the
+    # loop exits without converging, a final "last round" row is also
+    # collected regardless of adjustment schedule, so callers always get
+    # a final-state row.
     adjust_every = 5
     max_steps = 20
     args = (
@@ -77,8 +79,41 @@ def test_run_hawkdovemulti_model_step_column_adjust():
     )
     model_data, _ = run_hawkdovemulti_model(args)
     step_values = [row["Step"] for row in model_data]
-    expected = [(i + 1) * adjust_every - 1 for i in range(len(step_values))]
-    assert step_values == expected
+    # adjustment rounds at steps 4, 9, 14, 19 (0-based), plus a final
+    # row at step 20 (loop runs while schedule.steps <= max_steps, so
+    # 21 total steps -> final step index is 20)
+    assert step_values == [4, 9, 14, 19, 20]
+
+
+def test_run_hawkdovemulti_model_adjust_includes_final_row():
+    # ADJUST mode should always include a final-round row even when the
+    # loop exits on a non-adjustment step. previously the batch runner
+    # tried to force a final collect but the model's ADJUST branch
+    # ignored it unless the current step was itself an adjustment round,
+    # leaving no final-state row for non-converged runs.
+    adjust_every = 10
+    # pick max_steps so the loop exits far from any adjustment boundary:
+    # loop runs while schedule.steps <= max_steps, so max_steps=15 means
+    # the loop stops with schedule.steps=16 (step index 15). last adjustment
+    # round was at step index 9; without the fix, no row would exist for
+    # anything after step 9.
+    max_steps = 15
+    args = (
+        0,
+        0,
+        {
+            "grid_size": 3,
+            "risk_adjustment": "adopt",
+            "adjust_every": adjust_every,
+        },
+        max_steps,
+        DataCollectionSchedule.ADJUST,
+        False,
+    )
+    model_data, _ = run_hawkdovemulti_model(args)
+    step_values = [row["Step"] for row in model_data]
+    # expect the adjustment-round row and a final last-step row
+    assert step_values == [9, 15]
 
 
 def test_run_hawkdovemulti_model_agent_data_columns():

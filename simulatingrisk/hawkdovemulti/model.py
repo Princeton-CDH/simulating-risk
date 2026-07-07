@@ -400,17 +400,18 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         super().step()
 
     def collect_data(self):
-        # collect data based on configured schedule
+        # collect data based on configured schedule.
+        # For END and ADJUST, also collect on the last round (when the
+        # model is no longer running) regardless of schedule, so callers
+        # always get a final-state row. NOTE: if stopped before converged,
+        # set running to False and call model.collect_data() explicitly.
         collect_data = False
         match self.data_collection_schedule:
             case DataCollectionSchedule.ALL:
                 collect_data = True
             case DataCollectionSchedule.ADJUST:
-                collect_data = self.adjustment_round
+                collect_data = self.adjustment_round or not self.running
             case DataCollectionSchedule.END:
-                # collect when not running;
-                # NOTE: if stopped before converged, set running to False
-                # and call model.collect_data()
                 collect_data = not self.running
 
         if collect_data:
