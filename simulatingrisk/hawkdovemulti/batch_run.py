@@ -7,10 +7,14 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from mesa.batchrunner import _collect_data, _make_model_kwargs
+import polars as pl
+from mesa.batchrunner import _make_model_kwargs
 from tqdm.auto import tqdm
 
-from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
+from simulatingrisk.hawkdovemulti.model import (
+    DataCollectionSchedule,
+    HawkDoveMultipleRiskModel,
+)
 
 neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 
@@ -71,9 +75,26 @@ params = {
 
 
 # method for multiproc running model with a set of params
-def run_hawkdovemulti_model(args):
-    run_id, iteration, params, max_steps, data_collection_period = args
+def run_hawkdovemulti_model(args) -> tuple[list[dict], list[dict] | None]:
+    (
+        run_id,
+        iteration,
+        params,
+        max_steps,
+        data_collection_schedule,
+        collect_agent_data,
+    ) = args
     # simplified model runner adapted from mesa batch run code
+    # returns a tuple of model data, agent data (or None if not collecting agent data)
+    # data for each is returned as a list of dicts
+
+    # add data collection options to model parameters
+    params.update(
+        {
+            "data_collection_schedule": data_collection_schedule,
+            "collect_agent_data": collect_agent_data,
+        }
+    )
 
     model = HawkDoveMultipleRiskModel(**params)
     while model.running and model.schedule.steps <= max_steps:
@@ -86,89 +107,45 @@ def run_hawkdovemulti_model(args):
             # and finish data collection to report on whatever was completed
             break
 
-    # by default, collect data for the last step
-    # (scheduler is 1-based index but data collection is 0-based)
-    if data_collection_period == "end":
-        collect_steps = [model.schedule.steps - 1]
-    elif data_collection_period == "adjustment_round":
-        # when requested, collect data at every adjustment round
-        every_n = params.get("adjust_every", 10)
-        collect_steps = range(0, max_steps, every_n)
-    elif data_collection_period == "every_round":
-        collect_steps = range(0, max_steps)
+    # data collection schedule is now handled in the model, so we don't
+    # collect model/agent data we don't need.
+    # ensure we collect last-round data (always needed in any mode)
+    if model.running or not model.converged:
+        model.running = False
+        model.collect_data()
 
-    # make a dict of run id and params for combination with model data
-    run_data = {"RunId": run_id, "iteration": iteration, "Step": "-"}
-    run_data.update(params)
-    all_model_data = []
-    all_agent_data = []
+    # convert all collected model data into a dataframe
+    # (equivalent to get_model_vars_dataframe() but polars instead of pandas)
+    # add run id and iteration to the model data
+    model_data_df = pl.DataFrame(model.datacollector.model_vars).with_columns(
+        RunId=pl.lit(run_id), iteration=pl.lit(iteration)
+    )
+    # optionally get all agent data
+    agent_data = None
+    if collect_agent_data:
+        # datacollector returns a multi-indexed dataframe
+        agent_data_df = model.datacollector.get_agent_vars_dataframe()
+        # reset index and convert to polars, for consistency with above
+        agent_data_df = pl.DataFrame(agent_data_df.reset_index())
+        agent_data = agent_data_df.to_dicts()
 
-    # collect data at the specified data collection points
-    for step in collect_steps:
-        try:
-            model_data, agent_data = _collect_data(model, step)
-            # preserve order: run, iteration, step, params first
-            # then data collection from model
-            model_run_data = run_data.copy()
-            model_run_data["Step"] = step
-            model_run_data.update(model_data)
-            all_model_data.append(model_run_data)
-
-            # add step to every agent data entry
-            agent_data = [
-                {
-                    "Step": step,
-                    **agent_data,
-                }
-                for agent_data in agent_data
-            ]
-            all_agent_data.extend(agent_data)
-        except IndexError:
-            # if we requested a step that isn't available, collect last round
-            # (should capture converged status)
-            model_data, agent_data = _collect_data(model, -1)
-            model_run_data = run_data.copy()
-            model_run_data["Step"] = step
-            model_run_data.update(model_data)
-            all_model_data.append(model_run_data)
-            # add step to every agent data entry
-            agent_data = [
-                {
-                    "Step": step,
-                    **agent_data,
-                }
-                for agent_data in agent_data
-            ]
-            all_agent_data.extend(agent_data)
-            break
-
-    # populate run id and iteration for every row of agent data
-    all_agent_data = [
-        {
-            "RunId": run_id,
-            "iteration": iteration,
-            **agent_data,
-        }
-        for agent_data in all_agent_data
-    ]
-
-    return all_model_data, all_agent_data
+    # return list of dicts for model, agent data
+    return model_data_df.to_dicts(), agent_data
 
 
 def batch_run(
-    params,
-    iterations,
-    number_processes,
-    max_steps,
-    progressbar,
-    collect_agent_data,
-    file_prefix,
-    max_runs,
-    param_choice,
-    data_collection_period,
+    params: dict,
+    iterations: int,
+    number_processes: int,
+    max_steps: int,
+    progressbar: tqdm,
+    file_prefix: str,
+    max_runs: int,
+    param_choice: str,
+    data_collection_schedule: DataCollectionSchedule,
+    collect_agent_data: bool,
 ):
     run_params = params.get(param_choice)
-
     param_combinations = _make_model_kwargs(run_params)
     total_param_combinations = len(param_combinations)
     total_runs = total_param_combinations * iterations
@@ -184,7 +161,14 @@ def batch_run(
     for params in param_combinations:
         for iteration in range(iterations):
             runs_list.append(
-                (run_id, iteration, params, max_steps, data_collection_period)
+                (
+                    run_id,
+                    iteration,
+                    params,
+                    max_steps,
+                    data_collection_schedule,
+                    collect_agent_data,
+                )
             )
             run_id += 1
 
@@ -264,6 +248,14 @@ def batch_run(
             agent_output_file.close()
 
 
+# map cli data collection options to data collection schedule enum
+data_collection_opts = {
+    "end": DataCollectionSchedule.END,
+    "adjust": DataCollectionSchedule.ADJUST,
+    "all": DataCollectionSchedule.ALL,
+}
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="hawk/dove batch_run",
@@ -301,12 +293,6 @@ def main():
         default=True,
     )
     parser.add_argument(
-        "--agent-data",
-        help="Store agent data",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-    )
-    parser.add_argument(
         "--file-prefix",
         help="Prefix for data filenames (no prefix by default)",
         default="",
@@ -327,21 +313,31 @@ def main():
     parser.add_argument(
         "--collect-data",
         help="When and how often to collect model and agent data",
-        choices=["end", "adjustment_round", "every_round"],
+        choices=data_collection_opts.keys(),
         default="end",
     )
+    parser.add_argument(
+        "--agent-data",
+        help="Store agent data",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+    )
     args = parser.parse_args()
+
+    # convert command-line string arg to data collection value
+    collect_data = data_collection_opts[args.collect_data]
+
     batch_run(
         params,
         args.iterations,
         args.processes,
         args.max_steps,
         args.progress,
-        args.agent_data,
         args.file_prefix,
         args.max_runs,
         args.params,
-        args.collect_data,
+        collect_data,
+        args.agent_data,
     )
 
 
