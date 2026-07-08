@@ -307,6 +307,9 @@ class HawkDoveModel(mesa.Model):
         A model step. Used for collecting data and advancing the schedule
         """
         self.schedule.step()
+        # always update rolling stats needed for convergence detection,
+        # independent of data collection schedule
+        self._update_hawk_stats()
         # check if simulation has converged and should stop running
         if self.converged:
             self.status = "converged"
@@ -325,26 +328,26 @@ class HawkDoveModel(mesa.Model):
         # what is the current largest point total of any agent?
         return max([a.points for a in self.schedule.agents])
 
+    def _update_hawk_stats(self):
+        # update rolling stats used for convergence detection each step,
+        # regardless of data collection schedule
+        self.recent_percent_hawk.append(self.percent_hawk)
+        if len(self.recent_percent_hawk) > self.min_window:
+            self.recent_rolling_percent_hawk.append(
+                statistics.mean(self.recent_percent_hawk)
+            )
+
     @property
     def percent_hawk(self):
         # what percent of agents chose hawk?
         hawks = [a for a in self.schedule.agents if a.choice == Play.HAWK]
-        phawk = len(hawks) / self.num_agents
-        # add to recent values
-        self.recent_percent_hawk.append(phawk)
-        return phawk
+        return len(hawks) / self.num_agents
 
     @property
     def rolling_percent_hawk(self):
         # rolling average of percent hawk, included in data collection
-        # only generated after a defined minimum window
-
-        # make sure we have enough values to check
-        if len(self.recent_percent_hawk) > self.min_window:
-            rolling_phawk = statistics.mean(self.recent_percent_hawk)
-            # add to recent values
-            self.recent_rolling_percent_hawk.append(rolling_phawk)
-            return rolling_phawk
+        if self.recent_rolling_percent_hawk:
+            return self.recent_rolling_percent_hawk[-1]
 
     @property
     def converged(self):
