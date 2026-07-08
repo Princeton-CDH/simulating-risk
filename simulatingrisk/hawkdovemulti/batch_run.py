@@ -25,13 +25,15 @@ neighborhood_sizes = list(HawkDoveMultipleRiskModel.neighborhood_sizes)
 # combination of parameters we want to run
 params = {
     "default": {
-        "grid_size": [5, 10, 25],  # , 50],  # 100],
-        "risk_adjustment": ["adopt", "average"],
+        "grid_size": [10, 25, 50],  # 100],
+        # "risk_adjustment": ["adopt", "average"],
+        "risk_adjustment": ["adopt"],  # adopt/average compared in risk_adjust scenario
         "play_neighborhood": neighborhood_sizes,
         "observed_neighborhood": neighborhood_sizes,
         "adjust_neighborhood": neighborhood_sizes,
         "hawk_odds": [0.5, 0.25, 0.75],
-        "adjust_every": [2, 10, 20],
+        # "adjust_every": [2, 10, 20],  # test separately, doesn't need to be part of main parameter sweep
+        "adjust_every": [10],
         "risk_distribution": HawkDoveMultipleRiskModel.risk_distribution_options,
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
         "random_play_odds": [0, 0.01, 0.1],
@@ -42,8 +44,9 @@ params = {
         # any risk adjustment
         "risk_adjustment": ["adopt", "average"],
         "risk_distribution": "uniform",
+        "adjust_every": [2, 10, 20],
         # use model defaults; grid size must be specified
-        "grid_size": [5, 10, 25],
+        "grid_size": [10, 25, 50],
     },
     "payoff": {
         "adjust_payoff": HawkDoveMultipleRiskModel.supported_adjust_payoffs,
@@ -65,8 +68,8 @@ params = {
         "play_neighborhood": neighborhood_sizes,
         "observed_neighborhood": neighborhood_sizes,
         # adjust payoff doesn't matter since we're not adjusting
-        "grid_size": [5, 10, 25, 50],
-        "hawk_odds": [0.5, 0.25, 0.75],
+        "grid_size": [5, 10, 25, 50],  # include 100? drop 5 ?
+        "hawk_odds": [0.5, 0.25, 0.75],  # do we need to include 0, 1.0 ?
         "random_play_odds": [0, 0.01, 0.1],
         "include_endpoints": [True, False],
     },
