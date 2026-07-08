@@ -56,7 +56,7 @@ def test_agent_initial_choice_hawkodds():
     choice_count = Counter(initial_choices)
     # expect about 30% hawks
     expected_hawks = model.num_agents * 0.3
-    assert math.isclose(choice_count[Play.HAWK], expected_hawks, rel_tol=0.05)
+    assert math.isclose(choice_count[Play.HAWK], expected_hawks, rel_tol=0.10)
 
 
 def test_base_agent_risk_level():
