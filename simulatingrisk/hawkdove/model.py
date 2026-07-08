@@ -40,6 +40,7 @@ class HawkDoveAgent(mesa.Agent):
         super().__init__(unique_id, model)
 
         self.points = 0
+        self.hawk_count = 0
         self.choice = self.initial_choice(hawk_odds)
         self.last_choice = None
 
@@ -151,6 +152,9 @@ class HawkDoveAgent(mesa.Agent):
             payoff += self.payoff(n)
         # update total points based on payoff this round
         self.points += payoff
+
+        if self.choice == Play.HAWK:
+            self.hawk_count += 1
 
         # store this round's choice as previous choice
         self.last_choice = self.choice
@@ -289,6 +293,7 @@ class HawkDoveModel(mesa.Model):
                 "risk_level": "risk_level",
                 "choice": "choice_label",
                 "points": "points",
+                "hawk_count": "hawk_count",
             },
         }
 
