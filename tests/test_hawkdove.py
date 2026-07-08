@@ -280,6 +280,31 @@ def test_agent_play():
         assert agent.last_choice == Play.HAWK
 
 
+def test_agent_hawk_count():
+    agent = HawkDoveSingleRiskAgent(1, Mock(agent_risk_level=3))
+    assert agent.hawk_count == 0
+
+    agent.choice = Play.HAWK
+    with patch.object(HawkDoveAgent, "play_neighbors", []):
+        agent.play()
+    assert agent.hawk_count == 1
+
+    agent.choice = Play.DOVE
+    with patch.object(HawkDoveAgent, "play_neighbors", []):
+        agent.play()
+    assert agent.hawk_count == 1  # unchanged
+
+    agent.choice = Play.HAWK
+    with patch.object(HawkDoveAgent, "play_neighbors", []):
+        agent.play()
+    assert agent.hawk_count == 2
+
+
+def test_hawk_count_in_agent_reporters():
+    model = HawkDoveSingleRiskModel(3, agent_risk_level=4)
+    assert "hawk_count" in model.datacollector.agent_reporters
+
+
 def test_agent_payoff():
     # If I play HAWK and neighbor plays DOVE: 3
     # If I play DOVE and neighbor plays DOVE: 2
