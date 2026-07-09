@@ -8,7 +8,7 @@ import polars as pl
 from simulatingrisk.hawkdovemulti.model import RiskState
 
 
-def groupby_population_risk_category(df):
+def groupby_population_risk_category(df, *extra_cols):
     """takes a polars dataframe populated with model data generated
     by hawk/dove multi model, groups by population risk category and
     adds group labels."""
@@ -16,7 +16,7 @@ def groupby_population_risk_category(df):
 
     # group on risk category to get totals for the  number of runs that
     # ended up in each different type
-    poprisk_grouped = df.group_by("population_risk_category").count()
+    poprisk_grouped = df.group_by("population_risk_category", *extra_cols).count()
     poprisk_grouped = poprisk_grouped.rename(
         {"population_risk_category": "risk_category"}
     )
