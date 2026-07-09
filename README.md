@@ -82,11 +82,30 @@ For publication via static site, this notebook should be saved as html + web ass
 To export in edit mode, to debug any wasm-specific problems:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode edit
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode edit 
 ```
 
 To export in run mode, for publication:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode run
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode run --no-sandbox -f
+```
+
+To view locally, start a python webserver:
+```sh
+python -m http.server --directory docs/
+```
+
+Simulation will be available at http://localhost:8000/sim/
+
+
+For testing the html+wasm application notebook with a local version of the simrisk code:
+```sh
+uv build --wheel -o docs/sim/
+uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/sim/ --no-sandbox -f
+```
+
+To export static html copies of analysis notebooks:
+```sh
+uv run marimo export html notebooks/evolv-risk-attitudes/convergence.py -o docs/analysis/evolve/index.html
 ```
