@@ -20,6 +20,8 @@ app = marimo.App(width="full")
 async def _():
     import sys
 
+    import marimo as mo
+
     if sys.platform == "emscripten":
         # Running in Pyodide/WASM.
         # mesa 2.1.5's __init__.py does
@@ -28,40 +30,44 @@ async def _():
         # so stub it out before importing mesa to avoid the ModuleNotFoundError.
         import types
 
-        _stub = types.ModuleType("mesa_viz_tornado")
-        _stub.ModularVisualization = types.ModuleType(
-            "mesa_viz_tornado.ModularVisualization"
-        )
-        sys.modules["mesa_viz_tornado"] = _stub
-        sys.modules[
-            "mesa_viz_tornado.ModularVisualization"
-        ] = _stub.ModularVisualization
+        _tornado_stub = types.ModuleType("mesa_viz_tornado")
+        sys.modules["mesa_viz_tornado"] = _tornado_stub
+        for submodule in [
+            "ModularVisualization",
+            "modules",
+            "UserParam",
+            "TextVisualization",
+        ]:
+            import_name = f"mesa_viz_tornado.{submodule}"
+            setattr(_tornado_stub, submodule, types.ModuleType(import_name))
+            sys.modules[import_name] = getattr(_tornado_stub, submodule)
 
         import micropip
 
         await micropip.install("mesa==2.1.5", deps=False)
         await micropip.install(["networkx", "numpy", "tqdm"])
-        await micropip.install("simulatingrisk>=1.0.0", deps=False)
-    return
-
-
-@app.cell
-def _():
-    import marimo as mo
+        await micropip.install(
+            str(
+                mo.notebook_location()
+                / "public"
+                / "simulatingrisk-1.1.0.dev1-py3-none-any.whl"
+            )
+        )
+        # await micropip.install("simulatingrisk>=1.0.0", deps=False)
 
     from simulatingrisk.hawkdove.ui import (
         agent_portrayal,
         draw_hawkdove_agent_space,
     )
-    from simulatingrisk.hawkdovemulti.ui import ui_controls
     from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel
+    from simulatingrisk.hawkdovemulti.ui import ui_controls
     from simulatingrisk.hawkdovemulti.viz import (
         plot_agents_by_risk,
         plot_hawks_by_risk,
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
     )
-    from simulatingrisk.ui_common import init_refresh, init_control_buttons
+    from simulatingrisk.ui_common import init_control_buttons, init_refresh
 
     return (
         HawkDoveMultipleRiskModel,
