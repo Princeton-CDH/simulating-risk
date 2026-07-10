@@ -46,14 +46,15 @@ async def _():
 
         await micropip.install("mesa==2.1.5", deps=False)
         await micropip.install(["networkx", "numpy", "tqdm"])
-        await micropip.install(
-            str(
-                mo.notebook_location()
-                / "public"
-                / "simulatingrisk-1.1.0.dev1-py3-none-any.whl"
-            )
-        )
-        # await micropip.install("simulatingrisk>=1.0.0", deps=False)
+        # uncomment and enable for local development involving app ui
+        # await micropip.install(
+        #     str(
+        #         mo.notebook_location()
+        #         / "public"
+        #         / "simulatingrisk-1.1.0.dev1-py3-none-any.whl"
+        #     )
+        # )
+        await micropip.install("simulatingrisk>=1.1.0", deps=False)
 
     from simulatingrisk.hawkdove.ui import (
         agent_portrayal,
