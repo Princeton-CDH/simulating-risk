@@ -1,11 +1,12 @@
 import statistics
-from collections import Counter
+from collections import Counter, deque
 from unittest.mock import Mock, patch
 
 import pytest
 
 from simulatingrisk.hawkdove.model import Play
 from simulatingrisk.hawkdovemulti.model import (
+    DataCollectionSchedule,
     HawkDoveMultipleRiskAgent,
     HawkDoveMultipleRiskModel,
     RiskState,
@@ -58,6 +59,86 @@ def test_init():
         HawkDoveMultipleRiskModel(3, adjust_payoff="bogus")
 
 
+def test_init_data_collection_schedule():
+    # default: collect on every step
+    model = HawkDoveMultipleRiskModel(3)
+    assert model.data_collection_schedule == DataCollectionSchedule.ALL
+    assert model.collect_agent_data is True
+
+    # explicit schedule stored
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.END
+    )
+    assert model.data_collection_schedule == DataCollectionSchedule.END
+
+    # ADJUST schedule is fine when risk adjustment is enabled
+    model = HawkDoveMultipleRiskModel(
+        3,
+        risk_adjustment="adopt",
+        data_collection_schedule=DataCollectionSchedule.ADJUST,
+    )
+    assert model.data_collection_schedule == DataCollectionSchedule.ADJUST
+
+    # ADJUST schedule with no risk adjustment should error, not silently succeed
+    # (regression: previously referenced self.risk_adjustment before it was set,
+    # raising AttributeError from __getattr__ instead of the intended ValueError)
+    with pytest.raises(
+        ValueError,
+        match="Can't collect data on adjustment rounds when adjustment is disabled",
+    ):
+        HawkDoveMultipleRiskModel(
+            3,
+            risk_adjustment=None,
+            data_collection_schedule=DataCollectionSchedule.ADJUST,
+        )
+
+    # collect_agent_data can be disabled
+    model = HawkDoveMultipleRiskModel(3, collect_agent_data=False)
+    assert model.collect_agent_data is False
+    # and the datacollector should have no agent reporters configured
+    assert model.datacollector.agent_reporters == {}
+
+
+def test_collect_data_schedule():
+    # ALL: collect_data collects on every step
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.ALL
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    n_steps = 5
+    for _ in range(n_steps):
+        model.step()
+    # one row per step
+    assert len(first_reporter) == n_steps
+
+    # END: only collects when the model stops running
+    model = HawkDoveMultipleRiskModel(
+        3, data_collection_schedule=DataCollectionSchedule.END
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    for _ in range(5):
+        model.step()
+    # nothing collected while still running
+    assert len(first_reporter) == 0
+    # stop the model and collect the final row
+    model.running = False
+    model.collect_data()
+    assert len(first_reporter) == 1
+
+    # ADJUST: only collects on adjustment rounds
+    model = HawkDoveMultipleRiskModel(
+        3,
+        risk_adjustment="adopt",
+        adjust_every=3,
+        data_collection_schedule=DataCollectionSchedule.ADJUST,
+    )
+    first_reporter = next(iter(model.datacollector.model_vars.values()))
+    # step 9 rounds -> adjustment rounds at 3, 6, 9 -> expect 3 collections
+    for _ in range(9):
+        model.step()
+    assert len(first_reporter) == 3
+
+
 def test_init_variable_risk_level():
     model = HawkDoveMultipleRiskModel(5)
     # when risk level is variable/random, agents should have different risk levels
@@ -102,6 +183,7 @@ def test_adjustment_round(params, expect_adjust_step):
 def test_total_per_risk_level():
     model = HawkDoveMultipleRiskModel(3)
     model.schedule = Mock()
+    model.schedule.steps = 13  # must be an integer
     # add a few agents with different risk levels
     mock_agents = [
         Mock(risk_level=0),
@@ -206,7 +288,9 @@ def test_model_converged():
     # adjustment converge logic is different
     model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
     # simulate no adjustments on last round
-    with patch.multiple(HawkDoveMultipleRiskModel, num_agents_risk_changed=0):
+    with patch.multiple(
+        HawkDoveMultipleRiskModel, num_agents_risk_changed=0, sum_risk_level_changes=0
+    ):
         model.schedule.steps = model.min_steps_converge - 1
         assert not model.converged
 
@@ -261,6 +345,37 @@ def test_sum_risk_level_changes():
     # not order dependent
     reversed(model.recent_total_per_risk_level)
     assert model.sum_risk_level_changes == 4
+
+
+def test_step_records_totals_only_on_adjustment_round():
+    # totals should be recorded for comparison only on adjustment rounds,
+    # so sum_risk_level_changes reflects change between adjustments
+    model = HawkDoveMultipleRiskModel(3, risk_adjustment="adopt", adjust_every=3)
+
+    # walk through several steps and track when totals get appended
+    deque_sizes = []
+    for _ in range(model.adjust_round_n * 3):
+        model.step()
+        deque_sizes.append(len(model.recent_total_per_risk_level))
+
+    # step() appends the *previous* round's totals at the top of step,
+    # only when the previous round was an adjustment round. With
+    # adjust_every=3, steps 3, 6, 9 are adjustments, so the deque grows
+    # at the start of steps 4, 7, 10 (capped at maxlen=2)
+    assert deque_sizes == [0, 0, 0, 1, 1, 1, 2, 2, 2]
+
+
+def test_converged_handles_missing_sum_risk_level_changes():
+    # when sum_risk_level_changes is None (not enough adjustment-round
+    # snapshots yet), converged should return False rather than raise
+    model = HawkDoveMultipleRiskModel(5, risk_adjustment="adopt")
+    model.schedule.steps = model.min_steps_converge + 1
+    # ensure the cached property has not been populated and the deque is empty
+    model.recent_total_per_risk_level = deque([], maxlen=2)
+    assert model.sum_risk_level_changes is None
+    # should not raise TypeError even with agents still adjusting
+    with patch.object(HawkDoveMultipleRiskModel, "num_agents_risk_changed", new=5):
+        assert not model.converged
 
 
 def test_riskstate_label():

@@ -40,6 +40,7 @@ class HawkDoveAgent(mesa.Agent):
         super().__init__(unique_id, model)
 
         self.points = 0
+        self.hawk_count = 0
         self.choice = self.initial_choice(hawk_odds)
         self.last_choice = None
 
@@ -152,6 +153,9 @@ class HawkDoveAgent(mesa.Agent):
         # update total points based on payoff this round
         self.points += payoff
 
+        if self.choice == Play.HAWK:
+            self.hawk_count += 1
+
         # store this round's choice as previous choice
         self.last_choice = self.choice
 
@@ -211,6 +215,11 @@ class HawkDoveModel(mesa.Model):
     min_risk_level = 0
     #: maximum risk level allowed
     max_risk_level = 9
+
+    #: minium supported risk level (may not match actual min risk level in a given simulation)
+    min_allowed_risk_level = 0
+    #: maximum supported risk level (may not match actual max risk level in a given simulation)
+    max_allowed_risk_level = 9
 
     def __init__(
         self,
@@ -284,6 +293,7 @@ class HawkDoveModel(mesa.Model):
                 "risk_level": "risk_level",
                 "choice": "choice_label",
                 "points": "points",
+                "hawk_count": "hawk_count",
             },
         }
 
@@ -297,6 +307,9 @@ class HawkDoveModel(mesa.Model):
         A model step. Used for collecting data and advancing the schedule
         """
         self.schedule.step()
+        # always update rolling stats needed for convergence detection,
+        # independent of data collection schedule
+        self._update_hawk_stats()
         # check if simulation has converged and should stop running
         if self.converged:
             self.status = "converged"
@@ -304,6 +317,10 @@ class HawkDoveModel(mesa.Model):
 
         # collect data after status is updated, so data collected
         # for last round will reflect converged status
+        self.collect_data()
+
+    def collect_data(self):
+        # extend this method to customize when or how data collection happens
         self.datacollector.collect(self)
 
     @property
@@ -311,26 +328,26 @@ class HawkDoveModel(mesa.Model):
         # what is the current largest point total of any agent?
         return max([a.points for a in self.schedule.agents])
 
+    def _update_hawk_stats(self):
+        # update rolling stats used for convergence detection each step,
+        # regardless of data collection schedule
+        self.recent_percent_hawk.append(self.percent_hawk)
+        if len(self.recent_percent_hawk) > self.min_window:
+            self.recent_rolling_percent_hawk.append(
+                statistics.mean(self.recent_percent_hawk)
+            )
+
     @property
     def percent_hawk(self):
         # what percent of agents chose hawk?
         hawks = [a for a in self.schedule.agents if a.choice == Play.HAWK]
-        phawk = len(hawks) / self.num_agents
-        # add to recent values
-        self.recent_percent_hawk.append(phawk)
-        return phawk
+        return len(hawks) / self.num_agents
 
     @property
     def rolling_percent_hawk(self):
         # rolling average of percent hawk, included in data collection
-        # only generated after a defined minimum window
-
-        # make sure we have enough values to check
-        if len(self.recent_percent_hawk) > self.min_window:
-            rolling_phawk = statistics.mean(self.recent_percent_hawk)
-            # add to recent values
-            self.recent_rolling_percent_hawk.append(rolling_phawk)
-            return rolling_phawk
+        if self.recent_rolling_percent_hawk:
+            return self.recent_rolling_percent_hawk[-1]
 
     @property
     def converged(self):

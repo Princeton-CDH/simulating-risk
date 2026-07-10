@@ -1,7 +1,7 @@
 import random
 import statistics
 from collections import Counter, defaultdict, deque
-from enum import IntEnum
+from enum import Enum, IntEnum
 from functools import cached_property
 
 from simulatingrisk.hawkdove.model import HawkDoveAgent, HawkDoveModel
@@ -154,6 +154,10 @@ class RiskState(IntEnum):
         return str(self.value)
 
 
+#: customized data collection schedule options
+DataCollectionSchedule = Enum("DataCollectionSchedule", ["ALL", "END", "ADJUST"])
+
+
 class HawkDoveMultipleRiskModel(HawkDoveModel):
     """
     Model for hawk/dove game with variable risk attitudes.  Supports
@@ -190,6 +194,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         "bimodal",
     )
 
+    collect_agent_data = True
+    data_collection_schedule = DataCollectionSchedule.ALL
+
     def __init__(
         self,
         grid_size,
@@ -199,6 +206,9 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         adjust_neighborhood=None,
         adjust_payoff="recent",
         include_endpoints=True,
+        # options to customize data collection schedule, for efficient batch running
+        data_collection_schedule: DataCollectionSchedule | None = None,
+        collect_agent_data: bool | None = None,
         *args,
         **kwargs,
     ):
@@ -244,19 +254,39 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         self.risk_distribution = risk_distribution
         self.risk_attitude_generator = self.get_risk_attitude_generator()
 
-        super().__init__(grid_size, *args, **kwargs)
-
         self.risk_adjustment = risk_adjustment
         self.adjust_round_n = adjust_every
-        # if adjust neighborhood is not specified, then use the same size
-        # as play neighborhood
-        self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
         # store whether to compare cumulative payoff or since last adjustment round
         self.adjust_payoff = adjust_payoff
 
+        # configure data collection schedule if specified
+        # - configure before datacollector is initialized in super init method
+        if data_collection_schedule is not None:
+            if (
+                data_collection_schedule is DataCollectionSchedule.ADJUST
+                and self.risk_adjustment is None
+            ):
+                raise ValueError(
+                    "Can't collect data on adjustment rounds when adjustment is disabled"
+                )
+            self.data_collection_schedule = data_collection_schedule
+
+        if collect_agent_data is not None:
+            self.collect_agent_data = collect_agent_data
+
+        # track step indices for rows collected by non-ALL schedules,
+        # so batch runners can reconstruct the Step column
+        self._collected_steps = []
+
+        super().__init__(grid_size, *args, **kwargs)
+
+        # if adjust neighborhood is not specified, then use the same size
+        # as play neighborhood
+        self.adjust_neighborhood = adjust_neighborhood or self.play_neighborhood
+
         self.recent_total_per_risk_level = deque([], maxlen=2)
 
-    def _risk_level_in_bounds(self, value):
+    def _risk_level_in_bounds(self, value) -> bool:
         # check if a generated risk level is within bounds
         return self.min_risk_level <= value <= self.max_risk_level
 
@@ -293,7 +323,7 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
                 # NOTE: on smaller grids, using 0/9 makes it extremely
                 # unlikely to get mid-range risk values (4/5)
 
-    def get_risk_attitude(self):
+    def get_risk_attitude(self) -> int:
         """return the next value from risk attitude generator, based on
         configured distribution."""
         val = next(self.risk_attitude_generator)
@@ -316,13 +346,13 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         # check if the current step is an adjustment round
         # when risk adjustment is enabled, agents should adjust their risk
         # strategy every N rounds;
-        return (
+        return bool(
             self.risk_adjustment
             and self.schedule.steps > 0
             and self.schedule.steps % self.adjust_round_n == 0
         )
 
-    def get_data_collector_options(self):
+    def get_data_collector_options(self) -> dict:
         # in addition to common hawk/dove data points,
         # we want to include population risk category
         opts = super().get_data_collector_options()
@@ -331,41 +361,84 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
             "num_agents_risk_changed": "num_agents_risk_changed",
             "sum_risk_level_changes": "sum_risk_level_changes",
         }
-        for risk_level in range(self.min_risk_level, self.max_risk_level + 1):
+
+        # always report on full range of allowed risk levels, even if a particular
+        # simulation has customized max/min, so that reporting data is consistent across runs
+        for risk_level in range(
+            self.min_allowed_risk_level, self.max_allowed_risk_level + 1
+        ):
             field = f"total_r{risk_level}"
             model_reporters[field] = field
 
         opts["model_reporters"].update(model_reporters)
-        opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
+        if self.collect_agent_data:
+            opts["agent_reporters"].update({"risk_level_changed": "risk_level_changed"})
+        else:
+            # delete agent reporters when not collecting agent data
+            del opts["agent_reporters"]
+
         return opts
 
     def step(self):
         # delete cached property before the next round begins,
-        # so we recalcate values for current round before collecting data
+        # to force recalculating values before collecting data
+
         try:
-            # store risk level total for previous round
-            if hasattr(self, "total_per_risk_level"):
-                if (
-                    not self.recent_total_per_risk_level
-                    or self.total_per_risk_level != self.recent_total_per_risk_level[-1]
-                ):
-                    # add to recent values if changed or new
-                    self.recent_total_per_risk_level.append(self.total_per_risk_level)
-            # else:
-            #     self.recent_total_per_risk_level.append(self.total_per_risk_level)
+            # store risk level totals from the previous adjustment round to
+            # compare across adjustment rounds to detect convergence;
+            # _only_ records on adjustment rounds so that sum_risk_level_changes
+            # reflects change _between_ adjustments
+            if hasattr(self, "total_per_risk_level") and self.adjustment_round:
+                self.recent_total_per_risk_level.append(self.total_per_risk_level)
+
             del self.total_per_risk_level
             del self.sum_risk_level_changes
         except AttributeError:
             # property hasn't been set yet on the first round, ok to ignore
             pass
+
         super().step()
+
+    def collect_data(self):
+        # collect data based on configured schedule.
+        # For END and ADJUST, also collect on the last round (when the
+        # model is no longer running) regardless of schedule, so callers
+        # always get a final-state row. NOTE: if stopped before converged,
+        # set running to False and call model.collect_data() explicitly.
+        should_collect = False
+        match self.data_collection_schedule:
+            case DataCollectionSchedule.ALL:
+                should_collect = True
+            case DataCollectionSchedule.ADJUST:
+                should_collect = self.adjustment_round or not self.running
+            case DataCollectionSchedule.END:
+                should_collect = not self.running
+
+        if should_collect:
+            super().collect_data()
+            # record the step index (0-based) that this row corresponds to,
+            # so callers can reconstruct the Step column for output. skipped
+            # for ALL mode since collected_steps == range(len(model_vars)).
+            if self.data_collection_schedule is not DataCollectionSchedule.ALL:
+                self._collected_steps.append(self.schedule.steps - 1)
+
+    @property
+    def collected_steps(self):
+        """0-based step indices for each row in the datacollector, in
+        collection order. Returned as a range for ALL mode (where every
+        step is collected) or a list for other schedules."""
+        if self.data_collection_schedule is DataCollectionSchedule.ALL:
+            # length of any model_vars list == number of collected rows
+            n = self.schedule.steps
+            return range(n)
+        return self._collected_steps
 
     @property
     def num_agents_risk_changed(self):
         return len([a for a in self.schedule.agents if a.risk_level_changed])
 
     @property
-    def converged(self):
+    def converged(self) -> bool:
         # check if the simulation is stable and should stop running
         # based on the number of agents changing their risk level
 
@@ -375,26 +448,31 @@ class HawkDoveMultipleRiskModel(HawkDoveModel):
         if not self.risk_adjustment:
             return super().converged
 
-        # don't check for convergence until after the configured min step
-        # (duplicates base class logic since we otherwise override)
-        if self.schedule.steps < self.min_steps_converge:
+        # This simulation typically takes around 1000 rounds to converge;
+        # bail out if we have not hit the configured minimum steps.
+        # If sum of risk level changes is not yet set, we have not yet
+        # had two adjustment rounds, so convergence check is not possible.
+        if (
+            self.schedule.steps < self.min_steps_converge
+            or self.sum_risk_level_changes is None
+        ):
             return False
 
-        # this simulation typically takes around 1000 rounds to converge,
-        # so don't even bother checking until at least 50 rounds
         return (
             self.num_agents_risk_changed == 0
-            # NOTE: could adjust the threshold here
-            or self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07
+            # NOTE: could adjust the threshold here.
+            # sum_risk_level_changes is None until two adjustment rounds
+            # of totals have been recorded; treat that as "not converged"
+            or (self.sum_risk_level_changes <= len(self.schedule.agents) * 0.07)
         )
 
     @cached_property
-    def total_per_risk_level(self):
+    def total_per_risk_level(self) -> Counter:
         # tally the number of agents for each risk level
         return Counter([a.risk_level for a in self.schedule.agents])
 
     @cached_property
-    def sum_risk_level_changes(self):
+    def sum_risk_level_changes(self) -> int:
         # calculate the total in absolute changes across all risk levels
         # since most recent adjustment round
 

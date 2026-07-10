@@ -79,14 +79,45 @@ uv run marimo edit simulatingrisk/app.py --no-sandbox
 
 For publication via static site, this notebook should be saved as html + web assembly. This requires a version of the `simulatingrisk` package that can be installed in pyodide, either by a published version on pypi or a local wheel for testing.
 
-To export in edit mode, to debug any wasm-specific problems:
+To export as html+wasm in edit mode, to debug any wasm-specific problems:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode edit
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode edit
 ```
 
-To export in run mode, for publication:
+For convenience, a `.justfile` is included for building documentation and serving locally. Requires [just](https://github.com/casey/just) version 1.52 or newer.
+
+With `just` installed, run the following to build the documentation and serve it locally:
+
+````sh
+just docs
+just serve-docs
+```
+
+That is equivalent to running the following commands. To export manually in run mode:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o /tmp/hawkdove_wasm/ --mode run
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode run --no-sandbox -f
+````
+
+To view locally, start a python webserver:
+
+```sh
+python -m http.server --directory docs/
+```
+
+The interacvite simulation will be available at http://localhost:8000/sim/
+
+For testing the html+wasm application notebook with a local version of the simrisk code (notebook must be updated
+to install simulatingrisk from the wheel).
+
+```sh
+uv build --wheel -o docs/sim/
+uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/sim/ --no-sandbox -f
+```
+
+To export static html copies of analysis notebooks:
+
+```sh
+uv run marimo export html notebooks/evolv-risk-attitudes/convergence.py -o docs/analysis/evolve/index.html
 ```
