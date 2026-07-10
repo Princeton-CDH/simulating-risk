@@ -60,7 +60,15 @@ def _(data_dir, pl):
 
     # df = pl.read_csv("data/no_adjustment/2026-07-08T164725_967961_model.csv")
 
-    df = pl.read_csv(str(data_dir / "job_task_2026-07-08T165813_431344_model.csv"))
+    # df = pl.read_csv("data/no_adjustment/job_task_2026-07-08T165813_431344_model.csv")
+
+    df = pl.scan_csv(
+        [
+            str(file)
+            for file in data_dir.glob("2026-07-09*_model.csv")
+            if file.stat().st_size != 0
+        ]
+    ).collect()
     return (df,)
 
 
@@ -131,6 +139,7 @@ def _(alt, df, mo):
         .encode(
             x=alt.X("Step", title="Run length"),
             y=alt.Y("count()", title="Number of Runs"),
+            color="status",
         )
         .properties(title="Simulation run length")
         .facet("risk_distribution", columns=3)
