@@ -121,3 +121,12 @@ To export static html copies of analysis notebooks:
 ```sh
 uv run marimo export html notebooks/evolv-risk-attitudes/convergence.py -o docs/analysis/evolve/index.html
 ```
+
+## Publishing to PyPI
+
+This package has been [published on PyPI](https://pypi.org/project/simulatingrisk/) to simplify running the interactive simulation. This is not automated with a GitHub Actions workflow; use `uv` to publish (requires access on pypi and credentials):
+
+```sh
+uv build --wheel
+uv publish
+```
