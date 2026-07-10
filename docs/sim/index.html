@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <!-- Preload is necessary because we show these images when we disconnect from the server,
+    but at that point we cannot load these images from the server -->
+    <link rel="preload" href="./assets/gradient-yHQUC_QB.png" as="image" />
+    <link rel="preload" href="./assets/noise-60BoTA8O.png" as="image" />
+    <!-- Preload the fonts -->
+    <link rel="preload" href="./assets/Lora-VariableFont_wght-CZceb_kH.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Regular-Bam3NpBI.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Bold-C_DwAp7Z.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Regular-CEsLFVD9.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Medium-D5MAsWEG.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Bold-C6PDArdf.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="a marimo app" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <script data-marimo="true">
+      function __resizeIframe(obj) {
+        const scrollbarHeight = 20; // Max between windows, mac, and linux
+
+        function setHeight() {
+          // Guard against race condition where iframe isn't ready
+          if (!obj.contentWindow?.document?.documentElement) {
+            return;
+          }
+          const element = obj.contentWindow.document.documentElement;
+          // If there is no vertical scrollbar, we don't need to resize the iframe
+          if (element.scrollHeight === element.clientHeight) {
+            return;
+          }
+
+          // Create a new height that includes the scrollbar height if it's visible
+          const hasHorizontalScrollbar = element.scrollWidth > element.clientWidth;
+          const newHeight = element.scrollHeight + (hasHorizontalScrollbar ? scrollbarHeight : 0);
+
+          // Only update the height if it's different from the current height
+          if (obj.style.height !== `${newHeight}px`) {
+            obj.style.height = `${newHeight}px`;
+          }
+        }
+
+        // Resize the iframe to the height of the content and bottom scrollbar height
+        setHeight();
+
+        // Resize the iframe when the content changes
+        const resizeObserver = new ResizeObserver((_entries) => {
+          setHeight();
+        });
+        // Only observe if iframe content is ready
+        if (obj.contentWindow?.document?.body) {
+          resizeObserver.observe(obj.contentWindow.document.body);
+        }
+      }
+    </script>
+    <marimo-filename hidden>notebook.py</marimo-filename>
+    <!-- TODO(Trevor): Legacy, required by VS Code plugin. Remove when plugin is updated (see marimo/server/_templates/template.py) -->
+    <marimo-version data-version="{{ version }}" hidden></marimo-version>
+    <marimo-user-config data-config="{{ user_config }}" hidden></marimo-user-config>
+    <marimo-server-token data-token="{{ server_token }}" hidden></marimo-server-token>
+    <!-- /TODO -->
+    <title>app</title>
+    <script type="module" crossorigin src="./assets/index-BarYyfbP.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/preload-helper-y72bE5iF.js">
+    <link rel="modulepreload" crossorigin href="./assets/chunk-LvLJmgfZ.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-Bj1aDYRI.js">
+    <link rel="modulepreload" crossorigin href="./assets/compiler-runtime-B3qBwwSJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/jsx-runtime-PbYoItBR.js">
+    <link rel="modulepreload" crossorigin href="./assets/useEventListener-Wyg6Md5s.js">
+    <link rel="modulepreload" crossorigin href="./assets/defaultLocale-CuYNS33t.js">
+    <link rel="modulepreload" crossorigin href="./assets/precisionRound-CCOoIlcP.js">
+    <link rel="modulepreload" crossorigin href="./assets/defaultLocale-CGfP-Ye3.js">
+    <link rel="modulepreload" crossorigin href="./assets/vega-loader.browser-BJ9oKrvH.js">
+    <link rel="modulepreload" crossorigin href="./assets/utils-_i91gs5h.js">
+    <link rel="modulepreload" crossorigin href="./assets/clsx-BtEcuwwV.js">
+    <link rel="modulepreload" crossorigin href="./assets/cn-X2M2usMq.js">
+    <link rel="modulepreload" crossorigin href="./assets/badge-CFAaMy0O.js">
+    <link rel="modulepreload" crossorigin href="./assets/button-DuHyjdW2.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-dom-CSu739Rf.js">
+    <link rel="modulepreload" crossorigin href="./assets/fullscreen-BWhrFYLX.js">
+    <link rel="modulepreload" crossorigin href="./assets/menu-items-CO4MfAgB.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-C3166O2z.js">
+    <link rel="modulepreload" crossorigin href="./assets/createLucideIcon-BTp1tQDO.js">
+    <link rel="modulepreload" crossorigin href="./assets/check-DQmqoJgr.js">
+    <link rel="modulepreload" crossorigin href="./assets/x-9vLEgLY6.js">
+    <link rel="modulepreload" crossorigin href="./assets/select-D8ewebPZ.js">
+    <link rel="modulepreload" crossorigin href="./assets/tooltip-DfvClvB6.js">
+    <link rel="modulepreload" crossorigin href="./assets/use-toast-BH8bU9Xf.js">
+    <link rel="modulepreload" crossorigin href="./assets/useEvent-D91BmmQi.js">
+    <link rel="modulepreload" crossorigin href="./assets/invariant-C2E8KCbD.js">
+    <link rel="modulepreload" crossorigin href="./assets/isObject-DvLSfCY5.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseFor-DKD1r8uL.js">
+    <link rel="modulepreload" crossorigin href="./assets/merge-_9WLTEyt.js">
+    <link rel="modulepreload" crossorigin href="./assets/zod-H_cgTO0M.js">
+    <link rel="modulepreload" crossorigin href="./assets/utils-Dcn8htEz.js">
+    <link rel="modulepreload" crossorigin href="./assets/Deferred-CfyqLOPG.js">
+    <link rel="modulepreload" crossorigin href="./assets/uuid-BukULOeS.js">
+    <link rel="modulepreload" crossorigin href="./assets/DeferredRequestRegistry-EP9ZArpv.js">
+    <link rel="modulepreload" crossorigin href="./assets/constants-B9JJ72XE.js">
+    <link rel="modulepreload" crossorigin href="./assets/session-XnH_5qDa.js">
+    <link rel="modulepreload" crossorigin href="./assets/config-Co1uQiSh.js">
+    <link rel="modulepreload" crossorigin href="./assets/requests-KshNNAOp.js">
+    <link rel="modulepreload" crossorigin href="./assets/useLifecycle-Baf35rp4.js">
+    <link rel="modulepreload" crossorigin href="./assets/useNonce-0SWz6w4W.js">
+    <link rel="modulepreload" crossorigin href="./assets/useTheme-ChHTAPod.js">
+    <link rel="modulepreload" crossorigin href="./assets/arrays-DWxvyYxP.js">
+    <link rel="modulepreload" crossorigin href="./assets/strings-C0KZ4uek.js">
+    <link rel="modulepreload" crossorigin href="./assets/once-CXj_gH7S.js">
+    <link rel="modulepreload" crossorigin href="./assets/capabilities-ClLgkhPb.js">
+    <link rel="modulepreload" crossorigin href="./assets/createReducer-CzbhqMat.js">
+    <link rel="modulepreload" crossorigin href="./assets/paths-kNeJ8nbe.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Dez1I5M9.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-B0WqBUnf.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CwfKvuyQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-D-o1OXc9.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-BZhJ1bTM.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Bj9Iedc0.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-DHMtQYxT.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-DnIl7RU-.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CfGDksO-.js">
+    <link rel="modulepreload" crossorigin href="./assets/stex-C6JeW1YI.js">
+    <link rel="modulepreload" crossorigin href="./assets/toDate-DCE7d2fN.js">
+    <link rel="modulepreload" crossorigin href="./assets/purify.es-DdxMtdqK.js">
+    <link rel="modulepreload" crossorigin href="./assets/cjs-DXo9vDEJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/isSymbol-BT6B8Bon.js">
+    <link rel="modulepreload" crossorigin href="./assets/now-CsYTPAhW.js">
+    <link rel="modulepreload" crossorigin href="./assets/debounce-OiXznToA.js">
+    <link rel="modulepreload" crossorigin href="./assets/database-zap-DpKMaYZb.js">
+    <link rel="modulepreload" crossorigin href="./assets/main-DmhaVp6Y.js">
+    <link rel="modulepreload" crossorigin href="./assets/cells-B2OlRfrE.js">
+    <link rel="modulepreload" crossorigin href="./assets/ErrorBoundary-YqGfStRa.js">
+    <link rel="modulepreload" crossorigin href="./assets/kbd-BCXa3Ocm.js">
+    <link rel="modulepreload" crossorigin href="./assets/useInstallPackage-Dhp7gET-.js">
+    <link rel="modulepreload" crossorigin href="./assets/alert-dialog-Dj7YzzBi.js">
+    <link rel="modulepreload" crossorigin href="./assets/dialog-CoCi5287.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDebounce-BlBSYv0n.js">
+    <link rel="modulepreload" crossorigin href="./assets/numbers-CG6PuY93.js">
+    <link rel="modulepreload" crossorigin href="./assets/SSRProvider-DrpctNAg.js">
+    <link rel="modulepreload" crossorigin href="./assets/context-DE_5rdOV.js">
+    <link rel="modulepreload" crossorigin href="./assets/useNumberFormatter-DCM-63YT.js">
+    <link rel="modulepreload" crossorigin href="./assets/usePress-mjvipKvz.js">
+    <link rel="modulepreload" crossorigin href="./assets/input-DLn3gG6E.js">
+    <link rel="modulepreload" crossorigin href="./assets/ImperativeModal-CcKbawj8.js">
+    <link rel="modulepreload" crossorigin href="./assets/cell-link-Dxr4AoiF.js">
+    <link rel="modulepreload" crossorigin href="./assets/multi-map-BRoHtMOY.js">
+    <link rel="modulepreload" crossorigin href="./assets/alert-DcAz54bD.js">
+    <link rel="modulepreload" crossorigin href="./assets/chevron-right-C7RH0Nc7.js">
+    <link rel="modulepreload" crossorigin href="./assets/dropdown-menu-ItqBTuc3.js">
+    <link rel="modulepreload" crossorigin href="./assets/links-DK7te6sJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/useRunCells-Cwpw-OBX.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-CMbu3kZg.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-C6tO3NDV.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-icon-DhAvfYZu.js">
+    <link rel="modulepreload" crossorigin href="./assets/RenderHTML-CUFYhU6m.js">
+    <link rel="modulepreload" crossorigin href="./assets/datasource-XJWCNkcC.js">
+    <link rel="modulepreload" crossorigin href="./assets/state-DMJHItu_.js">
+    <link rel="modulepreload" crossorigin href="./assets/package-BoMcg6sy.js">
+    <link rel="modulepreload" crossorigin href="./assets/sparkles-DctOjjEz.js">
+    <link rel="modulepreload" crossorigin href="./assets/MarimoErrorOutput-AKU2x-PX.js">
+    <link rel="modulepreload" crossorigin href="./assets/eye-off-CFdFJ5Ma.js">
+    <link rel="modulepreload" crossorigin href="./assets/refresh-cw-DcEasnos.js">
+    <link rel="modulepreload" crossorigin href="./assets/tree-actions-B2y0DYNM.js">
+    <link rel="modulepreload" crossorigin href="./assets/spinner-DTBVbtl-.js">
+    <link rel="modulepreload" crossorigin href="./assets/html-to-image-OqWF70zk.js">
+    <link rel="modulepreload" crossorigin href="./assets/focus-CdA2cCjm.js">
+    <link rel="modulepreload" crossorigin href="./assets/useAsyncData-CT1LpOBD.js">
+    <link rel="modulepreload" crossorigin href="./assets/LazyAnyLanguageCodeMirror-BOhWaFqY.js">
+    <link rel="modulepreload" crossorigin href="./assets/micromark-factory-space-P--XWZhg.js">
+    <link rel="modulepreload" crossorigin href="./assets/chunk-5FQGJX7Z-D-AUn5sP.js">
+    <link rel="modulepreload" crossorigin href="./assets/markdown-renderer-2G_mck3Z.js">
+    <link rel="modulepreload" crossorigin href="./assets/command-Da-qul1Y.js">
+    <link rel="modulepreload" crossorigin href="./assets/field-P2PBa1Bb.js">
+    <link rel="modulepreload" crossorigin href="./assets/popover-CjugjEGp.js">
+    <link rel="modulepreload" crossorigin href="./assets/errors-48KFPvCp.js">
+    <link rel="modulepreload" crossorigin href="./assets/download-DjxXHxVz.js">
+    <link rel="modulepreload" crossorigin href="./assets/table-BEAxH5RS.js">
+    <link rel="modulepreload" crossorigin href="./assets/useIframeCapabilities-CUFFq7nH.js">
+    <link rel="modulepreload" crossorigin href="./assets/error-banner-CorP4DgP.js">
+    <link rel="modulepreload" crossorigin href="./assets/formats-C07FvFat.js">
+    <link rel="modulepreload" crossorigin href="./assets/en-US-DZwIjHwu.js">
+    <link rel="modulepreload" crossorigin href="./assets/isValid-Cgon0fXK.js">
+    <link rel="modulepreload" crossorigin href="./assets/dates-66EgNvbP.js">
+    <link rel="modulepreload" crossorigin href="./assets/extends-2LbFKIQQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/emotion-is-prop-valid.esm-DiQGBfwj.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDateFormatter-CANi6nSX.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-icons.esm-C2u-_EAQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/RSPContexts-cXYB-FyL.js">
+    <link rel="modulepreload" crossorigin href="./assets/table-DxdydCSG.js">
+    <link rel="modulepreload" crossorigin href="./assets/ellipsis-DesLDR9w.js">
+    <link rel="modulepreload" crossorigin href="./assets/external-link-CRubBjqK.js">
+    <link rel="modulepreload" crossorigin href="./assets/message-circle-D_YIPPZo.js">
+    <link rel="modulepreload" crossorigin href="./assets/plus-CExKUszm.js">
+    <link rel="modulepreload" crossorigin href="./assets/trash-2-CjPoUZCP.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-resizable-panels.browser.esm-CgWOEYeG.js">
+    <link rel="modulepreload" crossorigin href="./assets/JsonOutput-BtH7MWeH.js">
+    <link rel="modulepreload" crossorigin href="./assets/chart-no-axes-column-DVEV2j1H.js">
+    <link rel="modulepreload" crossorigin href="./assets/square-function-CPbVtjKW.js">
+    <link rel="modulepreload" crossorigin href="./assets/spec-0Lz7sg6-.js">
+    <link rel="modulepreload" crossorigin href="./assets/column-preview-DLKhDynP.js">
+    <link rel="modulepreload" crossorigin href="./assets/icons-D3YFXNmD.js">
+    <link rel="modulepreload" crossorigin href="./assets/radio-group-U7lRKGle.js">
+    <link rel="modulepreload" crossorigin href="./assets/floating-outline-C0SZhwjd.js">
+    <link rel="modulepreload" crossorigin href="./assets/objectWithoutPropertiesLoose-Msf1n32r.js">
+    <link rel="modulepreload" crossorigin href="./assets/esm-DSv-aO_T.js">
+    <link rel="modulepreload" crossorigin href="./assets/readonly-python-code-DSbejFDG.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-headphone-CY5S3y3b.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-CLyu7PSP.js">
+    <link rel="modulepreload" crossorigin href="./assets/image-jhXeQEgs.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-icons-iv0e9GQO.js">
+    <link rel="modulepreload" crossorigin href="./assets/switch-bF1-CZET.js">
+    <link rel="modulepreload" crossorigin href="./assets/events-BRbNg7Li.js">
+    <link rel="modulepreload" crossorigin href="./assets/globals-BRVtF1eA.js">
+    <link rel="modulepreload" crossorigin href="./assets/share-DaxBFxkk.js">
+    <link rel="modulepreload" crossorigin href="./assets/blob-dGUJ3Bw8.js">
+    <link rel="modulepreload" crossorigin href="./assets/memoize-Tp7rARFe.js">
+    <link rel="modulepreload" crossorigin href="./assets/get-C-qh_et5.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseSet-CsW0tABf.js">
+    <link rel="modulepreload" crossorigin href="./assets/state-C7gvYi5W.js">
+    <link rel="modulepreload" crossorigin href="./assets/label-B0dIDKzs.js">
+    <link rel="modulepreload" crossorigin href="./assets/textarea-C9UJnbJM.js">
+    <link rel="modulepreload" crossorigin href="./assets/refresh-ccw-CUkO1Vlo.js">
+    <link rel="modulepreload" crossorigin href="./assets/form-BnyFeEcN.js">
+    <link rel="modulepreload" crossorigin href="./assets/renderShortcut--Jq-xdwl.js">
+    <link rel="modulepreload" crossorigin href="./assets/useBoolean-CWy308NJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDeepCompareMemoize-zUHU--0D.js">
+    <link rel="modulepreload" crossorigin href="./assets/types-xF5uWODg.js">
+    <link rel="modulepreload" crossorigin href="./assets/semaphore-FlZezxaf.js">
+    <link rel="modulepreload" crossorigin href="./assets/fileToBase64-Doh9J-g6.js">
+    <link rel="modulepreload" crossorigin href="./assets/pathUtils-ANiMIEDI.js">
+    <link rel="modulepreload" crossorigin href="./assets/prop-types-D_pYuT11.js">
+    <link rel="modulepreload" crossorigin href="./assets/es-WvgFq7ze.js">
+    <link rel="modulepreload" crossorigin href="./assets/_hasPath-hMc_3QZy.js">
+    <link rel="modulepreload" crossorigin href="./assets/hasIn-CSsM95b1.js">
+    <link rel="modulepreload" crossorigin href="./assets/flatten-Bd5tsfm_.js">
+    <link rel="modulepreload" crossorigin href="./assets/pick-D1xb4gl6.js">
+    <link rel="modulepreload" crossorigin href="./assets/code-xml-tqeFGeKJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/house-DkdBWh44.js">
+    <link rel="modulepreload" crossorigin href="./assets/square-DPWHdF_-.js">
+    <link rel="modulepreload" crossorigin href="./assets/triangle-alert-CV7pqa1o.js">
+    <link rel="modulepreload" crossorigin href="./assets/bundle.esm-BULc9l6b.js">
+    <link rel="stylesheet" crossorigin href="./assets/cells-pu5xzE_v.css">
+    <link rel="stylesheet" crossorigin href="./assets/markdown-renderer-DdDKmWlR.css">
+    <link rel="stylesheet" crossorigin href="./assets/JsonOutput-B7vuddcd.css">
+    <link rel="stylesheet" crossorigin href="./assets/index-DYQYDO53.css">
+  <marimo-wasm hidden=""></marimo-wasm>
+    <script>
+        if (window.location.protocol === 'file:') {
+            alert('Warning: This file must be served by an HTTP server to function correctly.');
+        }
+    </script>
+    
+    <style>
+        #save-button {
+            display: none !important;
+        }
+        #filename-input {
+            display: none !important;
+        }
+    </style>
+    
+<script data-marimo="true">
+    Object.defineProperty(window, "__MARIMO_EXPORT_CONTEXT__", {
+        value: Object.freeze({
+            trusted: true,
+            notebookCode: "# /// script\n# requires-python = \"\u003E=3.11\"\n# dependencies = [\n#   \"altair\u003E=5.5.0,\u003C6.0\",\n#   \"pandas\",\n#   \"marimo\u003E=0.23.11\",\n# ]\n# ///\n# mesa and simulatingrisk are installed in the init cell below because mesa's\n# dependency on tornado (a C-extension package) must be loaded from Pyodide's\n# built-ins before micropip attempts to resolve it from PyPI.\n\nimport marimo\n\n__generated_with = \"0.23.11\"\napp = marimo.App(width=\"full\")\n\n\n@app.cell\nasync def _():\n    import sys\n\n    import marimo as mo\n\n    if sys.platform == \"emscripten\":\n        # Running in Pyodide/WASM.\n        # mesa 2.1.5's __init__.py does\n        # `from mesa_viz_tornado.ModularVisualization import *`\n        # unconditionally. We never use that visualization layer (we draw with altair),\n        # so stub it out before importing mesa to avoid the ModuleNotFoundError.\n        import types\n\n        _tornado_stub = types.ModuleType(\"mesa_viz_tornado\")\n        sys.modules[\"mesa_viz_tornado\"] = _tornado_stub\n        for submodule in [\n            \"ModularVisualization\",\n            \"modules\",\n            \"UserParam\",\n            \"TextVisualization\",\n        ]:\n            import_name = f\"mesa_viz_tornado.{submodule}\"\n            setattr(_tornado_stub, submodule, types.ModuleType(import_name))\n            sys.modules[import_name] = getattr(_tornado_stub, submodule)\n\n        import micropip\n\n        await micropip.install(\"mesa==2.1.5\", deps=False)\n        await micropip.install([\"networkx\", \"numpy\", \"tqdm\"])\n        # uncomment and enable for local development involving app ui\n        # await micropip.install(\n        #     str(\n        #         mo.notebook_location()\n        #         / \"public\"\n        #         / \"simulatingrisk-1.1.0.dev1-py3-none-any.whl\"\n        #     )\n        # )\n        await micropip.install(\"simulatingrisk\u003E=1.1.0\", deps=False)\n\n    from simulatingrisk.hawkdove.ui import (\n        agent_portrayal,\n        draw_hawkdove_agent_space,\n    )\n    from simulatingrisk.hawkdovemulti.model import HawkDoveMultipleRiskModel\n    from simulatingrisk.hawkdovemulti.ui import ui_controls\n    from simulatingrisk.hawkdovemulti.viz import (\n        plot_agents_by_risk,\n        plot_hawks_by_risk,\n        plot_risklevel_changes,\n        plot_wealth_by_risklevel,\n    )\n    from simulatingrisk.ui_common import init_control_buttons, init_refresh\n\n    return (\n        HawkDoveMultipleRiskModel,\n        agent_portrayal,\n        draw_hawkdove_agent_space,\n        init_control_buttons,\n        init_refresh,\n        mo,\n        plot_agents_by_risk,\n        plot_hawks_by_risk,\n        plot_risklevel_changes,\n        plot_wealth_by_risklevel,\n        ui_controls,\n    )\n\n\n@app.cell\ndef _(\n    control_buttons,\n    mo,\n    refresh,\n    simulation_display,\n    simulation_status,\n    ui_controls,\n):\n    mo.hstack(\n        [\n            mo.vstack(\n                [\n                    *ui_controls.values(),  # model parameters\n                    mo.hstack(\n                        control_buttons, gap=1, align=\"start\"\n                    ),  # simulation run/step/stop controls,\n                    refresh,\n                    simulation_status,\n                ]\n            ),\n            simulation_display,\n        ],\n        widths=[1, 4],\n        align=\"start\",\n    )\n    return\n\n\n@app.cell\ndef _(mo):\n    # Mutable simulation state \u2014 step_count increments on each model step,\n    # which causes the chart cell to re-run and redraw.\n    model_state, set_model_state = mo.state(None)\n    step_count, set_step_count = mo.state(0)\n    is_running, set_is_running = mo.state(False)\n    # Remember the user's selected auto-refresh interval across pause/resume so\n    # we can re-arm the refresh widget at the same speed when play is clicked.\n    refresh_interval, set_refresh_interval = mo.state(\"0.5s\")\n    return (\n        is_running,\n        model_state,\n        refresh_interval,\n        set_is_running,\n        set_model_state,\n        set_refresh_interval,\n        set_step_count,\n        step_count,\n    )\n\n\n@app.cell\ndef _(init_control_buttons):\n    # assign separately so we can watch the values of each button\n    run_btn, pause_btn, step_btn, reset_btn = init_control_buttons()\n    # combine for display in the UI\n    control_buttons = run_btn, pause_btn, step_btn, reset_btn\n    return control_buttons, pause_btn, reset_btn, run_btn, step_btn\n\n\n@app.cell\ndef _(init_refresh, is_running, refresh_interval, set_refresh_interval):\n    refresh = init_refresh(\n        is_running=is_running(),\n        refresh_interval=refresh_interval(),\n        set_refresh_interval=set_refresh_interval,\n    )\n    return (refresh,)\n\n\n@app.cell\ndef _(\n    HawkDoveMultipleRiskModel,\n    mo,\n    pause_btn,\n    reset_btn,\n    run_btn,\n    set_is_running,\n    set_model_state,\n    set_step_count,\n    ui_controls,\n):\n    # Handle run / pause / reset button clicks.\n    mo.stop(not any([run_btn.value, pause_btn.value, reset_btn.value]))\n\n    if run_btn.value:\n        set_is_running(True)\n    elif pause_btn.value:\n        set_is_running(False)\n    elif reset_btn.value:\n        _m = HawkDoveMultipleRiskModel(**{k: v.value for k, v in ui_controls.items()})\n        set_model_state(_m)\n        set_step_count(0)\n        set_is_running(False)\n    return\n\n\n@app.cell\ndef _(\n    HawkDoveMultipleRiskModel,\n    is_running,\n    mo,\n    model_state,\n    refresh,\n    set_is_running,\n    set_model_state,\n    set_step_count,\n    step_btn,\n    ui_controls,\n):\n    # Advance the simulation. Triggered on every refresh tick and on step_btn click.\n    # mo.stop exits when paused and the step button wasn't just pressed.\n    refresh\n    mo.stop(not (is_running() or step_btn.value))\n\n    _model = model_state()\n    if _model is None:\n        _model = HawkDoveMultipleRiskModel(\n            **{k: v.value for k, v in ui_controls.items()}\n        )\n        set_model_state(_model)\n\n    if _model.running:\n        _model.step()\n        set_step_count(_model.schedule.steps)\n    else:\n        set_is_running(False)\n    return\n\n\n@app.cell\ndef _(is_running, mo, model_state, step_count):\n    _model = model_state()\n    _step = step_count()\n    _run_label = \"\u25b6 Running\" if is_running() else \"\u23f8 Paused\"\n    _sim_status = _model.status if _model else \"not started\"\n    simulation_status = mo.md(\n        f\"**Step:** {_step} | **Simulation:** {_run_label} | **Status:** {_sim_status}\"\n    )\n    return (simulation_status,)\n\n\n@app.cell\ndef _(\n    agent_portrayal,\n    draw_hawkdove_agent_space,\n    mo,\n    model_state,\n    plot_agents_by_risk,\n    plot_hawks_by_risk,\n    plot_risklevel_changes,\n    plot_wealth_by_risklevel,\n    step_count,\n):\n    # Charts \u2014 depends on step_count so this cell re-runs on every model step.\n    _step = step_count()\n    _model = model_state()\n\n    if _model is None:\n        simulation_display = mo.md(\n            \"_Click **\u25b6 Run** or **\u23ed Step** to start the simulation._\"\n        )\n    else:\n        _grid = draw_hawkdove_agent_space(_model, agent_portrayal)\n\n        _agent_df = (\n            _model.datacollector.get_agent_vars_dataframe().reset_index().dropna()\n        )\n\n        _charts = [_grid]\n\n        if not _agent_df.empty:\n            _charts.append(plot_agents_by_risk(_model))\n            _charts.append(plot_hawks_by_risk(_model))\n            _charts.append(plot_wealth_by_risklevel(_model))\n            _charts.append(plot_risklevel_changes(_model))\n\n        simulation_display = mo.hstack(_charts, gap=0, wrap=True)\n    return (simulation_display,)\n\n\nif __name__ == \"__main__\":\n    app.run()\n",
+        }),
+        writable: false,
+        configurable: false,
+    });
+</script>
+<marimo-code hidden="">%23%20%2F%2F%2F%20script%0A%23%20requires-python%20%3D%20%22%3E%3D3.11%22%0A%23%20dependencies%20%3D%20%5B%0A%23%20%20%20%22altair%3E%3D5.5.0%2C%3C6.0%22%2C%0A%23%20%20%20%22pandas%22%2C%0A%23%20%20%20%22marimo%3E%3D0.23.11%22%2C%0A%23%20%5D%0A%23%20%2F%2F%2F%0A%23%20mesa%20and%20simulatingrisk%20are%20installed%20in%20the%20init%20cell%20below%20because%20mesa's%0A%23%20dependency%20on%20tornado%20(a%20C-extension%20package)%20must%20be%20loaded%20from%20Pyodide's%0A%23%20built-ins%20before%20micropip%20attempts%20to%20resolve%20it%20from%20PyPI.%0A%0Aimport%20marimo%0A%0A__generated_with%20%3D%20%220.23.11%22%0Aapp%20%3D%20marimo.App(width%3D%22full%22)%0A%0A%0A%40app.cell%0Aasync%20def%20_()%3A%0A%20%20%20%20import%20sys%0A%0A%20%20%20%20import%20marimo%20as%20mo%0A%0A%20%20%20%20if%20sys.platform%20%3D%3D%20%22emscripten%22%3A%0A%20%20%20%20%20%20%20%20%23%20Running%20in%20Pyodide%2FWASM.%0A%20%20%20%20%20%20%20%20%23%20mesa%202.1.5's%20__init__.py%20does%0A%20%20%20%20%20%20%20%20%23%20%60from%20mesa_viz_tornado.ModularVisualization%20import%20*%60%0A%20%20%20%20%20%20%20%20%23%20unconditionally.%20We%20never%20use%20that%20visualization%20layer%20(we%20draw%20with%20altair)%2C%0A%20%20%20%20%20%20%20%20%23%20so%20stub%20it%20out%20before%20importing%20mesa%20to%20avoid%20the%20ModuleNotFoundError.%0A%20%20%20%20%20%20%20%20import%20types%0A%0A%20%20%20%20%20%20%20%20_tornado_stub%20%3D%20types.ModuleType(%22mesa_viz_tornado%22)%0A%20%20%20%20%20%20%20%20sys.modules%5B%22mesa_viz_tornado%22%5D%20%3D%20_tornado_stub%0A%20%20%20%20%20%20%20%20for%20submodule%20in%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%22ModularVisualization%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22modules%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22UserParam%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%22TextVisualization%22%2C%0A%20%20%20%20%20%20%20%20%5D%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20import_name%20%3D%20f%22mesa_viz_tornado.%7Bsubmodule%7D%22%0A%20%20%20%20%20%20%20%20%20%20%20%20setattr(_tornado_stub%2C%20submodule%2C%20types.ModuleType(import_name))%0A%20%20%20%20%20%20%20%20%20%20%20%20sys.modules%5Bimport_name%5D%20%3D%20getattr(_tornado_stub%2C%20submodule)%0A%0A%20%20%20%20%20%20%20%20import%20micropip%0A%0A%20%20%20%20%20%20%20%20await%20micropip.install(%22mesa%3D%3D2.1.5%22%2C%20deps%3DFalse)%0A%20%20%20%20%20%20%20%20await%20micropip.install(%5B%22networkx%22%2C%20%22numpy%22%2C%20%22tqdm%22%5D)%0A%20%20%20%20%20%20%20%20%23%20uncomment%20and%20enable%20for%20local%20development%20involving%20app%20ui%0A%20%20%20%20%20%20%20%20%23%20await%20micropip.install(%0A%20%20%20%20%20%20%20%20%23%20%20%20%20%20str(%0A%20%20%20%20%20%20%20%20%23%20%20%20%20%20%20%20%20%20mo.notebook_location()%0A%20%20%20%20%20%20%20%20%23%20%20%20%20%20%20%20%20%20%2F%20%22public%22%0A%20%20%20%20%20%20%20%20%23%20%20%20%20%20%20%20%20%20%2F%20%22simulatingrisk-1.1.0.dev1-py3-none-any.whl%22%0A%20%20%20%20%20%20%20%20%23%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20%23%20)%0A%20%20%20%20%20%20%20%20await%20micropip.install(%22simulatingrisk%3E%3D1.1.0%22%2C%20deps%3DFalse)%0A%0A%20%20%20%20from%20simulatingrisk.hawkdove.ui%20import%20(%0A%20%20%20%20%20%20%20%20agent_portrayal%2C%0A%20%20%20%20%20%20%20%20draw_hawkdove_agent_space%2C%0A%20%20%20%20)%0A%20%20%20%20from%20simulatingrisk.hawkdovemulti.model%20import%20HawkDoveMultipleRiskModel%0A%20%20%20%20from%20simulatingrisk.hawkdovemulti.ui%20import%20ui_controls%0A%20%20%20%20from%20simulatingrisk.hawkdovemulti.viz%20import%20(%0A%20%20%20%20%20%20%20%20plot_agents_by_risk%2C%0A%20%20%20%20%20%20%20%20plot_hawks_by_risk%2C%0A%20%20%20%20%20%20%20%20plot_risklevel_changes%2C%0A%20%20%20%20%20%20%20%20plot_wealth_by_risklevel%2C%0A%20%20%20%20)%0A%20%20%20%20from%20simulatingrisk.ui_common%20import%20init_control_buttons%2C%20init_refresh%0A%0A%20%20%20%20return%20(%0A%20%20%20%20%20%20%20%20HawkDoveMultipleRiskModel%2C%0A%20%20%20%20%20%20%20%20agent_portrayal%2C%0A%20%20%20%20%20%20%20%20draw_hawkdove_agent_space%2C%0A%20%20%20%20%20%20%20%20init_control_buttons%2C%0A%20%20%20%20%20%20%20%20init_refresh%2C%0A%20%20%20%20%20%20%20%20mo%2C%0A%20%20%20%20%20%20%20%20plot_agents_by_risk%2C%0A%20%20%20%20%20%20%20%20plot_hawks_by_risk%2C%0A%20%20%20%20%20%20%20%20plot_risklevel_changes%2C%0A%20%20%20%20%20%20%20%20plot_wealth_by_risklevel%2C%0A%20%20%20%20%20%20%20%20ui_controls%2C%0A%20%20%20%20)%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20control_buttons%2C%0A%20%20%20%20mo%2C%0A%20%20%20%20refresh%2C%0A%20%20%20%20simulation_display%2C%0A%20%20%20%20simulation_status%2C%0A%20%20%20%20ui_controls%2C%0A)%3A%0A%20%20%20%20mo.hstack(%0A%20%20%20%20%20%20%20%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20mo.vstack(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20*ui_controls.values()%2C%20%20%23%20model%20parameters%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20mo.hstack(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20control_buttons%2C%20gap%3D1%2C%20align%3D%22start%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20)%2C%20%20%23%20simulation%20run%2Fstep%2Fstop%20controls%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20refresh%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20simulation_status%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20)%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20simulation_display%2C%0A%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20widths%3D%5B1%2C%204%5D%2C%0A%20%20%20%20%20%20%20%20align%3D%22start%22%2C%0A%20%20%20%20)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20%23%20Mutable%20simulation%20state%20%E2%80%94%20step_count%20increments%20on%20each%20model%20step%2C%0A%20%20%20%20%23%20which%20causes%20the%20chart%20cell%20to%20re-run%20and%20redraw.%0A%20%20%20%20model_state%2C%20set_model_state%20%3D%20mo.state(None)%0A%20%20%20%20step_count%2C%20set_step_count%20%3D%20mo.state(0)%0A%20%20%20%20is_running%2C%20set_is_running%20%3D%20mo.state(False)%0A%20%20%20%20%23%20Remember%20the%20user's%20selected%20auto-refresh%20interval%20across%20pause%2Fresume%20so%0A%20%20%20%20%23%20we%20can%20re-arm%20the%20refresh%20widget%20at%20the%20same%20speed%20when%20play%20is%20clicked.%0A%20%20%20%20refresh_interval%2C%20set_refresh_interval%20%3D%20mo.state(%220.5s%22)%0A%20%20%20%20return%20(%0A%20%20%20%20%20%20%20%20is_running%2C%0A%20%20%20%20%20%20%20%20model_state%2C%0A%20%20%20%20%20%20%20%20refresh_interval%2C%0A%20%20%20%20%20%20%20%20set_is_running%2C%0A%20%20%20%20%20%20%20%20set_model_state%2C%0A%20%20%20%20%20%20%20%20set_refresh_interval%2C%0A%20%20%20%20%20%20%20%20set_step_count%2C%0A%20%20%20%20%20%20%20%20step_count%2C%0A%20%20%20%20)%0A%0A%0A%40app.cell%0Adef%20_(init_control_buttons)%3A%0A%20%20%20%20%23%20assign%20separately%20so%20we%20can%20watch%20the%20values%20of%20each%20button%0A%20%20%20%20run_btn%2C%20pause_btn%2C%20step_btn%2C%20reset_btn%20%3D%20init_control_buttons()%0A%20%20%20%20%23%20combine%20for%20display%20in%20the%20UI%0A%20%20%20%20control_buttons%20%3D%20run_btn%2C%20pause_btn%2C%20step_btn%2C%20reset_btn%0A%20%20%20%20return%20control_buttons%2C%20pause_btn%2C%20reset_btn%2C%20run_btn%2C%20step_btn%0A%0A%0A%40app.cell%0Adef%20_(init_refresh%2C%20is_running%2C%20refresh_interval%2C%20set_refresh_interval)%3A%0A%20%20%20%20refresh%20%3D%20init_refresh(%0A%20%20%20%20%20%20%20%20is_running%3Dis_running()%2C%0A%20%20%20%20%20%20%20%20refresh_interval%3Drefresh_interval()%2C%0A%20%20%20%20%20%20%20%20set_refresh_interval%3Dset_refresh_interval%2C%0A%20%20%20%20)%0A%20%20%20%20return%20(refresh%2C)%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20HawkDoveMultipleRiskModel%2C%0A%20%20%20%20mo%2C%0A%20%20%20%20pause_btn%2C%0A%20%20%20%20reset_btn%2C%0A%20%20%20%20run_btn%2C%0A%20%20%20%20set_is_running%2C%0A%20%20%20%20set_model_state%2C%0A%20%20%20%20set_step_count%2C%0A%20%20%20%20ui_controls%2C%0A)%3A%0A%20%20%20%20%23%20Handle%20run%20%2F%20pause%20%2F%20reset%20button%20clicks.%0A%20%20%20%20mo.stop(not%20any(%5Brun_btn.value%2C%20pause_btn.value%2C%20reset_btn.value%5D))%0A%0A%20%20%20%20if%20run_btn.value%3A%0A%20%20%20%20%20%20%20%20set_is_running(True)%0A%20%20%20%20elif%20pause_btn.value%3A%0A%20%20%20%20%20%20%20%20set_is_running(False)%0A%20%20%20%20elif%20reset_btn.value%3A%0A%20%20%20%20%20%20%20%20_m%20%3D%20HawkDoveMultipleRiskModel(**%7Bk%3A%20v.value%20for%20k%2C%20v%20in%20ui_controls.items()%7D)%0A%20%20%20%20%20%20%20%20set_model_state(_m)%0A%20%20%20%20%20%20%20%20set_step_count(0)%0A%20%20%20%20%20%20%20%20set_is_running(False)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20HawkDoveMultipleRiskModel%2C%0A%20%20%20%20is_running%2C%0A%20%20%20%20mo%2C%0A%20%20%20%20model_state%2C%0A%20%20%20%20refresh%2C%0A%20%20%20%20set_is_running%2C%0A%20%20%20%20set_model_state%2C%0A%20%20%20%20set_step_count%2C%0A%20%20%20%20step_btn%2C%0A%20%20%20%20ui_controls%2C%0A)%3A%0A%20%20%20%20%23%20Advance%20the%20simulation.%20Triggered%20on%20every%20refresh%20tick%20and%20on%20step_btn%20click.%0A%20%20%20%20%23%20mo.stop%20exits%20when%20paused%20and%20the%20step%20button%20wasn't%20just%20pressed.%0A%20%20%20%20refresh%0A%20%20%20%20mo.stop(not%20(is_running()%20or%20step_btn.value))%0A%0A%20%20%20%20_model%20%3D%20model_state()%0A%20%20%20%20if%20_model%20is%20None%3A%0A%20%20%20%20%20%20%20%20_model%20%3D%20HawkDoveMultipleRiskModel(%0A%20%20%20%20%20%20%20%20%20%20%20%20**%7Bk%3A%20v.value%20for%20k%2C%20v%20in%20ui_controls.items()%7D%0A%20%20%20%20%20%20%20%20)%0A%20%20%20%20%20%20%20%20set_model_state(_model)%0A%0A%20%20%20%20if%20_model.running%3A%0A%20%20%20%20%20%20%20%20_model.step()%0A%20%20%20%20%20%20%20%20set_step_count(_model.schedule.steps)%0A%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20set_is_running(False)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(is_running%2C%20mo%2C%20model_state%2C%20step_count)%3A%0A%20%20%20%20_model%20%3D%20model_state()%0A%20%20%20%20_step%20%3D%20step_count()%0A%20%20%20%20_run_label%20%3D%20%22%E2%96%B6%20Running%22%20if%20is_running()%20else%20%22%E2%8F%B8%20Paused%22%0A%20%20%20%20_sim_status%20%3D%20_model.status%20if%20_model%20else%20%22not%20started%22%0A%20%20%20%20simulation_status%20%3D%20mo.md(%0A%20%20%20%20%20%20%20%20f%22**Step%3A**%20%7B_step%7D%20%7C%20**Simulation%3A**%20%7B_run_label%7D%20%7C%20**Status%3A**%20%7B_sim_status%7D%22%0A%20%20%20%20)%0A%20%20%20%20return%20(simulation_status%2C)%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20agent_portrayal%2C%0A%20%20%20%20draw_hawkdove_agent_space%2C%0A%20%20%20%20mo%2C%0A%20%20%20%20model_state%2C%0A%20%20%20%20plot_agents_by_risk%2C%0A%20%20%20%20plot_hawks_by_risk%2C%0A%20%20%20%20plot_risklevel_changes%2C%0A%20%20%20%20plot_wealth_by_risklevel%2C%0A%20%20%20%20step_count%2C%0A)%3A%0A%20%20%20%20%23%20Charts%20%E2%80%94%20depends%20on%20step_count%20so%20this%20cell%20re-runs%20on%20every%20model%20step.%0A%20%20%20%20_step%20%3D%20step_count()%0A%20%20%20%20_model%20%3D%20model_state()%0A%0A%20%20%20%20if%20_model%20is%20None%3A%0A%20%20%20%20%20%20%20%20simulation_display%20%3D%20mo.md(%0A%20%20%20%20%20%20%20%20%20%20%20%20%22_Click%20**%E2%96%B6%20Run**%20or%20**%E2%8F%AD%20Step**%20to%20start%20the%20simulation._%22%0A%20%20%20%20%20%20%20%20)%0A%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20_grid%20%3D%20draw_hawkdove_agent_space(_model%2C%20agent_portrayal)%0A%0A%20%20%20%20%20%20%20%20_agent_df%20%3D%20(%0A%20%20%20%20%20%20%20%20%20%20%20%20_model.datacollector.get_agent_vars_dataframe().reset_index().dropna()%0A%20%20%20%20%20%20%20%20)%0A%0A%20%20%20%20%20%20%20%20_charts%20%3D%20%5B_grid%5D%0A%0A%20%20%20%20%20%20%20%20if%20not%20_agent_df.empty%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20_charts.append(plot_agents_by_risk(_model))%0A%20%20%20%20%20%20%20%20%20%20%20%20_charts.append(plot_hawks_by_risk(_model))%0A%20%20%20%20%20%20%20%20%20%20%20%20_charts.append(plot_wealth_by_risklevel(_model))%0A%20%20%20%20%20%20%20%20%20%20%20%20_charts.append(plot_risklevel_changes(_model))%0A%0A%20%20%20%20%20%20%20%20simulation_display%20%3D%20mo.hstack(_charts%2C%20gap%3D0%2C%20wrap%3DTrue)%0A%20%20%20%20return%20(simulation_display%2C)%0A%0A%0Aif%20__name__%20%3D%3D%20%22__main__%22%3A%0A%20%20%20%20app.run()%0A</marimo-code></head>
+  <body>
+    <div id="root"></div>
+    <!-- This is a portal for the data editor to render in -->
+    <div id="portal" data-testid="glide-portal" style="position: fixed; left: 0; top: 0; z-index: 9999"></div>
+    <script data-marimo="true">
+      Object.defineProperty(window, "__MARIMO_MOUNT_CONFIG__", {
+        value: Object.freeze({
+            "filename": "notebook.py",
+            "cwd": "",
+            "lspWorkspace": null,
+            "mode": "read",
+            "version": "0.23.11",
+            "serverToken": "unused",
+            "config": {"ai": {"custom_providers": {}, "enabled": true, "models": {"custom_models": [], "displayed_models": []}}, "completion": {"activate_on_typing": true, "auto_close_pairs": true, "copilot": false, "signature_hint_on_typing": false}, "diagnostics": {"sql_linter": true}, "display": {"cell_output": "above", "code_editor_font_size": 14, "custom_css": [], "dataframes": "rich", "default_table_max_columns": 50, "default_table_page_size": 10, "default_width": "medium", "reference_highlighting": false, "theme": "system"}, "formatting": {"line_length": 79}, "keymap": {"overrides": {}, "preset": "default"}, "language_servers": {"pylsp": {"enable_flake8": false, "enable_mypy": true, "enable_pydocstyle": false, "enable_pyflakes": false, "enable_pylint": false, "enable_ruff": true, "enabled": false}}, "mcp": {"mcpServers": {}, "presets": []}, "package_management": {"manager": "uv"}, "runtime": {"auto_instantiate": false, "auto_reload": "off", "default_csv_encoding": "utf-8", "default_sql_output": "auto", "on_cell_change": "autorun", "output_max_bytes": 8000000, "reactive_tests": true, "show_tracebacks": false, "std_stream_max_bytes": 1000000, "watcher_on_save": "lazy"}, "save": {"autosave": "off", "autosave_delay": 1000, "format_on_save": false}, "server": {"browser": "default", "follow_symlink": false}, "snippets": {"custom_paths": [], "include_default_snippets": true}},
+            "configOverrides": {},
+            "appConfig": {"sql_output": "auto", "width": "full"},
+            "view": {"showAppCode": false},
+            "notebook": null,
+            "session": null,
+            "runtimeConfig": null,
+        }),
+        writable: false,
+        configurable: false,
+      });
+    </script>
+  </body>
+</html>
