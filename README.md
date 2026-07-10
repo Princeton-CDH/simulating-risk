@@ -82,7 +82,7 @@ For publication via static site, this notebook should be saved as html + web ass
 To export as html+wasm in edit mode, to debug any wasm-specific problems:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode edit
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/app/ --mode edit
 ```
 
 For convenience, a `.justfile` is included for building documentation and serving locally. Requires [just](https://github.com/casey/just) version 1.52 or newer.
@@ -97,7 +97,7 @@ just serve-docs
 That is equivalent to running the following commands. To export manually in run mode:
 
 ```sh
-uv run marimo export html-wasm simulatingrisk/app.py -o docs/sim/ --mode run --no-sandbox -f
+uv run marimo export html-wasm simulatingrisk/app.py -o docs/app/ --mode run --no-sandbox -f
 ````
 
 To view locally, start a python webserver:
@@ -106,14 +106,13 @@ To view locally, start a python webserver:
 python -m http.server --directory docs/
 ```
 
-The interacvite simulation will be available at http://localhost:8000/sim/
+The interacvite simulation will be available at http://localhost:8000/app/
 
-For testing the html+wasm application notebook with a local version of the simrisk code (notebook must be updated
-to install simulatingrisk from the wheel).
+For testing the html+wasm application notebook with a local version of the simrisk code (notebook must be updated to install simulatingrisk from the wheel; make sure the version string and filename match exactly).
 
 ```sh
-uv build --wheel -o docs/sim/
-uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/sim/ --no-sandbox -f
+uv build --wheel -o docs/app/
+uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/app/ --no-sandbox -f
 ```
 
 To export static html copies of analysis notebooks:

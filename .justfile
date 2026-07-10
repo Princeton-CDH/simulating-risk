@@ -5,8 +5,8 @@ set default-list := true
 
 # Export marimo app and analysis notebooks to html docs
 docs:
-    @echo "Exporting app ui to html-wasm in docs/sim/"
-    uv run marimo --quiet export html-wasm simulatingrisk/app.py -o docs/sim/ --mode run --no-sandbox --force
+    @echo "Exporting app ui to html-wasm in docs/app/"
+    uv run marimo --quiet export html-wasm simulatingrisk/app.py -o docs/app/ --mode run --no-sandbox --force
 
 #uv run marimo export html notebooks/evolv/convergence.py -o docs/analysis/evolve/convergence.html
 
