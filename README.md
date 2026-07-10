@@ -5,7 +5,7 @@
 
 The code in this repository is associated with the CDH project [Simulating risk, risking simulations](https://cdh.princeton.edu/projects/simulating-risk/).
 
-Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/), using Agent Based Modeling to explore risk attitudes within populations.
+Simulations are implemented in Python with [Mesa](https://mesa.readthedocs.io/en/stable/), using Agent Based Modeling to explore risk attitudes within populations.
 
 ---
 
@@ -15,10 +15,7 @@ Simulations are implemented with [Mesa](https://mesa.readthedocs.io/en/stable/),
 - [Hawk/Dove with multiple risk attitudes and adjustment](simulatingrisk/hawkdovemulti)
 
 > [!TIP]  
-> Run an interactive version of the simulation online: [Hawk/Dove with multiple risk attitudes](https://py.cafe/rlskoeser/simulatingrisk-hawk-dove-multirisk)
-
-> [!NOTE]
-> Altenately, run the simulation in a Jupyter notebook: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Princeton-CDH/simulating-risk.git/HEAD?urlpath=%2Fdoc%2Ftree%2Fsimulatingrisk%2Fhawkdovemulti%2Frun_simulation.ipynb)
+> Run an [interactive version of the simulation online](https://princeton-cdh.github.io/simulating-risk/app/)
 
 The code for **Hawk/Dove with risk attitudes** and **Hawk/Dove with multiple risk attitudes** in this codebase was [reviewed](https://github.com/DHCodeReview/simulating-risk/pull/1) in June 2024 by [Scott Foster](https://github.com/sgfost) and [Malte Vogl](https://github.com/maltevogl) (Senior Research Fellow, Max Planck Institute of Geoanthropology) via [DHTech Community Code Review](https://dhcodereview.github.io/); review was facilitated by [Cole Crawford](https://github.com/ColeDCrawford) (Senior Software Engineer, Harvard Arts and Humanities Research Computing).
 
