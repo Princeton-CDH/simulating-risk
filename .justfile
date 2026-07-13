@@ -15,7 +15,7 @@ docs:
 # serve documentation locally for development and testing
 serve-docs:
     #!/usr/bin/env bash
-    tmpdir=$(mktemp -d)
+    tmpdir=$(mktemp -d -t simrisk_docs_)
     trap 'rm -rf "$tmpdir"' EXIT
     ln -s "$PWD/docs" "$tmpdir/simulating-risk"
     echo "Serving at http://localhost:8000/simulating-risk/"
