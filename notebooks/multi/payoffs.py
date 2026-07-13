@@ -431,7 +431,7 @@ def _(mo):
     mo.md(r"""
     ---
 
-    Utility methods use to graph data.
+    Utility methods used to graph data.
     """)
     return
 
