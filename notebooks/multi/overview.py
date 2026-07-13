@@ -8,6 +8,14 @@ app = marimo.App(
 
 
 @app.cell(hide_code=True)
+def _():
+    from simulatingrisk.doc_utils import docs_header
+
+    docs_header()
+    return
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     # Hawk/Dove with Multiple Risk-Attitudes in a Population
