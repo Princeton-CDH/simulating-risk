@@ -61,7 +61,7 @@ def _(df, mo, params, pl, run_groups_df, runs_per_group):
 
     # TODO: would be great to report how many runs per parameter combination (hopefully 100)
     overview_txt = f"""
-    Analyzing data from **{df.height:,}** total simulation runs.
+    Analyzing data from **{df.height:,}** total simulation runs.  Data was collected for model and agents at the last round only.
 
     **{converged_stats["count"]:,} ({converged_stats["percent"] * 100:.1f}%)**  simulations converged.
 
@@ -266,9 +266,12 @@ def _(mo):
     mo.md(r"""
     ---
 
-    ### Data file review
+    ## Data file review
 
     List and checks on the files, parameters, and number of runs included in the data used for analysis.
+
+
+    ### Model data
     """)
     return
 
@@ -278,36 +281,48 @@ def _(data_dir, mo, pl):
     # create a dataframe with overview information the files we're drawing from,
     # to confirm that the files have the data and parameters we expect
 
-    file_info = []
-    for data_file in data_dir.glob("*_model.csv"):
-        file_size = data_file.stat().st_size
-        rows = None
-        max_step = None
-        cols = None
-        n_cols = None
-        if file_size:
-            file_df = pl.read_csv(data_file)
-            rows = file_df.height
-            if "Step" in file_df.columns:
-                max_step = file_df["Step"].max()
-            else:
-                print(f"data but no step in {data_file.name}")
-            cols = file_df.columns
-            n_cols = len(cols)
-        file_info.append(
-            {
-                "file_name": data_file.name,
-                "file_size": file_size,
-                "rows": rows,
-                "max_step": max_step,
-                # "columns": cols,
-                "n_cols": n_cols,
-            }
-        )
+    def get_data_file_info(file_iter):
+        file_info = []
+        for data_file in file_iter:
+            file_size = data_file.stat().st_size
+            rows = None
+            max_step = None
+            cols = None
+            n_cols = None
+            if file_size:
+                file_df = pl.read_csv(data_file)
+                rows = file_df.height
+                if "Step" in file_df.columns:
+                    max_step = file_df["Step"].max()
+                else:
+                    print(f"data but no step in {data_file.name}")
+                cols = file_df.columns
+                n_cols = len(cols)
+            file_info.append(
+                {
+                    "file_name": data_file.name,
+                    "file_size": file_size,
+                    "rows": rows,
+                    "max_step": max_step,
+                    # "columns": cols,
+                    "n_cols": n_cols,
+                }
+            )
+        file_info_df = pl.from_dicts(file_info)
+        return file_info_df
 
-    file_info_df = pl.from_dicts(file_info)
-    mo.ui.table(file_info_df, page_size=15, selection=None)
-    return (file_info_df,)
+    model_file_info_df = get_data_file_info(data_dir.glob("*_model.csv"))
+    # check that there is a corresponding agent data file
+    model_file_info_df = model_file_info_df.with_columns(
+        agent_file_name=pl.col.file_name.str.replace("_model", "_agent")
+    ).with_columns(
+        agent_file_exists=pl.col.agent_file_name.map_elements(
+            lambda x: (data_dir / x).exists()
+        )
+    )
+
+    mo.ui.table(model_file_info_df, page_size=15, selection=None)
+    return get_data_file_info, model_file_info_df
 
 
 @app.cell(hide_code=True)
@@ -319,20 +334,25 @@ def _(mo):
 
 
 @app.cell
-def _(file_info_df, pl):
+def _(model_file_info_df, pl):
     # we expect the same number of parameters in each file (may be redundant; can't load into common dataframe if they don't match)
-    assert (file_info_df["n_cols"].n_unique()) == 1, (
+    assert (model_file_info_df["n_cols"].n_unique()) == 1, (
         "All files should have the same number of parameters"
     )
 
     # less than 3240 means incomplete run (not all parameter combos)
-    assert file_info_df.filter(pl.col.rows.lt(3240)).height == 0, (
+    assert model_file_info_df.filter(pl.col.rows.lt(3240)).height == 0, (
         "Data should not include files with less than 3240 rows (incomplete run)"
     )
 
     # max step 300 was used for the full set fo 100 batches
-    assert file_info_df.filter(pl.col.max_step.ne(300)).height == 0, (
+    assert model_file_info_df.filter(pl.col.max_step.ne(300)).height == 0, (
         "Data should only include files with max step of 300"
+    )
+
+    # all model files should have agent  data
+    assert model_file_info_df.filter(pl.col.agent_file_exists.eq(False)).height == 0, (
+        "All model data files should have corresponding agent data file"
     )
     return
 
@@ -357,6 +377,50 @@ def _(df, params, pl):
 
     run_groups_df
     return run_groups_df, runs_per_group
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Agent data
+    """)
+    return
+
+
+@app.cell
+def _(data_dir, get_data_file_info, mo, pl):
+
+    agent_file_info_df = get_data_file_info(data_dir.glob("*_agent.csv"))
+    # check that there is a corresponding model file
+    agent_file_info_df = agent_file_info_df.with_columns(
+        model_file_name=pl.col.file_name.str.replace("_agent", "_model")
+    ).with_columns(
+        model_file_exists=pl.col.model_file_name.map_elements(
+            lambda x: (data_dir / x).exists()
+        )
+    )
+
+    mo.ui.table(agent_file_info_df, page_size=15, selection=None)
+    return (agent_file_info_df,)
+
+
+@app.cell
+def _(agent_file_info_df, pl):
+    # we expect the same number of parameters in each file
+    assert (agent_file_info_df["n_cols"].n_unique()) == 1, (
+        "All files should have the same number of parameters"
+    )
+
+    # max step 300 was used for the full set fo 100 batches
+    assert agent_file_info_df.filter(pl.col.max_step.ne(300)).height == 0, (
+        "Data should only include files with max step of 300"
+    )
+
+    # all agent files should have model data
+    assert agent_file_info_df.filter(pl.col.model_file_exists.eq(False)).height == 0, (
+        "All agent data files should have corresponding model data file"
+    )
+    return
 
 
 if __name__ == "__main__":
