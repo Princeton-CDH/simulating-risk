@@ -12,7 +12,11 @@ docs:
 
 #uv run marimo export html notebooks/evolv/convergence.py -o docs/analysis/evolve/convergence.html
 
-# serve documentation locally for dev/
+# serve documentation locally for development and testing
 serve-docs:
-    @echo "Serving docs/ at http://localhost:8000/"
-    python -m http.server --directory docs/
+    #!/usr/bin/env bash
+    tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
+    ln -s "$PWD/docs" "$tmpdir/simulating-risk"
+    echo "Serving at http://localhost:8000/simulating-risk/"
+    python -m http.server 8000 --directory "$tmpdir"
