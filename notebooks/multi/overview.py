@@ -123,6 +123,7 @@ def _(df, pl):
     # we want to know if there is any correlation between convergence / run length and the starting parameters
 
     corr_matrix_df = (
+        # add a boolean column for status converged
         df.with_columns(converged=pl.col.status.eq("converged"))
         .rename({"Step": "run length"})
         .select(
@@ -195,11 +196,6 @@ def _(alt, corr_matrix_df, pl):
     )
 
     _heatmap_corr_chart + _text_corr_chart
-    return
-
-
-@app.cell
-def _():
     return
 
 
