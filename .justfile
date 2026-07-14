@@ -1,17 +1,28 @@
 # justfile for building and serving notebooks as local html
 set default-list := true
 
-# TODO: may need base url option with exports to run properly on github pages
+# export a single marimo notebook to static html in docs/analysis/
+docs-notebook PATH:
+    #!/usr/bin/env bash
+    echo "Exporting notebook {{PATH}} to html in docs/analysis/"
+    # get base filename without the .py extension
+    output_path=$(basename {{PATH}} ".py")
+    # get directory path relative to notebooks/ directory, which is mirrored in output
+    # use basename and dirname together to get the notebook subirectory name
+    sub_dir=$(basename `dirname {{PATH}}`)
+    echo "... uv run marimo export html {{ PATH }} -o docs/analysis/$sub_dir/$output_path.html --force"
+    uv run marimo export html {{ PATH }} -o docs/analysis/$sub_dir/$output_path.html --force
 
-# Export marimo app and analysis notebooks to html docs
+# Export marimo app and all analysis notebooks to html docs (SLOW)
 docs:
     @echo "Exporting app ui to html-wasm in docs/app/"
     uv run marimo --quiet export html-wasm simulatingrisk/app.py -o docs/app/ --mode run --no-sandbox --force
-    @echo "Exporting analysis notebooks to html in docs/analysis/"
-    uv run marimo export html notebooks/multi/overview.py -o docs/analysis/multi/overview.html --force
-    uv run marimo export html notebooks/multi/payoffs.py -o docs/analysis/multi/payoffs.html --force
+    @echo "\n🔺 multiple risk attitudes"
+    @just docs-notebook notebooks/multi/overview.py
+    #@just docs-notebook notebooks/multi/payoffs.py
+    @echo "\n🔺 evolving risk attitudes"
+    @just docs-notebook notebooks/evolv/overview.py
 
-#uv run marimo export html notebooks/evolv/convergence.py -o docs/analysis/evolve/convergence.html
 
 # serve documentation locally for development and testing
 serve-docs:
