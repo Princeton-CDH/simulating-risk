@@ -108,7 +108,7 @@ The interacvite simulation will be available at http://localhost:8000/app/
 For testing the html+wasm application notebook with a local version of the simrisk code (notebook must be updated to install simulatingrisk from the wheel; make sure the version string and filename match exactly).
 
 ```sh
-uv build --wheel -o docs/app/
+uv build --wheel -o docs/app/public/
 uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/app/ --no-sandbox -f
 ```
 
