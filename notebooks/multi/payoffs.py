@@ -107,7 +107,6 @@ def _(data_dir, params, pl):
         )
         .collect()
     )
-    model_agent_df
     return (model_agent_df,)
 
 
@@ -220,10 +219,6 @@ def _(model_agent_df, params, pl):
         )
     )
 
-    # param_level
-    param_level
-    # corr = param_level.corr()
-
     return corr_sample_size, corr_variables, param_level, param_variables
 
 
@@ -238,7 +233,6 @@ def _(corr_variables, param_level, param_variables, pl):
         .with_columns(pl.Series("var_x", _corr_cols))
         .select("var_x", *_corr_cols)
     )
-    run_corr_matrix_df
     return (run_corr_matrix_df,)
 
 
@@ -262,7 +256,6 @@ def _(pl, run_corr_matrix_df):
             ),
         )
     )
-    run_corr_matrix_long_df
     return (run_corr_matrix_long_df,)
 
 
@@ -283,7 +276,7 @@ def _(alt, corr_sample_size, run_corr_matrix_long_df):
             ),
             y=alt.Y("var_y:O", title=""),
             # use spectral theme since we have both negative and positive correlations
-            color=alt.Color("correlation").scale(scheme="spectral"),
+            color=alt.Color("correlation", scale=alt.Scale(scheme="spectral")),
         )
         .properties(width=450, height=300)
     )
@@ -459,9 +452,7 @@ def _(alt, mo, pl):
 
         # area chart for Q1 to Q3
         area_chart = base_chart.mark_rect(width=15).encode(
-            y=alt.Y("Q1").axis(
-                offset=12
-            ),  # add offset so axis does not crowd rectangle
+            y=alt.Y("Q1", axis=alt.Axis(offset=12)),
             y2="Q3",
             x=alt.X("risk_attitude:Q", title="Risk Attitude"),
             tooltip=["min", "max", "mean", "Q1", "median", "Q3"],
@@ -523,15 +514,21 @@ def _(alt, payoffchart_title):
         base_chart = alt.Chart(df)
         # curved line for the mean pyoff by risk attitude
         payoff_mean_chart = base_chart.mark_line(interpolate="monotone").encode(
-            x=alt.X("risk_attitude", title="Risk Attitude").scale(domain=[0, 9]),
-            y=alt.Y("mean", title="Cumulative Payoff (mean)").scale(zero=False),
+            x=alt.X(
+                "risk_attitude", title="Risk Attitude", scale=alt.Scale(domain=[0, 9])
+            ),
+            y=alt.Y(
+                "mean", title="Cumulative Payoff (mean)", scale=alt.Scale(zero=False)
+            ),
             color=alt.Color(f"{field}:N", title=field_label),
             opacity=alt.when(selection).then(alt.value(1.0)).otherwise(alt.value(0.4)),
         )
         # curved area chart for payoff quartile spread
         payoff_spread = base_chart.mark_area(interpolate="monotone").encode(
-            x=alt.X("risk_attitude", title="Risk Attitude").scale(domain=[0, 9]),
-            y=alt.Y("Q3").scale(zero=False),
+            x=alt.X(
+                "risk_attitude", title="Risk Attitude", scale=alt.Scale(domain=[0, 9])
+            ),
+            y=alt.Y("Q3", scale=alt.Scale(zero=False)),
             y2="Q1",
             color=alt.Color(f"{field}:N", title=field_label),
             opacity=alt.when(selection).then(alt.value(0.3)).otherwise(alt.value(0.1)),
