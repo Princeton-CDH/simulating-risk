@@ -1,7 +1,11 @@
 import marimo
 
 __generated_with = "0.23.11"
-app = marimo.App(width="medium")
+app = marimo.App(
+    width="medium",
+    app_title="Hawk/Dove with Multiple Risk-Attitudes - Payoff Analysis",
+    html_head_file="../docs_head.html",
+)
 
 
 @app.cell

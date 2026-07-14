@@ -3,7 +3,8 @@ import marimo
 __generated_with = "0.23.11"
 app = marimo.App(
     width="medium",
-    app_title="Hawk/Dove with Multiple Risk-Attitudes - Overview",
+    app_title="Overview - Hawk/Dove with Multiple Risk-Attitudes",
+    html_head_file="../docs_head.html",
 )
 
 
