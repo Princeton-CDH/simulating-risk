@@ -50,11 +50,13 @@ def _(mo):
     - Risk-Seeking : r = 0, 1, 2
     - Risk-Moderate : r = 3, 4, 5, 6
     - Risk-Averse : r = 7, 8, 9
+
+    Then generate and graph a correlation matrix for the starting simulation parameters and those percentages.
     """)
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(c, df):
     # for each simulation run, calculate what percent of the population was risk seeking/moderate/averse
     # after all adjustments were made
@@ -93,11 +95,11 @@ def _(c, df):
         "adjust_payoff"
     )
 
-    agent_risk_pcts_df
+    # agent_risk_pcts_df
     return (agent_risk_pcts_df,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(agent_risk_pcts_df, params, pl):
 
     # parameters we are interested in testing correlation
@@ -125,21 +127,21 @@ def _(agent_risk_pcts_df, params, pl):
         "var_x", *df_corr.columns
     )
 
-    df_corr
+    # df_corr
     return corr_variables, df_corr, param_variables
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(c, corr_variables, df_corr, param_variables, pl):
     def param_group(param_name):
-        # group parameters
+        # add group names to parameters so they can be displayed in logical groups
         if param_name.startswith("risk_distribution"):
             return "risk distribution"
         if param_name.endswith("neighborhood"):
             return "neighborhood size"
         if param_name.startswith("adjust_payoff"):
             return "adjust payoff"
-        return "-"
+        return ""
 
     df_corr_long = (
         df_corr.unpivot(
@@ -169,12 +171,62 @@ def _(c, corr_variables, df_corr, param_variables, pl):
             .str.replace_all("_", " ", literal=True),
         )
     )
-    df_corr_long
+    # df_corr_long
     return (df_corr_long,)
 
 
-@app.cell
+@app.cell(hide_code=True)
+def _(alt, df_corr_long, y_axis_sort):
+    # flip the axes and display the chart longwise - easier to read
+
+    _heatmap_corr_chart = (
+        alt.Chart(df_corr_long)
+        .mark_rect()
+        .encode(
+            y=alt.Y(
+                "var_x:O",
+                title=None,
+            ),
+            x=alt.X(
+                "var_y:O",
+                title="",  # Population Risk-Attitudes",
+                sort=y_axis_sort,
+                axis=alt.Axis(
+                    orient="top",  # move axis to top
+                    labelAngle=-25,  # angle the labels (negative = counterclockwise)
+                    labelExpr="{'pct_risk_inclined': '% Risk-Seeking', 'pct_risk_moderate': '% Risk-Moderate', 'pct_risk_avoidant': '% Risk-Averse'}[datum.value]",
+                ),
+            ),
+            # display color legend at bottom, match the chart width
+            color=alt.Color("correlation")
+            .scale(scheme="spectral", domain=[-0.43, 0.43])
+            .legend(orient="bottom", gradientLength=350),
+        )
+    )
+
+    _text_corr_chart = _heatmap_corr_chart.mark_text().encode(
+        y="var_x:O",
+        x=alt.X("var_y:O", sort=y_axis_sort),
+        text="correlation_str",
+        # for contrast, vary the color based on the intensity of the correlation, negative or positive
+        color=alt.condition(
+            "abs(datum.correlation) > 0.29", alt.value("white"), alt.value("black")
+        ),
+    )
+
+    # facet by group so that so that related parameters can be compared together
+    (_heatmap_corr_chart + _text_corr_chart).properties(
+        width=350, height=alt.Step(30)
+    ).facet(
+        row=alt.Row("group:N", title=""),
+        title="Parameter correlation with population risk attitudes",
+    ).resolve_scale(y="independent")
+    return
+
+
+@app.cell(hide_code=True)
 def _(alt, df_corr_long):
+    # wide version of the correlation chart - uncomment last statement to view
 
     y_axis_sort = ["pct_risk_inclined", "pct_risk_moderate", "pct_risk_avoidant"]
 
@@ -214,14 +266,13 @@ def _(alt, df_corr_long):
     )
 
     # facet by group so that so that related parameters can be compared together
-    (_heatmap_corr_chart + _text_corr_chart).resolve_axis(y="shared").properties(
-        width=alt.Step(55), height=300
-    ).facet(
-        column=alt.Column("group:N", title="Parameter Group"),
-        title="Simulation parameter correlation with population risk attitudes",
-    ).resolve_scale(x="independent")
-
-    return
+    # (_heatmap_corr_chart + _text_corr_chart).resolve_axis(y="shared").properties(
+    #     width=alt.Step(55), height=300
+    # ).facet(
+    #     column=alt.Column("group:N", title="Parameter Group"),
+    #     title="Simulation parameter correlation with population risk attitudes",
+    # ).resolve_scale(x="independent")
+    return (y_axis_sort,)
 
 
 if __name__ == "__main__":
