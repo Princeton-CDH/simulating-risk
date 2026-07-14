@@ -22,6 +22,8 @@ docs:
     #@just docs-notebook notebooks/multi/payoffs.py
     @echo "\n🔺 evolving risk attitudes"
     @just docs-notebook notebooks/evolv/overview.py
+    @just docs-notebook notebooks/evolv/population-category.py
+    @just docs-notebook notebooks/evolv/param-significance.py
 
 
 # serve documentation locally for development and testing
