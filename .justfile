@@ -19,7 +19,7 @@ docs:
     uv run marimo --quiet export html-wasm simulatingrisk/app.py -o docs/app/ --mode run --no-sandbox --force
     @echo "\n🔺 multiple risk attitudes"
     @just docs-notebook notebooks/multi/overview.py
-    #@just docs-notebook notebooks/multi/payoffs.py
+    @just docs-notebook notebooks/multi/payoffs.py
     @echo "\n🔺 evolving risk attitudes"
     @just docs-notebook notebooks/evolv/overview.py
     @just docs-notebook notebooks/evolv/population-category.py
