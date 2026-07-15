@@ -27,10 +27,19 @@ def _():
     from simulatingrisk.hawkdovemulti.batch_run import params
 
     # shared notebook code in this folder
-    from utils import custom_boxplot, plot_mean_quartiles
+    from utils import custom_boxplot, plot_mean_quartiles, load_agent_data
 
     data_dir = Path("data/no_adjustment/")
-    return alt, custom_boxplot, data_dir, mo, params, pl, plot_mean_quartiles
+    return (
+        alt,
+        custom_boxplot,
+        data_dir,
+        mo,
+        params,
+        pl,
+        plot_mean_quartiles,
+        load_agent_data,
+    )
 
 
 @app.cell(hide_code=True)
@@ -55,52 +64,10 @@ def _(mo):
 
 
 @app.cell
-def _(data_dir, params, pl):
-    # agent data accompanies model data with same filename; run ids are only unique within a filename, and model
-    # data includes all the parameters for that run
-
-    def load_agent_data() -> list[pl.LazyFrame]:
-        # load agent data and model data in pairs by filename, joining on RunId
-        data_lf = []
-        for model_file in data_dir.glob("*_model.csv"):
-            # batch run filename shared by model/agent data; runid is unique within a batch
-            batchrun_base_name = model_file.stem.replace("_model", "")
-            agent_file = model_file.with_name(f"{batchrun_base_name}_agent.csv")
-            if not agent_file.exists() or agent_file.stat().st_size == 0:
-                print(f"Missing or empty agent file at {agent_file}")
-                return None
-
-            # load model data and join with agent data, then subset to the columns needed for analysis
-            # - limit to initial parameters and RunId for joining with model data
-            model_df = pl.scan_csv(str(model_file)).select(
-                "RunId", *params["no_adjustment"].keys()
-            )
-            # drop risk_level_changed; not relevant here (no adjustment = no changes)
-            # rename internal risk_level field to risk_attitude
-            agent_df = (
-                pl.scan_csv(str(agent_file))
-                .drop("risk_level_changed")
-                .rename({"risk_level": "risk_attitude"})
-            )
-            # join agent data with model data and add to list of lazy frames
-            # make runid unique by adding base filename
-            agent_df = (
-                agent_df.join(model_df, on=["RunId"], how="left")
-                .with_columns(
-                    run_id=pl.concat_str(
-                        [pl.col.RunId, pl.lit(model_file.stem.replace("_model", ""))],
-                        separator="|",
-                    )
-                )
-                .drop("RunId")
-            )
-
-            data_lf.append(agent_df)
-
-        return data_lf
+def _(data_dir, pl, load_agent_data):
 
     model_agent_df = (
-        pl.concat(load_agent_data())
+        pl.concat(load_agent_data(data_dir))
         .with_columns(
             # calculate a scaled points value so we can compare across runs with different length and play neighborhood
             scaled_points=pl.col("points")
