@@ -1,23 +1,36 @@
 <html lang="en">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Simulating Risk-Attitudes</title>
-        <meta name="color-scheme" content="light dark">
+        <meta name="color-scheme" content="light dark" />
         <link rel="stylesheet" href="css/pico.min.css" />
-        <base href="/simulating-risk/">
-        <link rel="icon" type="image/png" href="/simulating-risk/favicon-96x96.png" sizes="96x96" />
-        <link rel="icon" type="image/svg+xml" href="/simulating-risk/favicon.svg" />
+        <base href="/simulating-risk/" />
+        <link
+            rel="icon"
+            type="image/png"
+            href="/simulating-risk/favicon-96x96.png"
+            sizes="96x96"
+        />
+        <link
+            rel="icon"
+            type="image/svg+xml"
+            href="/simulating-risk/favicon.svg"
+        />
         <link rel="shortcut icon" href="/simulating-risk/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/simulating-risk/apple-touch-icon.png" />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="/simulating-risk/apple-touch-icon.png"
+        />
         <link rel="manifest" href="/simulating-risk/site.webmanifest" />
     </head>
     <body class="container">
         <nav>
-          <ul>
-            <li><a href="/">Home</a></li>
-          </ul>
-          <ul>
+            <ul>
+                <li><a href="/">Home</a></li>
+            </ul>
+            <ul>
                 <li><a href="app/">Simulation</a></li>
                 <li><a href="analysis/">Analysis</a></li>
             </ul>
@@ -28,15 +41,66 @@
         <main>
             <article>
                 <p>View the <a href="app/">interactive simulation</a>.</p>
-                <footer><small>Requires JavaScript and Web Assembly; may take a few seconds to load.</small></footer>
+                <footer>
+                    <small
+                        >Requires JavaScript and Web Assembly; may take a few
+                        seconds to load.</small
+                    >
+                </footer>
             </article>
             <article>
-                Browse <a href="analysis/">batch-run analysis</a>.</article>.
+                <p>Browse <a href="analysis/">batch-run analysis</a>:</p>
+
+                <ul>
+                    <li>
+                        <a href="analysis/multi/">Multiple Risk-Attitudes</a>
+                        <ul>
+                            <li>
+                                <a href="analysis/multi/overview.html"
+                                    >Overview</a
+                                >
+                                - data overview, parameters, run length &
+                                convergence
+                            </li>
+                            <li>
+                                <a href="analysis/multi/payoffs.html"
+                                    >Cumulative Payoff</a
+                                >
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="analysis/evolv/">Evolving Risk-Attitudes</a>
+                        <ul>
+                            <li>
+                                <a href="analysis/evolv/overview.html"
+                                    >Overview</a
+                                >
+                                - data overview, parameters, run length &
+                                convergence
+                            </li>
+                            <li>
+                                <a href="analysis/evolv/param-significance.html"
+                                    >Parameter Significance</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="analysis/evolv/population-category.html"
+                                    >Population Category</a
+                                >
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             </article>
         </main>
 
         <footer>
-            <p class="small">Analysis from earlier batch runs is still <a href="analysis/prev/">available as notebook snapshots</a>.</p>
+            <p class="small">
+                Analysis from earlier batch runs is still
+                <a href="analysis/prev/">available as notebook snapshots</a>.
+            </p>
         </footer>
     </body>
 </html>
