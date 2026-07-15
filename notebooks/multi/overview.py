@@ -42,7 +42,7 @@ def _():
 
 
 @app.cell
-def _(df, mo, params, pl, run_groups_df, runs_per_group):
+def _(df, mo, params, pl, run_groups_df, runs_per_group, total_agent_rows):
 
     param_opts = []
 
@@ -70,6 +70,8 @@ def _(df, mo, params, pl, run_groups_df, runs_per_group):
     {param_info}
 
     This resulted in **{run_groups_df.height:,}** combinations; each set of parameters was run **{runs_per_group:,} times**.
+
+    Agent data for those simualations results in **{total_agent_rows:,}** rows.
     """
     mo.md(overview_txt)
     return (status_df,)
@@ -399,6 +401,13 @@ def _(data_dir, get_data_file_info, mo, pl):
 
     mo.ui.table(agent_file_info_df, page_size=15, selection=None)
     return (agent_file_info_df,)
+
+
+@app.cell
+def _(agent_file_info_df):
+    total_agent_rows = agent_file_info_df["rows"].sum()
+    total_agent_rows
+    return (total_agent_rows,)
 
 
 @app.cell
