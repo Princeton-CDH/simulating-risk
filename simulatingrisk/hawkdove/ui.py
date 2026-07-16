@@ -121,24 +121,32 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     # custom agent space chart, modeled on default
     # make_space method in mesa jupyterviz code,
     # but using altair so we can contrl shapes as well as color and size
+    grid = model.grid._grid
     all_agent_data = []
-    for i in range(model.grid.width):
-        for j in range(model.grid.height):
-            agent_data = {}
-            content = model.grid._grid[i][j]
+    for i, col in enumerate(grid):
+        for j, content in enumerate(col):
             if not content:
                 continue
-            if not hasattr(content, "__iter__"):
-                # Is a single grid
-                content = [content]
-            for agent in content:
-                # use all data from agent portrayal, and add x,y coordinates
-                agent_data = agent_portrayal(agent)
-                agent_data["x"] = i
-                agent_data["y"] = j
-            all_agent_data.append(agent_data)
+            agents = content if hasattr(content, "__iter__") else [content]
+            for agent in agents:
+                data = agent_portrayal(agent)
+                data["x"] = i
+                data["y"] = j
+                all_agent_data.append(data)
 
     df = pd.DataFrame(all_agent_data)
+    # drop mesa runserver fields not used in the Altair chart
+    df.drop(columns=["Shape", "Layer", "r"], errors="ignore", inplace=True)
+    # shorten field names — they repeat per-record in inline JSON
+    df.rename(
+        columns={
+            "risk_level": "rl",
+            "risk_level_changed": "rlc",
+            "size": "s",
+            "choice": "c",
+        },
+        inplace=True,
+    )
 
     # use grid x,y coordinates to plot, but suppress axis labels
 
@@ -155,28 +163,25 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         )
         chart_color = (
             # set to nominal to show all values
-            alt.Color("risk_level", title=["Risk", "Attitude"], type="nominal")
+            alt.Color("rl", title=["Risk", "Attitude"], type="nominal")
             # display discrete symbols rather than gradient
             .legend(orient="left", type="symbol")
             .scale(domain=risk_attitude_domain, range=divergent_colors_10)
         )
     elif model.risk_attitudes == "single":
         chart_color = (
-            alt.Color("choice", title="Play Choice")
+            alt.Color("c", title="Play Choice")
             # .legend(None)
             .scale(domain=hawkdove_domain, range=["orange", "blue"])
         )
 
     # optionally display information from multi-risk attitude variant
-    if "risk_level_changed" in df.columns:
+    if "rlc" in df.columns:
         # map true/false to readable labels for display in the chart
-        df["risk_attitude_adjustment"] = df["risk_level_changed"].map(
-            {True: "adjusted", False: "didn't adjust"}
-        )
-
+        df["raa"] = df["rlc"].map({True: "adjusted", False: "didn't adjust"})
         outer_color = alt.Color(
             # use list to split legend title across two lines, for brevity
-            "risk_attitude_adjustment",
+            "raa",
             title=["Adjusted", "Risk Attitude"],
         ).scale(
             domain=["adjusted", "didn't adjust"],
@@ -185,25 +190,27 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
     else:
         outer_color = chart_color
 
+    renderer = "canvas" if model.grid.width * model.grid.height > 500 else "svg"
     agent_chart = (
         alt.Chart(df)
         .mark_point()  # filled=True)
         .encode(
             # scale=alt.Scale(padding=2, nice=False, zero=False
-            x=alt.X("x", axis=None),  # no x-axis label
-            y=alt.Y("y", axis=None),  # no y-axis label
-            size=alt.Size("size", title="Payoff Rank"),  # relabel size for legend
+            x=alt.X("x", axis=None, scale=alt.Scale(nice=False, zero=False)),
+            y=alt.Y("y", axis=None, scale=alt.Scale(nice=False, zero=False)),
+            size=alt.Size("s", title="Payoff Rank"),  # relabel size for legend
             # when fill and color differ, color acts as an outline
             fill=chart_color,
             color=outer_color,
             shape=alt.Shape(  # use shape to indicate choice
-                "choice",
+                "c",
                 title="Play Choice",
                 scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
             ),
         )
         .configure(padding=5)
         .configure_view(strokeOpacity=0)  # hide grid/chart lines
+        .properties(usermeta={"embedOptions": {"renderer": renderer}})
     )
 
     return agent_chart
