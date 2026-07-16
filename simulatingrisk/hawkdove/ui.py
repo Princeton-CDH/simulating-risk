@@ -148,11 +148,15 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         inplace=True,
     )
 
+    # encode categoricals as integers and round floats to reduce inline JSON size
+    df["c"] = df["c"].map({"hawk": 1, "dove": 0})
+    df["s"] = df["s"].round(1)
+
     # use grid x,y coordinates to plot, but suppress axis labels
 
     # currently passing in actual colors, not a variable to use for color
     # use domain/range to use color for display
-    hawkdove_domain = ("hawk", "dove")
+    hawkdove_domain = (1, 0)  # hawk=1, dove=0
     shape_range = ("triangle-up", "circle")
 
     # when risk attitude is variable,
@@ -172,20 +176,27 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         chart_color = (
             alt.Color("c", title="Play Choice")
             # .legend(None)
+            .legend(labelExpr="datum.value === 1 ? 'hawk' : 'dove'")
             .scale(domain=hawkdove_domain, range=["orange", "blue"])
         )
 
     # optionally display information from multi-risk attitude variant
     if "rlc" in df.columns:
-        # map true/false to readable labels for display in the chart
-        df["raa"] = df["rlc"].map({True: "adjusted", False: "didn't adjust"})
-        outer_color = alt.Color(
-            # use list to split legend title across two lines, for brevity
-            "raa",
-            title=["Adjusted", "Risk Attitude"],
-        ).scale(
-            domain=["adjusted", "didn't adjust"],
-            range=["black", "transparent"],
+        # map true/false to 1/0 for compact JSON; drop rlc since only raa is encoded
+        df["raa"] = df["rlc"].map({True: 1, False: 0})
+        df.drop(columns=["rlc"], inplace=True)
+        outer_color = (
+            alt.Color(
+                # use list to split legend title across two lines, for brevity
+                "raa",
+                title=["Adjusted", "Risk Attitude"],
+                type="nominal",
+            )
+            .scale(
+                domain=[1, 0],
+                range=["black", "transparent"],
+            )
+            .legend(labelExpr="datum.value === 1 ? 'adjusted' : \"didn't adjust\"")
         )
     else:
         outer_color = chart_color
@@ -206,6 +217,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
                 "c",
                 title="Play Choice",
                 scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
+                legend=alt.Legend(labelExpr="datum.value === 1 ? 'hawk' : 'dove'"),
             ),
         )
         .configure(padding=5)
