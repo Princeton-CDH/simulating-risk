@@ -13,7 +13,10 @@
 import marimo
 
 __generated_with = "0.23.11"
-app = marimo.App(width="full")
+app = marimo.App(
+    width="full",
+    app_title="Hawk/Dove with Multiple Risk-Attitudes",
+)
 
 
 @app.cell
