@@ -243,12 +243,30 @@ def _(
     _step = step_count()
     _model = model_state()
 
+    # smallest the agent grid should be displayed
+    _min_grid_dimension = 275
+    # width padding for legends
+    _grid_width_padding = 75
+    _min_grid_height = 325
+    _grid_space_per_agent = 18
+
     if _model is None:
         simulation_display = mo.md(
             "_Click **▶ Run** or **⏭ Step** to start the simulation._"
         )
     else:
         _grid = draw_hawkdove_agent_space(_model, agent_portrayal)
+        # set grid chart based on grid size (grid size = # agents in each dimension)
+        # NOTE: set from model, not ui, since display must match current model
+        # (changed ui values only applied on reset/restart)
+        _grid_dimension = max(
+            _grid_space_per_agent * _model.grid.width, _min_grid_dimension
+        )
+        _grid_height = max(_min_grid_height, _grid_dimension)
+
+        _grid = _grid.properties(
+            width=_grid_dimension + _grid_width_padding, height=_grid_height
+        )
 
         _agent_df = (
             _model.datacollector.get_agent_vars_dataframe().reset_index().dropna()
@@ -262,7 +280,13 @@ def _(
             _charts.append(plot_wealth_by_risklevel(_model))
             _charts.append(plot_risklevel_changes(_model))
 
-        simulation_display = mo.hstack(_charts, gap=0, wrap=True)
+        # if grid is close to chart size, just flow all the charts together and wrap
+        if _grid_dimension < 350:
+            simulation_display = mo.hstack(_charts, gap=0, wrap=True)
+        else:
+            simulation_display = mo.hstack(
+                [_grid, mo.hstack(_charts[1:], gap=0, wrap=True)], gap=0
+            )
     return (simulation_display,)
 
 

@@ -157,9 +157,8 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             # set to nominal to show all values
             alt.Color("risk_level", title=["Risk", "Attitude"], type="nominal")
             # display discrete symbols rather than gradient
-            .legend(orient="left", type="symbol").scale(
-                domain=risk_attitude_domain, range=divergent_colors_10
-            )
+            .legend(orient="left", type="symbol")
+            .scale(domain=risk_attitude_domain, range=divergent_colors_10)
         )
     elif model.risk_attitudes == "single":
         chart_color = (
@@ -190,6 +189,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
         alt.Chart(df)
         .mark_point()  # filled=True)
         .encode(
+            # scale=alt.Scale(padding=2, nice=False, zero=False
             x=alt.X("x", axis=None),  # no x-axis label
             y=alt.Y("y", axis=None),  # no y-axis label
             size=alt.Size("size", title="Payoff Rank"),  # relabel size for legend
@@ -202,6 +202,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
                 scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
             ),
         )
+        .configure(padding=5)
         .configure_view(strokeOpacity=0)  # hide grid/chart lines
     )
 
