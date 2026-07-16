@@ -104,6 +104,8 @@ def _(
                     ),  # simulation run/step/stop controls,
                     refresh,
                     simulation_status,
+                    # make sure users know to reset to run with new parameters
+                    mo.md("---\nⓘ Parameter changes take effect on **Reset**."),
                 ]
             ),
             simulation_display,
@@ -120,14 +122,19 @@ def _(mo):
     # which causes the chart cell to re-run and redraw.
     model_state, set_model_state = mo.state(None)
     step_count, set_step_count = mo.state(0)
+    # display_step only updates every N steps for large grids, throttling chart re-renders.
+    # The status bar uses step_count for accuracy; charts use display_step.
+    display_step, set_display_step = mo.state(0)
     is_running, set_is_running = mo.state(False)
     # Remember the user's selected auto-refresh interval across pause/resume so
     # we can re-arm the refresh widget at the same speed when play is clicked.
     refresh_interval, set_refresh_interval = mo.state("0.5s")
     return (
+        display_step,
         is_running,
         model_state,
         refresh_interval,
+        set_display_step,
         set_is_running,
         set_model_state,
         set_refresh_interval,
@@ -162,6 +169,7 @@ def _(
     pause_btn,
     reset_btn,
     run_btn,
+    set_display_step,
     set_is_running,
     set_model_state,
     set_step_count,
@@ -178,6 +186,7 @@ def _(
         _m = HawkDoveMultipleRiskModel(**{k: v.value for k, v in ui_controls.items()})
         set_model_state(_m)
         set_step_count(0)
+        set_display_step(0)
         set_is_running(False)
     return
 
@@ -189,6 +198,7 @@ def _(
     mo,
     model_state,
     refresh,
+    set_display_step,
     set_is_running,
     set_model_state,
     set_step_count,
@@ -210,6 +220,11 @@ def _(
     if _model.running:
         _model.step()
         set_step_count(_model.schedule.steps)
+        # throttle chart re-renders for large grids: only update display every N steps
+        # always redraw on manual step so the user sees the result immediately
+        _n = max(1, _model.grid.width * _model.grid.height // 500)
+        if step_btn.value or _model.schedule.steps % _n == 0:
+            set_display_step(_model.schedule.steps)
     else:
         set_is_running(False)
     return
@@ -221,8 +236,10 @@ def _(is_running, mo, model_state, step_count):
     _step = step_count()
     _run_label = "▶ Running" if is_running() else "⏸ Paused"
     _sim_status = _model.status if _model else "not started"
+    _n = max(1, _model.grid.width * _model.grid.height // 500) if _model else 1
+    _refresh_note = f"\n\n_Charts refresh every {_n} steps._" if _n > 1 else ""
     simulation_status = mo.md(
-        f"**Step:** {_step} | **Simulation:** {_run_label} | **Status:** {_sim_status}"
+        f"**Step:** {_step} | **Simulation:** {_run_label} | **Status:** {_sim_status}{_refresh_note}"
     )
     return (simulation_status,)
 
@@ -230,6 +247,7 @@ def _(is_running, mo, model_state, step_count):
 @app.cell
 def _(
     agent_portrayal,
+    display_step,
     draw_hawkdove_agent_space,
     mo,
     model_state,
@@ -237,10 +255,9 @@ def _(
     plot_hawks_by_risk,
     plot_risklevel_changes,
     plot_wealth_by_risklevel,
-    step_count,
 ):
-    # Charts — depends on step_count so this cell re-runs on every model step.
-    _step = step_count()
+    # Charts — depends on display_step, which is throttled for large grids to reduce re-renders.
+    _step = display_step()
     _model = model_state()
 
     # smallest the agent grid should be displayed

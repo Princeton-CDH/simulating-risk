@@ -49,8 +49,8 @@ def agent_portrayal(agent):
 
 MinMaxDefault = namedtuple("MinMaxDefault", ["min", "max", "default", "step"])
 
-#: ui options for grid size
-grid_size_opts = MinMaxDefault(min=10, max=100, default=10, step=1)
+#: ui options for grid size - 72 ~= current max that can render in marimo
+grid_size_opts = MinMaxDefault(min=10, max=72, default=10, step=1)
 
 #: supported neighborhood sizes
 neighborhood_sizes = sorted(list(HawkDoveModel.neighborhood_sizes))
@@ -75,6 +75,7 @@ ui_controls = {
         value=grid_size_opts.default,
         label="Grid Size",
         show_value=True,
+        include_input=True,
     ),
     # drop-down to select from choices
     "play_neighborhood": mo.ui.dropdown(
