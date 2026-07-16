@@ -20,6 +20,7 @@ docs:
     @echo "\n🔺 multiple risk attitudes"
     @just docs-notebook notebooks/multi/overview.py
     @just docs-notebook notebooks/multi/payoffs.py
+    @just docs-notebook notebooks/multi/payoff_significance.py
     @echo "\n🔺 evolving risk attitudes"
     @just docs-notebook notebooks/evolv/overview.py
     @just docs-notebook notebooks/evolv/population-category.py
