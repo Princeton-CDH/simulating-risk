@@ -215,7 +215,7 @@ def draw_hawkdove_agent_space(model, agent_portrayal):
             fill=chart_color,
             color=outer_color,
             shape=alt.Shape(  # use shape to indicate choice
-                "c",
+                "c:N",
                 title="Play Choice",
                 scale=alt.Scale(domain=hawkdove_domain, range=shape_range),
                 legend=alt.Legend(labelExpr="datum.value === 1 ? 'hawk' : 'dove'"),
