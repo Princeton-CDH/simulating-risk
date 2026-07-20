@@ -16,6 +16,7 @@ __generated_with = "0.23.11"
 app = marimo.App(
     width="full",
     app_title="Hawk/Dove with Multiple Risk-Attitudes",
+    html_head_file="docs/docs_head.html",
 )
 
 
@@ -54,10 +55,10 @@ async def _():
         #     str(
         #         mo.notebook_location()
         #         / "public"
-        #         / "simulatingrisk-1.1.0.dev1-py3-none-any.whl"
+        #         / "simulatingrisk-1.2.0-py3-none-any.whl"
         #     )
         # )
-        await micropip.install("simulatingrisk>=1.1.0", deps=False)
+        await micropip.install("simulatingrisk>=1.2.0", deps=False)
 
     from simulatingrisk.hawkdove.ui import (
         agent_portrayal,
@@ -72,6 +73,7 @@ async def _():
         plot_wealth_by_risklevel,
     )
     from simulatingrisk.ui_common import init_control_buttons, init_refresh
+    from simulatingrisk.doc_utils import docs_header
 
     return (
         HawkDoveMultipleRiskModel,
@@ -85,6 +87,7 @@ async def _():
         plot_risklevel_changes,
         plot_wealth_by_risklevel,
         ui_controls,
+        docs_header,
     )
 
 
@@ -96,11 +99,14 @@ def _(
     simulation_display,
     simulation_status,
     ui_controls,
+    docs_header,
 ):
     mo.hstack(
         [
             mo.vstack(
                 [
+                    docs_header(),
+                    mo.md("---"),
                     *ui_controls.values(),  # model parameters
                     mo.hstack(
                         control_buttons, gap=1, align="start"
@@ -113,6 +119,7 @@ def _(
             ),
             simulation_display,
         ],
+        # widths=[0, 1],  # minimizing first doesn't work for all components
         widths=[1, 4],
         align="start",
     )

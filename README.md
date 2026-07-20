@@ -103,14 +103,17 @@ To view locally, start a python webserver:
 python -m http.server --directory docs/
 ```
 
-The interacvite simulation will be available at http://localhost:8000/app/
+The interactive simulation will be available at http://localhost:8000/simulating-risk/app/
 
 For testing the html+wasm application notebook with a local version of the simrisk code (notebook must be updated to install simulatingrisk from the wheel; make sure the version string and filename match exactly).
 
 ```sh
 uv build --wheel -o docs/app/public/
 uv run marimo export html-wasm simulatingrisk/app.py --mode edit -o docs/app/ --no-sandbox -f
+just serve-docs
 ```
+
+Make sure any changes made to the editable html+wasm version of the app get propagated back to the python version.
 
 To export static html copies of analysis notebooks:
 

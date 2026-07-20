@@ -17,6 +17,8 @@ docs-notebook PATH:
 docs:
     @echo "Exporting app ui to html-wasm in docs/app/"
     uv run marimo --quiet export html-wasm simulatingrisk/app.py -o docs/app/ --mode run --no-sandbox --force
+    @cp notebooks/docs_head.html docs/
+    @sed -i '' 's|docs/docs_head.html|docs_head.html|g' docs/app/index.html
     @echo "\n🔺 multiple risk attitudes"
     @just docs-notebook notebooks/multi/overview.py
     @just docs-notebook notebooks/multi/overview.py
@@ -26,6 +28,7 @@ docs:
     @just docs-notebook notebooks/evolv/overview.py
     @just docs-notebook notebooks/evolv/population-category.py
     @just docs-notebook notebooks/evolv/param-significance.py
+
 
 
 # serve documentation locally for development and testing
