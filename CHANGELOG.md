@@ -1,3 +1,10 @@
+# 1.2.0 - 2026-07-20
+
+- Updated interactive ui logic to resize agent grid chart based on grid size; tested and optimized to go up to 72x72 with decreased refresh frequency.
+- Updated analysis notebooks for current batch run data, adapting and expanding previous analysis. Written in marimo, and exported as static html to docs/analysis/
+- Create `analysis_utils` module within non-adjusting notebooks, for shared functionality.
+- Improved justfile logic for exporting app and notebooks to html docs.
+
 # 1.1.0 - 2026-07-10
 
 Updates to support the paper "Playing Risky Games."
